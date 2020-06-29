@@ -7,13 +7,19 @@ class Neomutt < Formula
     sha256 "4449d43b3586a730ead151c66afc6af37e3ea15b3e72065e579a9e9884146acc"
 
     diff_file = Tap.fetch("z80oolong/eaw").path/"diff/neomutt-#{version}-fix.diff"
+    unless diff_file.exist? then
+      diff_file = Formula["z80oolong/eaw/#{name}"].opt_prefix/".brew/neomutt-#{version}-fix.diff"
+    end
     patch :p1, diff_file.open.gets(nil)
   end
 
   head do
     url "https://github.com/neomutt/neomutt.git"
 
-    diff_file = Tap.fetch("z80oolong/eaw").path/"diff/neomutt-HEAD-dc0d6e424-fix.diff"
+    diff_file = Tap.fetch("z80oolong/eaw").path/"diff/neomutt-HEAD-90c5333f9-fix.diff"
+    unless diff_file.exist? then
+      diff_file = Formula["z80oolong/eaw/#{name}"].opt_prefix/".brew/neomutt-HEAD-90c5333f9-fix.diff"
+    end
     patch :p1, diff_file.open.gets(nil)
   end
 
@@ -65,6 +71,14 @@ class Neomutt < Formula
     append_list.each {|name| rpath.unshift("#{Formula[name].opt_lib}")}
 
     system "#{Formula["patchelf"].opt_bin}/patchelf", "--set-rpath", "#{rpath.join(":")}", "#{binname}"
+  end
+
+  def post_install
+    if build.head? then
+      system "install", "-m", "0444", Tap.fetch("z80oolong/eaw").path/"diff/neomutt-HEAD-90c5333f9-fix.diff", "#{prefix}/.brew"
+    else
+      system "install", "-m", "0444", Tap.fetch("z80oolong/eaw").path/"diff/neomutt-#{version}-fix.diff", "#{prefix}/.brew"
+    end
   end
 
   test do

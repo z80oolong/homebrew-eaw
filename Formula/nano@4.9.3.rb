@@ -12,6 +12,9 @@ class NanoAT493 < Formula
   depends_on "libmagic" unless OS.mac?
 
   diff_file = Tap.fetch("z80oolong/eaw").path/"diff/nano-#{version}-fix.diff"
+  unless diff_file.exist? then
+    diff_file = Formula["z80oolong/eaw/#{name}"].opt_prefix/".brew/nano-#{version}-fix.diff"
+  end
   patch :p1, diff_file.open.gets(nil)
 
   def install
@@ -31,6 +34,10 @@ class NanoAT493 < Formula
     system "make", "install"
     fix_rpath "#{bin}/nano", ["z80oolong/eaw/ncurses-eaw@6.2"], ["ncurses"]
     doc.install "doc/sample.nanorc"
+  end
+
+  def post_install
+    system "install", "-m", "0444", Tap.fetch("z80oolong/eaw").path/"diff/nano-#{version}-fix.diff", "#{prefix}/.brew"
   end
 
   def fix_rpath(binname, append_list, delete_list)

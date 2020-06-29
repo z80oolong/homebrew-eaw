@@ -7,13 +7,19 @@ class Nano < Formula
     sha256 "6e3438f033a0ed07d3d74c30d0803cbda3d2366ba1601b7bbf9b16ac371f51b4"
 
     diff_file = Tap.fetch("z80oolong/eaw").path/"diff/nano-#{version}-fix.diff"
+    unless diff_file.exist? then
+      diff_file = Formula["z80oolong/eaw/#{name}"].opt_prefix/".brew/nano-#{version}-fix.diff"
+    end
     patch :p1, diff_file.open.gets(nil)
   end
 
   head do
     url "https://git.savannah.gnu.org/git/nano.git"
 
-    diff_file = Tap.fetch("z80oolong/eaw").path/"diff/nano-HEAD-24740815-fix.diff"
+    diff_file = Tap.fetch("z80oolong/eaw").path/"diff/nano-HEAD-13327203-fix.diff"
+    unless diff_file.exist? then
+      diff_file = Formula["z80oolong/eaw/#{name}"].opt_prefix/".brew/nano-HEAD-13327203-fix.diff"
+    end
     patch :p1, diff_file.open.gets(nil)
 
     depends_on "automake" => :build
@@ -53,6 +59,14 @@ class Nano < Formula
     system "make", "install"
     fix_rpath "#{bin}/nano", ["z80oolong/eaw/ncurses-eaw@6.2"], ["ncurses"]
     doc.install "doc/sample.nanorc"
+  end
+
+  def post_install
+    if build.head? then
+      system "install", "-m", "0444", Tap.fetch("z80oolong/eaw").path/"diff/nano-HEAD-13327203-fix.diff", "#{prefix}/.brew"
+    else
+      system "install", "-m", "0444", Tap.fetch("z80oolong/eaw").path/"diff/nano-#{version}-fix.diff", "#{prefix}/.brew"
+    end
   end
 
   def fix_rpath(binname, append_list, delete_list)

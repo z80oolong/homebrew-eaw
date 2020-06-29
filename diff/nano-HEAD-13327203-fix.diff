@@ -1,5 +1,5 @@
 diff --git a/configure.ac b/configure.ac
-index 609de605..046bd585 100644
+index 0d7396f9..1b5216cf 100644
 --- a/configure.ac
 +++ b/configure.ac
 @@ -71,11 +71,19 @@ AM_CONDITIONAL(BUILDING_FROM_GIT, test x$from_git = xyes)
@@ -443,7 +443,7 @@ index 0725c91d..9aa15be6 100644
  		if (width < 0)
  			return 1;
 diff --git a/src/definitions.h b/src/definitions.h
-index 5c24e7fb..a02748c7 100644
+index 91f10d00..703dbc36 100644
 --- a/src/definitions.h
 +++ b/src/definitions.h
 @@ -542,6 +542,12 @@ enum
@@ -457,10 +457,10 @@ index 5c24e7fb..a02748c7 100644
 +#endif /* NO_USE_UTF8CJK_EMOJI */
 +#endif /* NO_USE_UTF8CJK */
  	EMPTY_LINE,
- 	INDICATOR
- };
+ 	INDICATOR,
+ 	BOOKSTYLE
 diff --git a/src/global.c b/src/global.c
-index 66549e5a..0597fc38 100644
+index 655832ed..cee09137 100644
 --- a/src/global.c
 +++ b/src/global.c
 @@ -94,8 +94,12 @@ int didfind = 0;
@@ -477,10 +477,10 @@ index 66549e5a..0597fc38 100644
  int controlleft, controlright, controlup, controldown;
  int controlhome, controlend;
 diff --git a/src/nano.c b/src/nano.c
-index d9d978b5..baac49fb 100644
+index 80f11a40..017fe057 100644
 --- a/src/nano.c
 +++ b/src/nano.c
-@@ -634,6 +634,14 @@ void usage(void)
+@@ -636,6 +636,14 @@ void usage(void)
  	print_opt("-x", "--nohelp", N_("Don't show the two help lines"));
  #ifndef NANO_TINY
  	print_opt("-y", "--afterends", N_("Make Ctrl+Right stop at word ends"));
@@ -495,7 +495,7 @@ index d9d978b5..baac49fb 100644
  #endif
  	if (!ISSET(RESTRICTED))
  		print_opt("-z", "--suspendable", N_("Enable suspension"));
-@@ -1748,6 +1756,14 @@ int main(int argc, char **argv)
+@@ -1751,6 +1759,14 @@ int main(int argc, char **argv)
  		{"indicator", 0, NULL, 'q'},
  		{"unix", 0, NULL, 'u'},
  		{"afterends", 0, NULL, 'y'},
@@ -510,7 +510,7 @@ index d9d978b5..baac49fb 100644
  #endif
  		{NULL, 0, NULL, 0}
  	};
-@@ -1803,8 +1819,18 @@ int main(int argc, char **argv)
+@@ -1806,8 +1822,18 @@ int main(int argc, char **argv)
  	if (*(tail(argv[0])) == 'r')
  		SET(RESTRICTED);
  
@@ -523,13 +523,13 @@ index d9d978b5..baac49fb 100644
 +				"abcdef:ghijklmno:pqr:s:tuvwxyz8$", long_options, NULL)) != -1) {
 +#endif /* NO_USE_UTF8CJK_EMOJI */
 +#else
- 	while ((optchr = getopt_long(argc, argv, "ABC:DEFGHIJ:KLMNPQ:RST:UVWX:Y:Z"
+ 	while ((optchr = getopt_long(argc, argv, "ABC:DEFGHIJ:KLMNOPQ:RST:UVWX:Y:Z"
  				"abcdef:ghijklmno:pqr:s:tuvwxyz$", long_options, NULL)) != -1) {
 +#endif /* NO_USE_UTF8CJK */
  		switch (optchr) {
  #ifndef NANO_TINY
  			case 'A':
-@@ -2035,12 +2061,40 @@ int main(int argc, char **argv)
+@@ -2041,12 +2067,40 @@ int main(int argc, char **argv)
  			case 'z':
  				SET(SUSPENDABLE);
  				break;
@@ -571,7 +571,7 @@ index d9d978b5..baac49fb 100644
  	if (initscr() == NULL)
  		exit(1);
 diff --git a/src/prototypes.h b/src/prototypes.h
-index 6d91adbb..fb29ca16 100644
+index 36904ffa..9a58aa49 100644
 --- a/src/prototypes.h
 +++ b/src/prototypes.h
 @@ -63,7 +63,11 @@ extern int didfind;
@@ -587,10 +587,10 @@ index 6d91adbb..fb29ca16 100644
  extern int controlleft, controlright;
  extern int controlup, controldown;
 diff --git a/src/rcfile.c b/src/rcfile.c
-index 68427770..393ccfb8 100644
+index 3f7786ce..2f540e06 100644
 --- a/src/rcfile.c
 +++ b/src/rcfile.c
-@@ -130,6 +130,14 @@ static const rcoption rcopts[] = {
+@@ -131,6 +131,14 @@ static const rcoption rcopts[] = {
  	{"errorcolor", 0},
  	{"keycolor", 0},
  	{"functioncolor", 0},
@@ -606,7 +606,7 @@ index 68427770..393ccfb8 100644
  	{NULL, 0}
  };
 diff --git a/src/winio.c b/src/winio.c
-index c8fe28b2..c5944177 100644
+index 21a5afb6..44a0ff9a 100644
 --- a/src/winio.c
 +++ b/src/winio.c
 @@ -29,6 +29,12 @@
@@ -622,7 +622,7 @@ index c8fe28b2..c5944177 100644
  #endif
  
  #ifdef REVISION
-@@ -1921,7 +1927,23 @@ char *display_string(const char *buf, size_t column, size_t span,
+@@ -1911,7 +1917,23 @@ char *display_string(const char *buf, size_t column, size_t span,
  		}
  
  		/* Determine whether the character takes zero, one, or two columns. */

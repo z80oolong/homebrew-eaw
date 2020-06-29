@@ -12,6 +12,9 @@ class NanoAT492 < Formula
   depends_on "libmagic" unless OS.mac?
 
   diff_file = Tap.fetch("z80oolong/eaw").path/"diff/nano-#{version}-fix.diff"
+  unless diff_file.exist? then
+    diff_file = Formula["z80oolong/eaw/#{name}"].opt_prefix/".brew/nano-#{version}-fix.diff"
+  end
   patch :p1, diff_file.open.gets(nil)
 
   def install
@@ -42,6 +45,10 @@ class NanoAT492 < Formula
     append_list.each {|name| rpath.unshift("#{Formula[name].opt_lib}")}
 
     system "#{Formula["patchelf"].opt_bin}/patchelf", "--set-rpath", "#{rpath.join(":")}", "#{binname}"
+  end
+
+  def post_install
+    system "install", "-m", "0444", Tap.fetch("z80oolong/eaw").path/"diff/nano-#{version}-fix.diff", "#{prefix}/.brew"
   end
 
   test do
