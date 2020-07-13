@@ -460,10 +460,10 @@ index 91f10d00..703dbc36 100644
  	INDICATOR,
  	BOOKSTYLE
 diff --git a/src/global.c b/src/global.c
-index 655832ed..cee09137 100644
+index fe70929d..97be46fc 100644
 --- a/src/global.c
 +++ b/src/global.c
-@@ -94,8 +94,12 @@ int didfind = 0;
+@@ -91,8 +91,12 @@ int didfind = 0;
  char *present_path = NULL;
  		/* The current browser directory when trying to do tab completion. */
  
@@ -477,7 +477,7 @@ index 655832ed..cee09137 100644
  int controlleft, controlright, controlup, controldown;
  int controlhome, controlend;
 diff --git a/src/nano.c b/src/nano.c
-index 80f11a40..017fe057 100644
+index 8e8b9952..7a124ae2 100644
 --- a/src/nano.c
 +++ b/src/nano.c
 @@ -636,6 +636,14 @@ void usage(void)
@@ -510,16 +510,33 @@ index 80f11a40..017fe057 100644
  #endif
  		{NULL, 0, NULL, 0}
  	};
-@@ -1806,8 +1822,18 @@ int main(int argc, char **argv)
+@@ -1785,7 +1801,16 @@ int main(int argc, char **argv)
+ #endif
+ 
+ #ifdef ENABLE_NLS
++#if 1
++	const char *locale_dir;
++
++	if ((locale_dir = getenv("LOCALEDIR")) == NULL)
++		locale_dir = LOCALEDIR;
++
++	bindtextdomain(PACKAGE, locale_dir);
++#else
+ 	bindtextdomain(PACKAGE, LOCALEDIR);
++#endif
+ 	textdomain(PACKAGE);
+ #endif
+ 
+@@ -1806,8 +1831,18 @@ int main(int argc, char **argv)
  	if (*(tail(argv[0])) == 'r')
  		SET(RESTRICTED);
  
 +#ifndef NO_USE_UTF8CJK
 +#ifndef NO_USE_UTF8CJK_EMOJI
-+	while ((optchr = getopt_long(argc, argv, "ABC:DEFGHIJ:KLMNPQ:RST:UVWX:Y:Z"
++	while ((optchr = getopt_long(argc, argv, "ABC:DEFGHIJ:KLMNOPQ:RST:UVWX:Y:Z"
 +				"abcdef:ghijklmno:pqr:s:tuvwxyz80$", long_options, NULL)) != -1) {
 +#else
-+	while ((optchr = getopt_long(argc, argv, "ABC:DEFGHIJ:KLMNPQ:RST:UVWX:Y:Z"
++	while ((optchr = getopt_long(argc, argv, "ABC:DEFGHIJ:KLMNOPQ:RST:UVWX:Y:Z"
 +				"abcdef:ghijklmno:pqr:s:tuvwxyz8$", long_options, NULL)) != -1) {
 +#endif /* NO_USE_UTF8CJK_EMOJI */
 +#else
@@ -529,7 +546,7 @@ index 80f11a40..017fe057 100644
  		switch (optchr) {
  #ifndef NANO_TINY
  			case 'A':
-@@ -2041,12 +2067,40 @@ int main(int argc, char **argv)
+@@ -2041,12 +2076,40 @@ int main(int argc, char **argv)
  			case 'z':
  				SET(SUSPENDABLE);
  				break;
@@ -571,10 +588,10 @@ index 80f11a40..017fe057 100644
  	if (initscr() == NULL)
  		exit(1);
 diff --git a/src/prototypes.h b/src/prototypes.h
-index 36904ffa..9a58aa49 100644
+index 24fb1a36..01919901 100644
 --- a/src/prototypes.h
 +++ b/src/prototypes.h
-@@ -63,7 +63,11 @@ extern int didfind;
+@@ -61,7 +61,11 @@ extern int didfind;
  
  extern char *present_path;
  
@@ -587,7 +604,7 @@ index 36904ffa..9a58aa49 100644
  extern int controlleft, controlright;
  extern int controlup, controldown;
 diff --git a/src/rcfile.c b/src/rcfile.c
-index 3f7786ce..2f540e06 100644
+index 733db378..43d6242a 100644
 --- a/src/rcfile.c
 +++ b/src/rcfile.c
 @@ -131,6 +131,14 @@ static const rcoption rcopts[] = {
@@ -606,7 +623,7 @@ index 3f7786ce..2f540e06 100644
  	{NULL, 0}
  };
 diff --git a/src/winio.c b/src/winio.c
-index 21a5afb6..44a0ff9a 100644
+index 89908dbd..95ff4929 100644
 --- a/src/winio.c
 +++ b/src/winio.c
 @@ -29,6 +29,12 @@
@@ -622,7 +639,7 @@ index 21a5afb6..44a0ff9a 100644
  #endif
  
  #ifdef REVISION
-@@ -1911,7 +1917,23 @@ char *display_string(const char *buf, size_t column, size_t span,
+@@ -1923,7 +1929,23 @@ char *display_string(const char *buf, size_t column, size_t span,
  		}
  
  		/* Determine whether the character takes zero, one, or two columns. */
