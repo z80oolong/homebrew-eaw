@@ -1,5 +1,72 @@
+class NeomuttAT20200626 < Formula
+  desc "E-mail reader with support for Notmuch, NNTP and much more"
+  homepage "https://neomutt.org/"
+  url "https://github.com/neomutt/neomutt/archive/20200626.tar.gz"
+  sha256 "94b2e59667a080cb9d531050c3ad320f9951ba7ba09eb7eda15427899627f89e"
+
+  depends_on "patchelf" => :build
+  depends_on "gettext"
+  depends_on "gpgme"
+  depends_on "libidn"
+  depends_on "lmdb"
+  depends_on "lua"
+  depends_on "notmuch"
+  depends_on "openssl@1.1"
+  depends_on "tokyo-cabinet"
+  depends_on "z80oolong/eaw/ncurses-eaw@6.2"
+  unless OS.mac?
+    depends_on "krb5"
+    depends_on "libsasl2"
+  end
+
+  patch :p1, :DATA
+
+  keg_only :versioned_formula
+
+  def install
+    ENV.append "CFLAGS",   "-I#{Formula["z80oolong/eaw/ncurses-eaw@6.2"].opt_include}"
+    ENV.append "CPPFLAGS", "-I#{Formula["z80oolong/eaw/ncurses-eaw@6.2"].opt_include}"
+    ENV.append "LDFLAGS",  "-L#{Formula["z80oolong/eaw/ncurses-eaw@6.2"].opt_lib}"
+    ENV["XML_CATALOG_FILES"] = "#{etc}/xml/catalog"
+
+    system "./configure", "--prefix=#{prefix}",
+                          "--enable-gpgme",
+                          "--with-gpgme=#{Formula["gpgme"].opt_prefix}",
+                          "--disable-doc",
+                          "--gss",
+                          "--lmdb",
+                          "--notmuch",
+                          "--sasl",
+                          "--tokyocabinet",
+                          "--with-ssl=#{Formula["openssl@1.1"].opt_prefix}",
+                          "--with-ui=ncurses",
+                          "--with-ncurses=#{Formula["z80oolong/eaw/ncurses-eaw@6.2"].opt_prefix}",
+                          "--lua",
+                          "--with-lua=#{Formula["lua"].prefix}"
+    system "make", "install"
+    fix_rpath "#{bin}/neomutt", ["z80oolong/eaw/ncurses-eaw@6.2"], ["ncurses"]
+  end
+
+  def fix_rpath(binname, append_list, delete_list)
+    delete_list_hash = {}
+    rpath = %x{#{Formula["patchelf"].opt_bin}/patchelf --print-rpath #{binname}}.chomp.split(":")
+
+    (append_list + delete_list).each {|name| delete_list_hash["#{Formula[name].opt_lib}"] = true}
+    rpath.delete_if {|path| delete_list_hash[path]}
+    append_list.each {|name| rpath.unshift("#{Formula[name].opt_lib}")}
+
+    system "#{Formula["patchelf"].opt_bin}/patchelf", "--set-rpath", "#{rpath.join(":")}", "#{binname}"
+  end
+
+  test do
+    output = shell_output("#{bin}/neomutt -F /dev/null -Q debug_level")
+    assert_equal "set debug_level = 0", output.chomp
+  end
+end
+
+__END__
 diff --git a/enter.c b/enter.c
-index 76d88def2..1773caf51 100644
+index cf1efc5..fef5ea6 100644
 --- a/enter.c
 +++ b/enter.c
 @@ -61,7 +61,11 @@ enum EnterRedrawFlags
@@ -26,8 +93,24 @@ index 76d88def2..1773caf51 100644
    if (IsWPrint(wc) && (n > 0))
      return mutt_addwch(wc);
    if (!(wc & ~0x7f))
+diff --git a/globals.h b/globals.h
+index fe030ff..aedaada 100644
+--- a/globals.h
++++ b/globals.h
+@@ -282,4 +282,11 @@ WHERE bool C_XCommentTo;                     ///< Config: (nntp) Add 'X-Comment-
+ WHERE bool C_VirtualSpoolfile;               ///< Config: (notmuch) Use the first virtual mailbox as a spool file
+ #endif
+ 
++#ifndef NO_USE_UTF8CJK
++WHERE bool C_Utf8Cjk;                       ///< Config: (utf8cjk) Width of East Asian Ambiguous Charactor is set 2
++#ifndef NO_USE_UTF8CJK_EMOJI
++WHERE bool C_Utf8Emoji;                     ///< Config: (utf8cjk) Width of UTF8 Emoji is set 2
++#endif
++#endif
++
+ #endif /* MUTT_GLOBALS_H */
 diff --git a/gui/curs_lib.c b/gui/curs_lib.c
-index 44a7d841b..3358fb36c 100644
+index bca175d..85edc9d 100644
 --- a/gui/curs_lib.c
 +++ b/gui/curs_lib.c
 @@ -1117,7 +1117,11 @@ void mutt_simple_format(char *buf, size_t buflen, int min_width, int max_width,
@@ -79,7 +162,7 @@ index 44a7d841b..3358fb36c 100644
    return w;
  }
 diff --git a/help.c b/help.c
-index 9d1b8ce86..b1772c22c 100644
+index ca33b8f..4b27562 100644
 --- a/help.c
 +++ b/help.c
 @@ -157,7 +157,11 @@ static int print_macro(FILE *fp, int maxwidth, const char **macro)
@@ -107,7 +190,7 @@ index 9d1b8ce86..b1772c22c 100644
    if (n > wid)
      n = m;
 diff --git a/main.c b/main.c
-index 9af050d7e..a7854cf96 100644
+index 398adc3..9e35de3 100644
 --- a/main.c
 +++ b/main.c
 @@ -562,6 +562,21 @@ int main(int argc, char *argv[], char *envp[])
@@ -133,7 +216,7 @@ index 9af050d7e..a7854cf96 100644
    mutt_str_replace(&HomeDir, mutt_str_getenv("HOME"));
  
 diff --git a/mutt/mbyte.c b/mutt/mbyte.c
-index 4dfda46f2..b13ba712b 100644
+index ee696b4..6ea52e3 100644
 --- a/mutt/mbyte.c
 +++ b/mutt/mbyte.c
 @@ -43,6 +43,426 @@
@@ -602,7 +685,7 @@ index 4dfda46f2..b13ba712b 100644
      return n;
    if (!(wc & ~0x7f))
 diff --git a/mutt_config.c b/mutt_config.c
-index c28d27dfd..a6f9e0b6d 100644
+index b907874..2d6360b 100644
 --- a/mutt_config.c
 +++ b/mutt_config.c
 @@ -4971,6 +4971,12 @@ struct ConfigDef MuttVars[] = {
@@ -618,24 +701,8 @@ index c28d27dfd..a6f9e0b6d 100644
  #endif
    /*--*/
  
-diff --git a/mutt_globals.h b/mutt_globals.h
-index 8decf5ed5..67db75d51 100644
---- a/mutt_globals.h
-+++ b/mutt_globals.h
-@@ -282,4 +282,11 @@ WHERE bool C_XCommentTo;                     ///< Config: (nntp) Add 'X-Comment-
- WHERE bool C_VirtualSpoolfile;               ///< Config: (notmuch) Use the first virtual mailbox as a spool file
- #endif
- 
-+#ifndef NO_USE_UTF8CJK
-+WHERE bool C_Utf8Cjk;                       ///< Config: (utf8cjk) Width of East Asian Ambiguous Charactor is set 2
-+#ifndef NO_USE_UTF8CJK_EMOJI
-+WHERE bool C_Utf8Emoji;                     ///< Config: (utf8cjk) Width of UTF8 Emoji is set 2
-+#endif
-+#endif
-+
- #endif /* MUTT_GLOBALS_H */
 diff --git a/pager.c b/pager.c
-index cb1e20ba2..afed54432 100644
+index c0f239d..98d0f52 100644
 --- a/pager.c
 +++ b/pager.c
 @@ -1550,7 +1550,11 @@ static int format_line(struct Line **line_info, int n, unsigned char *buf,
