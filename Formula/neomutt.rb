@@ -3,8 +3,8 @@ class Neomutt < Formula
   homepage "https://neomutt.org/"
 
   stable do
-    url "https://github.com/neomutt/neomutt/archive/20200626.tar.gz"
-    sha256 "94b2e59667a080cb9d531050c3ad320f9951ba7ba09eb7eda15427899627f89e"
+    url "https://github.com/neomutt/neomutt/archive/20200821.tar.gz"
+    sha256 "4233d03e03220a2ba8096ab28061e12ef538259fd7d32ad441aad5207b17b390"
 
     def pick_diff(formula_path)
       lines = formula_path.each_line.to_a.inject([]) do |result, line|
@@ -15,7 +15,7 @@ class Neomutt < Formula
       return lines.join("")
     end
 
-    patch :p1, pick_diff(Formula["z80oolong/eaw/neomutt@20200626"].path)
+    patch :p1, pick_diff(Formula["z80oolong/eaw/neomutt@20200821"].path)
   end
 
   head do
@@ -82,10 +82,10 @@ end
 
 __END__
 diff --git a/enter.c b/enter.c
-index 76d88def2..1773caf51 100644
+index ebcc164c1..632bdee5c 100644
 --- a/enter.c
 +++ b/enter.c
-@@ -61,7 +61,11 @@ enum EnterRedrawFlags
+@@ -62,7 +62,11 @@ enum EnterRedrawFlags
  };
  
  /* combining mark / non-spacing character */
@@ -97,7 +97,7 @@ index 76d88def2..1773caf51 100644
  
  /**
   * my_addwch - Display one wide character on screen
-@@ -71,7 +75,11 @@ enum EnterRedrawFlags
+@@ -72,7 +76,11 @@ enum EnterRedrawFlags
   */
  static int my_addwch(wchar_t wc)
  {
@@ -110,10 +110,10 @@ index 76d88def2..1773caf51 100644
      return mutt_addwch(wc);
    if (!(wc & ~0x7f))
 diff --git a/gui/curs_lib.c b/gui/curs_lib.c
-index 00f06e460..29f5415fe 100644
+index 5124ff630..5ae2fa5b1 100644
 --- a/gui/curs_lib.c
 +++ b/gui/curs_lib.c
-@@ -1135,7 +1135,11 @@ void mutt_simple_format(char *buf, size_t buflen, int min_width, int max_width,
+@@ -1138,7 +1138,11 @@ void mutt_simple_format(char *buf, size_t buflen, int min_width, int max_width,
  #endif
            if (!IsWPrint(wc))
          wc = '?';
@@ -125,7 +125,7 @@ index 00f06e460..29f5415fe 100644
      }
      if (w >= 0)
      {
-@@ -1279,7 +1283,11 @@ void mutt_paddstr(int n, const char *s)
+@@ -1282,7 +1286,11 @@ void mutt_paddstr(int n, const char *s)
      }
      if (!IsWPrint(wc))
        wc = '?';
@@ -137,7 +137,7 @@ index 00f06e460..29f5415fe 100644
      if (w >= 0)
      {
        if (w > n)
-@@ -1325,7 +1333,11 @@ size_t mutt_wstr_trunc(const char *src, size_t maxlen, size_t maxwid, size_t *wi
+@@ -1328,7 +1336,11 @@ size_t mutt_wstr_trunc(const char *src, size_t maxlen, size_t maxwid, size_t *wi
        cl = (cl == (size_t)(-1)) ? 1 : n;
        wc = ReplacementChar;
      }
@@ -149,7 +149,7 @@ index 00f06e460..29f5415fe 100644
      /* hack because MUTT_TREE symbols aren't turned into characters
       * until rendered by print_enriched_string() */
      if ((cw < 0) && (src[0] == MUTT_SPECIAL_INDEX))
-@@ -1395,7 +1407,11 @@ int mutt_strnwidth(const char *s, size_t n)
+@@ -1398,7 +1410,11 @@ int mutt_strnwidth(const char *s, size_t n)
      }
      if (!IsWPrint(wc))
        wc = '?';
@@ -162,10 +162,10 @@ index 00f06e460..29f5415fe 100644
    return w;
  }
 diff --git a/help.c b/help.c
-index 9d1b8ce86..b1772c22c 100644
+index f9adf9756..4f23d5e53 100644
 --- a/help.c
 +++ b/help.c
-@@ -157,7 +157,11 @@ static int print_macro(FILE *fp, int maxwidth, const char **macro)
+@@ -102,7 +102,11 @@ static int print_macro(FILE *fp, int maxwidth, const char **macro)
        wc = ReplacementChar;
      }
      /* glibc-2.1.3's wcwidth() returns 1 for unprintable chars! */
@@ -177,7 +177,7 @@ index 9d1b8ce86..b1772c22c 100644
      if (IsWPrint(wc) && (w >= 0))
      {
        if (w > n)
-@@ -232,7 +236,11 @@ static int get_wrapped_width(const char *t, size_t wid)
+@@ -177,7 +181,11 @@ static int get_wrapped_width(const char *t, size_t wid)
      }
      if (!IsWPrint(wc))
        wc = '?';
@@ -190,10 +190,10 @@ index 9d1b8ce86..b1772c22c 100644
    if (n > wid)
      n = m;
 diff --git a/main.c b/main.c
-index b8c578332..c8779bb76 100644
+index 8d6ef8ce4..95d2a1a43 100644
 --- a/main.c
 +++ b/main.c
-@@ -553,6 +553,21 @@ int main(int argc, char *argv[], char *envp[])
+@@ -563,6 +563,21 @@ int main(int argc, char *argv[], char *envp[])
      goto main_ok; // TEST04: neomutt -v
    }
  
@@ -216,7 +216,7 @@ index b8c578332..c8779bb76 100644
    mutt_str_replace(&HomeDir, mutt_str_getenv("HOME"));
  
 diff --git a/mutt/mbyte.c b/mutt/mbyte.c
-index 4dfda46f2..b13ba712b 100644
+index 97fb8f6cd..68ef87619 100644
 --- a/mutt/mbyte.c
 +++ b/mutt/mbyte.c
 @@ -43,6 +43,426 @@
@@ -685,27 +685,31 @@ index 4dfda46f2..b13ba712b 100644
      return n;
    if (!(wc & ~0x7f))
 diff --git a/mutt_config.c b/mutt_config.c
-index df81f20a0..caadc48c6 100644
+index 284f26e4b..72b2d76ea 100644
 --- a/mutt_config.c
 +++ b/mutt_config.c
-@@ -278,6 +278,12 @@ struct ConfigDef MainVars[] = {
-   { "write_bcc", DT_BOOL, &C_WriteBcc, false },
-   { "write_inc", DT_NUMBER|DT_NOT_NEGATIVE, &C_WriteInc, 10 },
-   { "escape", DT_DEPRECATED|DT_STRING, &C_Escape, IP "~" },
+@@ -748,6 +748,16 @@ struct ConfigDef MainVars[] = {
+   { "write_inc", DT_NUMBER|DT_NOT_NEGATIVE, &C_WriteInc, 10, 0, NULL,
+     "Update the progress bar after this many records written (0 to disable)"
+   },
 +#ifndef NO_USE_UTF8CJK
-+  { "utf8_cjk", DT_BOOL, &C_Utf8Cjk, false },
++  { "utf8_cjk", DT_BOOL, &C_Utf8Cjk, false, 0, NULL,
++    "Width of East Asian Ambiguous Character is 2."
++  },
 +#ifndef NO_USE_UTF8CJK_EMOJI
-+  { "utf8_emoji", DT_BOOL, &C_Utf8Emoji, false },
++  { "utf8_emoji", DT_BOOL, &C_Utf8Emoji, false, 0, NULL,
++    "Width of Emoji of UTF-8 Character is 2."
++  },
 +#endif
 +#endif
  
-   { "ignore_linear_white_space", DT_DEPRECATED|DT_BOOL,            &C_IgnoreLinearWhiteSpace, false   },
- 
+   { "escape", DT_DEPRECATED|DT_STRING, &C_Escape, IP "~" },
+   { "ignore_linear_white_space", DT_DEPRECATED|DT_BOOL, &C_IgnoreLinearWhiteSpace, false },
 diff --git a/mutt_globals.h b/mutt_globals.h
-index ea45ca9a2..0475ed738 100644
+index 228cafb06..c831e8a18 100644
 --- a/mutt_globals.h
 +++ b/mutt_globals.h
-@@ -172,4 +172,11 @@ WHERE bool C_WaitKey;                        ///< Config: Prompt to press a key
+@@ -169,4 +169,11 @@ WHERE bool C_WaitKey;                        ///< Config: Prompt to press a key
  WHERE bool C_WrapSearch;                     ///< Config: Wrap around when the search hits the end
  WHERE bool C_WriteBcc;                       ///< Config: Write out the 'Bcc' field when preparing to send a mail
  
@@ -718,10 +722,10 @@ index ea45ca9a2..0475ed738 100644
 +
  #endif /* MUTT_GLOBALS_H */
 diff --git a/pager.c b/pager.c
-index cf92637be..3b526bed8 100644
+index ba3db7368..35f08d458 100644
 --- a/pager.c
 +++ b/pager.c
-@@ -1550,7 +1550,11 @@ static int format_line(struct Line **line_info, int n, unsigned char *buf,
+@@ -1604,7 +1604,11 @@ static int format_line(struct Line **line_info, int n, unsigned char *buf,
        {
          space = ch;
        }

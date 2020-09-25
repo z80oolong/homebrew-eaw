@@ -1,32 +1,8 @@
-class Nano < Formula
+class NanoAT50 < Formula
   desc "Free (GNU) replacement for the Pico text editor"
   homepage "https://www.nano-editor.org/"
-
-  stable do
-    url "https://www.nano-editor.org/dist/v5/nano-5.2.tar.xz"
-    sha256 "32c2da43e1ae9a5e43437d8c6e1ec0388af870c7762c479e5bffb5f292bda7e1"
-
-    def pick_diff(formula_path)
-      lines = formula_path.each_line.to_a.inject([]) do |result, line|
-        result.push(line) if ((/^__END__/ === line) || result.first)
-        result
-      end
-      lines.shift
-      return lines.join("")
-    end
-
-    patch :p1, pick_diff(Formula["z80oolong/eaw/nano@5.2"].path)
-  end
-
-  head do
-    url "https://git.savannah.gnu.org/git/nano.git"
-
-    patch :p1, :DATA
-
-    depends_on "automake" => :build
-    depends_on "autoconf" => :build
-    depends_on "texinfo"  => :build
-  end
+  url "https://www.nano-editor.org/dist/v5/nano-5.0.tar.xz"
+  sha256 "7c0d94be69cd066f20df2868a2da02f7b1d416ce8d47c0850a8bd270897caa36"
 
   depends_on "pkg-config" => :build
   depends_on "patchelf" => :build
@@ -35,18 +11,12 @@ class Nano < Formula
 
   depends_on "libmagic" unless OS.mac?
 
-  option "without-utf8-cjk", "Build without using East asian Ambiguous Width Character in tmux."
-  option "without-utf8-emoji", "Build without using Emoji Character in tmux."
+  patch :p1, :DATA
 
   def install
-    ENV.append "CFLAGS",     "-I#{Formula["z80oolong/eaw/ncurses-eaw@6.2"].opt_include}"
-    ENV.append "CPPFLAGS",   "-I#{Formula["z80oolong/eaw/ncurses-eaw@6.2"].opt_include}"
-    ENV.append "LDFLAGS",    "-L#{Formula["z80oolong/eaw/ncurses-eaw@6.2"].opt_lib}"
-
-    ENV.append "CPPFLAGS", "-DNO_USE_UTF8CJK" if build.without?("utf8-cjk")
-    ENV.append "CPPFLAGS", "-DNO_USE_UTF8CJK_EMOJI" if build.without?("utf8-emoji")
-
-    system "sh", "autogen.sh" if build.head?
+    ENV.append "CFLAGS",   "-I#{Formula["z80oolong/eaw/ncurses-eaw@6.2"].opt_include}"
+    ENV.append "CPPFLAGS", "-I#{Formula["z80oolong/eaw/ncurses-eaw@6.2"].opt_include}"
+    ENV.append "LDFLAGS",  "-L#{Formula["z80oolong/eaw/ncurses-eaw@6.2"].opt_lib}"
 
     system "./configure", "--disable-debug",
                           "--disable-dependency-tracking",
@@ -79,32 +49,8 @@ class Nano < Formula
 end
 
 __END__
-diff --git a/configure.ac b/configure.ac
-index 1d9e2cc0..26d013cb 100644
---- a/configure.ac
-+++ b/configure.ac
-@@ -71,11 +71,19 @@ AM_CONDITIONAL(BUILDING_FROM_GIT, test x$from_git = xyes)
- dnl Checks for pkg-config and gettext when building from git.
- 
- if test x$from_git = xyes; then
-+	if true; then
-+	if test ! -f HOMEBREW_PREFIX/share/aclocal/pkg.m4; then
-+		AC_MSG_ERROR([
-+  *** The pkg.m4 macros are missing. ***
-+  *** The pkg-config package needs to be installed when building from git. ***])
-+	fi
-+	else
- 	if test ! -f $(aclocal --print-ac-dir)/pkg.m4; then
- 		AC_MSG_ERROR([
-   *** The pkg.m4 macros are missing.
-   *** The pkg-config package needs to be installed when building from git.
-   *** After fixing this problem, rerun ./autogen.sh.])
-+	fi
- 	fi
- 	if test "$ac_cv_path_MSGFMT" = ":"; then
- 		AC_MSG_ERROR([
 diff --git a/src/chars.c b/src/chars.c
-index 93ffde19..37964565 100644
+index 619b7fd..476814d 100644
 --- a/src/chars.c
 +++ b/src/chars.c
 @@ -28,6 +28,391 @@
@@ -524,10 +470,10 @@ index 93ffde19..37964565 100644
  		if (width < 0)
  			return 1;
 diff --git a/src/definitions.h b/src/definitions.h
-index 4b593624..6eae6d4c 100644
+index 91f10d0..703dbc3 100644
 --- a/src/definitions.h
 +++ b/src/definitions.h
-@@ -539,6 +539,12 @@ enum
+@@ -542,6 +542,12 @@ enum
  	LET_THEM_ZAP,
  	BREAK_LONG_LINES,
  	JUMPY_SCROLLING,
@@ -539,9 +485,9 @@ index 4b593624..6eae6d4c 100644
 +#endif /* NO_USE_UTF8CJK */
  	EMPTY_LINE,
  	INDICATOR,
- 	BOOKSTYLE,
+ 	BOOKSTYLE
 diff --git a/src/global.c b/src/global.c
-index 4ac66590..2ad98856 100644
+index ceecce7..e43645b 100644
 --- a/src/global.c
 +++ b/src/global.c
 @@ -91,8 +91,12 @@ int didfind = 0;
@@ -558,10 +504,10 @@ index 4ac66590..2ad98856 100644
  int controlleft, controlright, controlup, controldown;
  int controlhome, controlend;
 diff --git a/src/nano.c b/src/nano.c
-index 49ef3775..53bfb51d 100644
+index bc502b1..47ac3b3 100644
 --- a/src/nano.c
 +++ b/src/nano.c
-@@ -641,6 +641,14 @@ void usage(void)
+@@ -636,6 +636,14 @@ void usage(void)
  	print_opt("-x", "--nohelp", N_("Don't show the two help lines"));
  #ifndef NANO_TINY
  	print_opt("-y", "--afterends", N_("Make Ctrl+Right stop at word ends"));
@@ -576,7 +522,7 @@ index 49ef3775..53bfb51d 100644
  #endif
  	if (!ISSET(RESTRICTED))
  		print_opt("-z", "--suspendable", N_("Enable suspension"));
-@@ -1786,6 +1794,14 @@ int main(int argc, char **argv)
+@@ -1759,6 +1767,14 @@ int main(int argc, char **argv)
  		{"indicator", 0, NULL, 'q'},
  		{"unix", 0, NULL, 'u'},
  		{"afterends", 0, NULL, 'y'},
@@ -591,7 +537,7 @@ index 49ef3775..53bfb51d 100644
  #endif
  		{NULL, 0, NULL, 0}
  	};
-@@ -1820,7 +1836,16 @@ int main(int argc, char **argv)
+@@ -1793,7 +1809,16 @@ int main(int argc, char **argv)
  #endif
  
  #ifdef ENABLE_NLS
@@ -608,26 +554,26 @@ index 49ef3775..53bfb51d 100644
  	textdomain(PACKAGE);
  #endif
  
-@@ -1841,8 +1866,18 @@ int main(int argc, char **argv)
+@@ -1814,8 +1839,18 @@ int main(int argc, char **argv)
  	if (*(tail(argv[0])) == 'r')
  		SET(RESTRICTED);
  
 +#ifndef NO_USE_UTF8CJK
 +#ifndef NO_USE_UTF8CJK_EMOJI
-+	while ((optchr = getopt_long(argc, argv, "%ABC:DEFGHIJ:KLMNOPQ:RST:UVWX:Y:Z"
++	while ((optchr = getopt_long(argc, argv, "ABC:DEFGHIJ:KLMNOPQ:RST:UVWX:Y:Z"
 +				"abcdef:ghijklmno:pqr:s:tuvwxyz80$", long_options, NULL)) != -1) {
 +#else
-+	while ((optchr = getopt_long(argc, argv, "%ABC:DEFGHIJ:KLMNOPQ:RST:UVWX:Y:Z"
++	while ((optchr = getopt_long(argc, argv, "ABC:DEFGHIJ:KLMNOPQ:RST:UVWX:Y:Z"
 +				"abcdef:ghijklmno:pqr:s:tuvwxyz8$", long_options, NULL)) != -1) {
 +#endif /* NO_USE_UTF8CJK_EMOJI */
 +#else
- 	while ((optchr = getopt_long(argc, argv, "%ABC:DEFGHIJ:KLMNOPQ:RST:UVWX:Y:Z"
+ 	while ((optchr = getopt_long(argc, argv, "ABC:DEFGHIJ:KLMNOPQ:RST:UVWX:Y:Z"
  				"abcdef:ghijklmno:pqr:s:tuvwxyz$", long_options, NULL)) != -1) {
 +#endif /* NO_USE_UTF8CJK */
  		switch (optchr) {
  #ifndef NANO_TINY
- 			case '%':
-@@ -2083,12 +2118,40 @@ int main(int argc, char **argv)
+ 			case 'A':
+@@ -2049,12 +2084,40 @@ int main(int argc, char **argv)
  			case 'z':
  				SET(SUSPENDABLE);
  				break;
@@ -669,7 +615,7 @@ index 49ef3775..53bfb51d 100644
  	if (initscr() == NULL)
  		exit(1);
 diff --git a/src/prototypes.h b/src/prototypes.h
-index d1b2ece6..68795ba2 100644
+index 53174b6..63041ec 100644
 --- a/src/prototypes.h
 +++ b/src/prototypes.h
 @@ -61,7 +61,11 @@ extern int didfind;
@@ -685,10 +631,10 @@ index d1b2ece6..68795ba2 100644
  extern int controlleft, controlright;
  extern int controlup, controldown;
 diff --git a/src/rcfile.c b/src/rcfile.c
-index 5d69d374..148e1dc0 100644
+index 733db37..43d6242 100644
 --- a/src/rcfile.c
 +++ b/src/rcfile.c
-@@ -133,6 +133,14 @@ static const rcoption rcopts[] = {
+@@ -131,6 +131,14 @@ static const rcoption rcopts[] = {
  	{"errorcolor", 0},
  	{"keycolor", 0},
  	{"functioncolor", 0},
@@ -704,7 +650,7 @@ index 5d69d374..148e1dc0 100644
  	{NULL, 0}
  };
 diff --git a/src/winio.c b/src/winio.c
-index edb1a3b4..68dcaaf8 100644
+index 3de547d..01acb82 100644
 --- a/src/winio.c
 +++ b/src/winio.c
 @@ -29,6 +29,12 @@
@@ -720,7 +666,7 @@ index edb1a3b4..68dcaaf8 100644
  #endif
  
  #ifdef REVISION
-@@ -1844,7 +1850,23 @@ char *display_string(const char *buf, size_t column, size_t span,
+@@ -1819,7 +1825,23 @@ char *display_string(const char *buf, size_t column, size_t span,
  		}
  
  		/* Determine whether the character takes zero, one, or two columns. */
