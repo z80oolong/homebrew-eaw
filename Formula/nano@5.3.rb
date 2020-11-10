@@ -1,8 +1,8 @@
-class NanoAT493 < Formula
+class NanoAT53 < Formula
   desc "Free (GNU) replacement for the Pico text editor"
   homepage "https://www.nano-editor.org/"
-  url "https://www.nano-editor.org/dist/v4/nano-4.9.3.tar.xz"
-  sha256 "6e3438f033a0ed07d3d74c30d0803cbda3d2366ba1601b7bbf9b16ac371f51b4"
+  url "https://www.nano-editor.org/dist/v5/nano-5.3.tar.xz"
+  sha256 "c5c1cbcf622d9a96b6030d66409ed12b204e8bc01ef5e6554ebbe6fb1d734352"
 
   depends_on "pkg-config" => :build
   depends_on "patchelf" => :build
@@ -52,7 +52,7 @@ end
 
 __END__
 diff --git a/src/chars.c b/src/chars.c
-index 91f960b..d6d15a8 100644
+index 93ffde19..37964565 100644
 --- a/src/chars.c
 +++ b/src/chars.c
 @@ -28,6 +28,391 @@
@@ -471,11 +471,28 @@ index 91f960b..d6d15a8 100644
  
  		if (width < 0)
  			return 1;
+diff --git a/src/definitions.h b/src/definitions.h
+index 4e4951dd..1c31dcc0 100644
+--- a/src/definitions.h
++++ b/src/definitions.h
+@@ -537,6 +537,12 @@ enum
+ 	LET_THEM_ZAP,
+ 	BREAK_LONG_LINES,
+ 	JUMPY_SCROLLING,
++#ifndef NO_USE_UTF8CJK
++	UTF8CJK,
++#ifndef NO_USE_UTF8CJK_EMOJI
++	UTF8EMOJI,
++#endif /* NO_USE_UTF8CJK_EMOJI */
++#endif /* NO_USE_UTF8CJK */
+ 	EMPTY_LINE,
+ 	INDICATOR,
+ 	BOOKSTYLE,
 diff --git a/src/global.c b/src/global.c
-index 6c9a981..02a6a3d 100644
+index 4ac66590..2ad98856 100644
 --- a/src/global.c
 +++ b/src/global.c
-@@ -93,8 +93,12 @@ int didfind = 0;
+@@ -91,8 +91,12 @@ int didfind = 0;
  char *present_path = NULL;
  		/* The current browser directory when trying to do tab completion. */
  
@@ -489,10 +506,10 @@ index 6c9a981..02a6a3d 100644
  int controlleft, controlright, controlup, controldown;
  int controlhome, controlend;
 diff --git a/src/nano.c b/src/nano.c
-index be80a07..8247feb 100644
+index 787f5e4b..8f75193c 100644
 --- a/src/nano.c
 +++ b/src/nano.c
-@@ -667,6 +667,14 @@ void usage(void)
+@@ -638,6 +638,14 @@ void usage(void)
  	print_opt("-x", "--nohelp", N_("Don't show the two help lines"));
  #ifndef NANO_TINY
  	print_opt("-y", "--afterends", N_("Make Ctrl+Right stop at word ends"));
@@ -507,10 +524,11 @@ index be80a07..8247feb 100644
  #endif
  	if (!ISSET(RESTRICTED))
  		print_opt("-z", "--suspendable", N_("Enable suspension"));
-@@ -1829,6 +1837,14 @@ int main(int argc, char **argv)
- 		{"cutfromcursor", 0, NULL, 'k'},
- 		{"unix", 0, NULL, 'u'},
- 		{"afterends", 0, NULL, 'y'},
+@@ -1793,6 +1801,14 @@ int main(int argc, char **argv)
+ #endif
+ #ifdef HAVE_LIBMAGIC
+ 		{"magic", 0, NULL, '!'},
++#endif
 +#ifdef ENABLE_UTF8
 +#ifndef NO_USE_UTF8CJK
 +		{"utf8cjk", 0, NULL, '8'},
@@ -518,11 +536,10 @@ index be80a07..8247feb 100644
 +		{"utf8emoji", 0, NULL, '0'},
 +#endif /* NO_USE_UTF8CJK_EMOJI */
 +#endif /* NO_USE_UTF8CJK */
-+#endif
- 		{"softwrap", 0, NULL, '$'},
  #endif
  		{NULL, 0, NULL, 0}
-@@ -1864,7 +1880,16 @@ int main(int argc, char **argv)
+ 	};
+@@ -1827,7 +1843,16 @@ int main(int argc, char **argv)
  #endif
  
  #ifdef ENABLE_NLS
@@ -539,26 +556,26 @@ index be80a07..8247feb 100644
  	textdomain(PACKAGE);
  #endif
  
-@@ -1885,8 +1910,18 @@ int main(int argc, char **argv)
+@@ -1848,8 +1873,18 @@ int main(int argc, char **argv)
  	if (*(tail(argv[0])) == 'r')
  		SET(RESTRICTED);
  
 +#ifndef NO_USE_UTF8CJK
 +#ifndef NO_USE_UTF8CJK_EMOJI
 +	while ((optchr = getopt_long(argc, argv, "ABC:DEFGHIJ:KLMNOPQ:RST:UVWX:Y:Z"
-+				"abcdef:ghijklmno:pr:s:tuvwxyz80$", long_options, NULL)) != -1) {
++				"abcdef:ghijklmno:pqr:s:tuvwxyz80$?%!", long_options, NULL)) != -1) {
 +#else
 +	while ((optchr = getopt_long(argc, argv, "ABC:DEFGHIJ:KLMNOPQ:RST:UVWX:Y:Z"
-+				"abcdef:ghijklmno:pr:s:tuvwxyz8$", long_options, NULL)) != -1) {
++				"abcdef:ghijklmno:pqr:s:tuvwxyz8$?%!", long_options, NULL)) != -1) {
 +#endif /* NO_USE_UTF8CJK_EMOJI */
 +#else
  	while ((optchr = getopt_long(argc, argv, "ABC:DEFGHIJ:KLMNOPQ:RST:UVWX:Y:Z"
- 				"abcdef:ghijklmno:pr:s:tuvwxyz$", long_options, NULL)) != -1) {
+ 				"abcdef:ghijklmno:pqr:s:tuvwxyz$?%!", long_options, NULL)) != -1) {
 +#endif /* NO_USE_UTF8CJK */
  		switch (optchr) {
  #ifndef NANO_TINY
  			case 'A':
-@@ -2116,6 +2151,19 @@ int main(int argc, char **argv)
+@@ -2088,6 +2123,19 @@ int main(int argc, char **argv)
  			case 'z':
  				SET(SUSPENDABLE);
  				break;
@@ -576,9 +593,9 @@ index be80a07..8247feb 100644
 +#endif
 +#endif
  #ifndef NANO_TINY
- 			case '$':
- 				SET(SOFTWRAP);
-@@ -2127,6 +2175,21 @@ int main(int argc, char **argv)
+ 			case '%':
+ 				SET(STATEFLAGS);
+@@ -2104,6 +2152,21 @@ int main(int argc, char **argv)
  		}
  	}
  
@@ -597,31 +614,14 @@ index be80a07..8247feb 100644
 +#endif
 +#endif
 +
- 	/* Set up the function and shortcut lists.  This needs to be done
- 	 * before reading the rcfile, to be able to rebind/unbind keys. */
- 	shortcut_init();
-diff --git a/src/nano.h b/src/nano.h
-index a390d1e..e61013c 100644
---- a/src/nano.h
-+++ b/src/nano.h
-@@ -535,6 +535,12 @@ enum
- 	LET_THEM_ZAP,
- 	BREAK_LONG_LINES,
- 	JUMPY_SCROLLING,
-+#ifndef NO_USE_UTF8CJK
-+	UTF8CJK,
-+#ifndef NO_USE_UTF8CJK_EMOJI
-+	UTF8EMOJI,
-+#endif /* NO_USE_UTF8CJK_EMOJI */
-+#endif /* NO_USE_UTF8CJK */
- 	EMPTY_LINE
- };
- 
-diff --git a/src/proto.h b/src/proto.h
-index a69087e..b006382 100644
---- a/src/proto.h
-+++ b/src/proto.h
-@@ -62,7 +62,11 @@ extern int didfind;
+ 	/* Enter into curses mode.  Abort if this fails. */
+ 	if (initscr() == NULL)
+ 		exit(1);
+diff --git a/src/prototypes.h b/src/prototypes.h
+index d1b2ece6..68795ba2 100644
+--- a/src/prototypes.h
++++ b/src/prototypes.h
+@@ -61,7 +61,11 @@ extern int didfind;
  
  extern char *present_path;
  
@@ -634,10 +634,10 @@ index a69087e..b006382 100644
  extern int controlleft, controlright;
  extern int controlup, controldown;
 diff --git a/src/rcfile.c b/src/rcfile.c
-index 722a65f..eeaa532 100644
+index 81e26bd2..60a67727 100644
 --- a/src/rcfile.c
 +++ b/src/rcfile.c
-@@ -128,6 +128,14 @@ static const rcoption rcopts[] = {
+@@ -136,6 +136,14 @@ static const rcoption rcopts[] = {
  	{"errorcolor", 0},
  	{"keycolor", 0},
  	{"functioncolor", 0},
@@ -653,7 +653,7 @@ index 722a65f..eeaa532 100644
  	{NULL, 0}
  };
 diff --git a/src/winio.c b/src/winio.c
-index 4b9e9ea..2455bcb 100644
+index 1efbef23..1b092074 100644
 --- a/src/winio.c
 +++ b/src/winio.c
 @@ -29,6 +29,12 @@
@@ -669,7 +669,7 @@ index 4b9e9ea..2455bcb 100644
  #endif
  
  #ifdef REVISION
-@@ -1957,7 +1963,23 @@ char *display_string(const char *buf, size_t column, size_t span,
+@@ -1839,7 +1845,23 @@ char *display_string(const char *buf, size_t column, size_t span,
  		}
  
  		/* Determine whether the character takes zero, one, or two columns. */

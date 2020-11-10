@@ -3,8 +3,8 @@ class Neomutt < Formula
   homepage "https://neomutt.org/"
 
   stable do
-    url "https://github.com/neomutt/neomutt/archive/20200821.tar.gz"
-    sha256 "4233d03e03220a2ba8096ab28061e12ef538259fd7d32ad441aad5207b17b390"
+    url "https://github.com/neomutt/neomutt/archive/20200925.tar.gz"
+    sha256 "dcec98ea2454d7695ff92184c33a0051c2b3c46320f81f7889c4580c943140dd"
 
     def pick_diff(formula_path)
       lines = formula_path.each_line.to_a.inject([]) do |result, line|
@@ -82,10 +82,10 @@ end
 
 __END__
 diff --git a/enter.c b/enter.c
-index ebcc164c1..632bdee5c 100644
+index 9cb5e4844..8fb90339e 100644
 --- a/enter.c
 +++ b/enter.c
-@@ -62,7 +62,11 @@ enum EnterRedrawFlags
+@@ -63,7 +63,11 @@ enum EnterRedrawFlags
  };
  
  /* combining mark / non-spacing character */
@@ -97,7 +97,7 @@ index ebcc164c1..632bdee5c 100644
  
  /**
   * my_addwch - Display one wide character on screen
-@@ -72,7 +76,11 @@ enum EnterRedrawFlags
+@@ -73,7 +77,11 @@ enum EnterRedrawFlags
   */
  static int my_addwch(wchar_t wc)
  {
@@ -190,7 +190,7 @@ index f9adf9756..4f23d5e53 100644
    if (n > wid)
      n = m;
 diff --git a/main.c b/main.c
-index 8d6ef8ce4..95d2a1a43 100644
+index e2d685a53..3f131ba01 100644
 --- a/main.c
 +++ b/main.c
 @@ -563,6 +563,21 @@ int main(int argc, char *argv[], char *envp[])
@@ -685,7 +685,7 @@ index 97fb8f6cd..68ef87619 100644
      return n;
    if (!(wc & ~0x7f))
 diff --git a/mutt_config.c b/mutt_config.c
-index 284f26e4b..72b2d76ea 100644
+index 7e565f301..a7dca1d52 100644
 --- a/mutt_config.c
 +++ b/mutt_config.c
 @@ -748,6 +748,16 @@ struct ConfigDef MainVars[] = {
@@ -706,7 +706,7 @@ index 284f26e4b..72b2d76ea 100644
    { "escape", DT_DEPRECATED|DT_STRING, &C_Escape, IP "~" },
    { "ignore_linear_white_space", DT_DEPRECATED|DT_BOOL, &C_IgnoreLinearWhiteSpace, false },
 diff --git a/mutt_globals.h b/mutt_globals.h
-index 228cafb06..c831e8a18 100644
+index 50126eb56..e18771830 100644
 --- a/mutt_globals.h
 +++ b/mutt_globals.h
 @@ -169,4 +169,11 @@ WHERE bool C_WaitKey;                        ///< Config: Prompt to press a key
@@ -722,7 +722,7 @@ index 228cafb06..c831e8a18 100644
 +
  #endif /* MUTT_GLOBALS_H */
 diff --git a/pager.c b/pager.c
-index ba3db7368..35f08d458 100644
+index b08dda250..3043f08f7 100644
 --- a/pager.c
 +++ b/pager.c
 @@ -1604,7 +1604,11 @@ static int format_line(struct Line **line_info, int n, unsigned char *buf,

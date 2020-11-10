@@ -3,8 +3,8 @@ class Nano < Formula
   homepage "https://www.nano-editor.org/"
 
   stable do
-    url "https://www.nano-editor.org/dist/v5/nano-5.2.tar.xz"
-    sha256 "32c2da43e1ae9a5e43437d8c6e1ec0388af870c7762c479e5bffb5f292bda7e1"
+    url "https://www.nano-editor.org/dist/v5/nano-5.3.tar.xz"
+    sha256 "c5c1cbcf622d9a96b6030d66409ed12b204e8bc01ef5e6554ebbe6fb1d734352"
 
     def pick_diff(formula_path)
       lines = formula_path.each_line.to_a.inject([]) do |result, line|
@@ -15,7 +15,7 @@ class Nano < Formula
       return lines.join("")
     end
 
-    patch :p1, pick_diff(Formula["z80oolong/eaw/nano@5.2"].path)
+    patch :p1, pick_diff(Formula["z80oolong/eaw/nano@5.3"].path)
   end
 
   head do
@@ -80,7 +80,7 @@ end
 
 __END__
 diff --git a/configure.ac b/configure.ac
-index 1d9e2cc0..26d013cb 100644
+index 77634a50..5d641720 100644
 --- a/configure.ac
 +++ b/configure.ac
 @@ -71,11 +71,19 @@ AM_CONDITIONAL(BUILDING_FROM_GIT, test x$from_git = xyes)
@@ -524,10 +524,10 @@ index 93ffde19..37964565 100644
  		if (width < 0)
  			return 1;
 diff --git a/src/definitions.h b/src/definitions.h
-index 4b593624..6eae6d4c 100644
+index 6d4809ac..285252c4 100644
 --- a/src/definitions.h
 +++ b/src/definitions.h
-@@ -539,6 +539,12 @@ enum
+@@ -535,6 +535,12 @@ enum
  	LET_THEM_ZAP,
  	BREAK_LONG_LINES,
  	JUMPY_SCROLLING,
@@ -541,7 +541,7 @@ index 4b593624..6eae6d4c 100644
  	INDICATOR,
  	BOOKSTYLE,
 diff --git a/src/global.c b/src/global.c
-index 4ac66590..2ad98856 100644
+index 6f2803e1..375f6288 100644
 --- a/src/global.c
 +++ b/src/global.c
 @@ -91,8 +91,12 @@ int didfind = 0;
@@ -558,10 +558,10 @@ index 4ac66590..2ad98856 100644
  int controlleft, controlright, controlup, controldown;
  int controlhome, controlend;
 diff --git a/src/nano.c b/src/nano.c
-index 49ef3775..53bfb51d 100644
+index b47b2b8f..b7eb0e74 100644
 --- a/src/nano.c
 +++ b/src/nano.c
-@@ -641,6 +641,14 @@ void usage(void)
+@@ -638,6 +638,14 @@ void usage(void)
  	print_opt("-x", "--nohelp", N_("Don't show the two help lines"));
  #ifndef NANO_TINY
  	print_opt("-y", "--afterends", N_("Make Ctrl+Right stop at word ends"));
@@ -576,10 +576,10 @@ index 49ef3775..53bfb51d 100644
  #endif
  	if (!ISSET(RESTRICTED))
  		print_opt("-z", "--suspendable", N_("Enable suspension"));
-@@ -1786,6 +1794,14 @@ int main(int argc, char **argv)
- 		{"indicator", 0, NULL, 'q'},
- 		{"unix", 0, NULL, 'u'},
- 		{"afterends", 0, NULL, 'y'},
+@@ -1792,6 +1800,14 @@ int main(int argc, char **argv)
+ #endif
+ #ifdef HAVE_LIBMAGIC
+ 		{"magic", 0, NULL, '!'},
 +#endif
 +#ifdef ENABLE_UTF8
 +#ifndef NO_USE_UTF8CJK
@@ -591,7 +591,7 @@ index 49ef3775..53bfb51d 100644
  #endif
  		{NULL, 0, NULL, 0}
  	};
-@@ -1820,7 +1836,16 @@ int main(int argc, char **argv)
+@@ -1826,7 +1842,16 @@ int main(int argc, char **argv)
  #endif
  
  #ifdef ENABLE_NLS
@@ -608,26 +608,26 @@ index 49ef3775..53bfb51d 100644
  	textdomain(PACKAGE);
  #endif
  
-@@ -1841,8 +1866,18 @@ int main(int argc, char **argv)
+@@ -1847,8 +1872,18 @@ int main(int argc, char **argv)
  	if (*(tail(argv[0])) == 'r')
  		SET(RESTRICTED);
  
 +#ifndef NO_USE_UTF8CJK
 +#ifndef NO_USE_UTF8CJK_EMOJI
-+	while ((optchr = getopt_long(argc, argv, "%ABC:DEFGHIJ:KLMNOPQ:RST:UVWX:Y:Z"
-+				"abcdef:ghijklmno:pqr:s:tuvwxyz80$", long_options, NULL)) != -1) {
++	while ((optchr = getopt_long(argc, argv, "ABC:DEFGHIJ:KLMNOPQ:RST:UVWX:Y:Z"
++				"abcdef:ghijklmno:pqr:s:tuvwxyz80$?%!", long_options, NULL)) != -1) {
 +#else
-+	while ((optchr = getopt_long(argc, argv, "%ABC:DEFGHIJ:KLMNOPQ:RST:UVWX:Y:Z"
-+				"abcdef:ghijklmno:pqr:s:tuvwxyz8$", long_options, NULL)) != -1) {
++	while ((optchr = getopt_long(argc, argv, "ABC:DEFGHIJ:KLMNOPQ:RST:UVWX:Y:Z"
++				"abcdef:ghijklmno:pqr:s:tuvwxyz8$?%!", long_options, NULL)) != -1) {
 +#endif /* NO_USE_UTF8CJK_EMOJI */
 +#else
- 	while ((optchr = getopt_long(argc, argv, "%ABC:DEFGHIJ:KLMNOPQ:RST:UVWX:Y:Z"
- 				"abcdef:ghijklmno:pqr:s:tuvwxyz$", long_options, NULL)) != -1) {
+ 	while ((optchr = getopt_long(argc, argv, "ABC:DEFGHIJ:KLMNOPQ:RST:UVWX:Y:Z"
+ 				"abcdef:ghijklmno:pqr:s:tuvwxyz$?%!", long_options, NULL)) != -1) {
 +#endif /* NO_USE_UTF8CJK */
  		switch (optchr) {
  #ifndef NANO_TINY
- 			case '%':
-@@ -2083,12 +2118,40 @@ int main(int argc, char **argv)
+ 			case 'A':
+@@ -2087,6 +2122,19 @@ int main(int argc, char **argv)
  			case 'z':
  				SET(SUSPENDABLE);
  				break;
@@ -644,9 +644,10 @@ index 49ef3775..53bfb51d 100644
 +#endif
 +#endif
 +#endif
- 			default:
- 				printf(_("Type '%s -h' for a list of available options.\n"), argv[0]);
- 				exit(1);
+ #ifndef NANO_TINY
+ 			case '%':
+ 				SET(STATEFLAGS);
+@@ -2103,6 +2151,21 @@ int main(int argc, char **argv)
  		}
  	}
  
@@ -685,10 +686,10 @@ index d1b2ece6..68795ba2 100644
  extern int controlleft, controlright;
  extern int controlup, controldown;
 diff --git a/src/rcfile.c b/src/rcfile.c
-index 5d69d374..148e1dc0 100644
+index 3824de99..f5bebe23 100644
 --- a/src/rcfile.c
 +++ b/src/rcfile.c
-@@ -133,6 +133,14 @@ static const rcoption rcopts[] = {
+@@ -135,6 +135,14 @@ static const rcoption rcopts[] = {
  	{"errorcolor", 0},
  	{"keycolor", 0},
  	{"functioncolor", 0},
@@ -704,7 +705,7 @@ index 5d69d374..148e1dc0 100644
  	{NULL, 0}
  };
 diff --git a/src/winio.c b/src/winio.c
-index edb1a3b4..68dcaaf8 100644
+index 1efbef23..1b092074 100644
 --- a/src/winio.c
 +++ b/src/winio.c
 @@ -29,6 +29,12 @@
@@ -720,7 +721,7 @@ index edb1a3b4..68dcaaf8 100644
  #endif
  
  #ifdef REVISION
-@@ -1844,7 +1850,23 @@ char *display_string(const char *buf, size_t column, size_t span,
+@@ -1839,7 +1845,23 @@ char *display_string(const char *buf, size_t column, size_t span,
  		}
  
  		/* Determine whether the character takes zero, one, or two columns. */

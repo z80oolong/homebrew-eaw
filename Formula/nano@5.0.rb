@@ -11,6 +11,8 @@ class NanoAT50 < Formula
 
   depends_on "libmagic" unless OS.mac?
 
+  keg_only :versioned_formula
+
   patch :p1, :DATA
 
   def install
