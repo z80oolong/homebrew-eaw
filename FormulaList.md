@@ -56,7 +56,7 @@ Unicode の規格における東アジア圏の各種文字のうち、いわゆ
 
 ### z80oolong/eaw/nano@4.9.2
 
-この Formula は、 [East Asian Ambiguous Character][EAWA] 問題）を修正した軽量の CUI テキストエディタ [nano][NANO] の旧安定版 [nano 4.9.2][NANO] を導入します。
+この Formula は、 [East Asian Ambiguous Character][EAWA] 問題を修正した軽量の CUI テキストエディタ [nano][NANO] の旧安定版 [nano 4.9.2][NANO] を導入します。
 
 この Formula で導入した [nano][NANO] の使用法については、前述の z80oolong/eaw/nano の Formula についての記述を参照して下さい。
 
@@ -68,7 +68,7 @@ Unicode の規格における東アジア圏の各種文字のうち、いわゆ
 
 ### z80oolong/eaw/nano@4.9.3
 
-この Formula は、 [East Asian Ambiguous Character][EAWA] 問題）を修正した軽量の CUI テキストエディタ [nano][NANO] の旧安定版 [nano 4.9.3][NANO] を導入します。
+この Formula は、 [East Asian Ambiguous Character][EAWA] 問題を修正した軽量の CUI テキストエディタ [nano][NANO] の旧安定版 [nano 4.9.3][NANO] を導入します。
 
 この Formula で導入した [nano][NANO] の使用法については、前述の z80oolong/eaw/nano の Formula についての記述を参照して下さい。
 
@@ -80,7 +80,7 @@ Unicode の規格における東アジア圏の各種文字のうち、いわゆ
 
 ### z80oolong/eaw/nano@5.0
 
-この Formula は、 [East Asian Ambiguous Character][EAWA] 問題）を修正した軽量の CUI テキストエディタ [nano][NANO] の旧安定版 [nano 5.0][NANO] を導入します。
+この Formula は、 [East Asian Ambiguous Character][EAWA] 問題を修正した軽量の CUI テキストエディタ [nano][NANO] の旧安定版 [nano 5.0][NANO] を導入します。
 
 この Formula で導入した [nano][NANO] の使用法については、前述の z80oolong/eaw/nano の Formula についての記述を参照して下さい。
 
@@ -92,7 +92,7 @@ Unicode の規格における東アジア圏の各種文字のうち、いわゆ
 
 ### z80oolong/eaw/nano@5.1
 
-この Formula は、 [East Asian Ambiguous Character][EAWA] 問題）を修正した軽量の CUI テキストエディタ [nano][NANO] の旧安定版 [nano 5.1][NANO] を導入します。
+この Formula は、 [East Asian Ambiguous Character][EAWA] 問題を修正した軽量の CUI テキストエディタ [nano][NANO] の旧安定版 [nano 5.1][NANO] を導入します。
 
 この Formula で導入した [nano][NANO] の使用法については、前述の z80oolong/eaw/nano の Formula についての記述を参照して下さい。
 
@@ -104,7 +104,7 @@ Unicode の規格における東アジア圏の各種文字のうち、いわゆ
 
 ### z80oolong/eaw/nano@5.2
 
-この Formula は、 [East Asian Ambiguous Character][EAWA] 問題）を修正した軽量の CUI テキストエディタ [nano][NANO] の旧安定版 [nano 5.2][NANO] を導入します。
+この Formula は、 [East Asian Ambiguous Character][EAWA] 問題を修正した軽量の CUI テキストエディタ [nano][NANO] の旧安定版 [nano 5.2][NANO] を導入します。
 
 この Formula で導入した [nano][NANO] の使用法については、前述の z80oolong/eaw/nano の Formula についての記述を参照して下さい。
 
@@ -116,7 +116,7 @@ Unicode の規格における東アジア圏の各種文字のうち、いわゆ
 
 ### z80oolong/eaw/nano@5.3
 
-この Formula は、 [East Asian Ambiguous Character][EAWA] 問題）を修正した軽量の CUI テキストエディタ [nano][NANO] の旧安定版 [nano 5.3][NANO] を導入します。
+この Formula は、 [East Asian Ambiguous Character][EAWA] 問題を修正した軽量の CUI テキストエディタ [nano][NANO] の旧安定版 [nano 5.3][NANO] を導入します。
 
 この Formula で導入した [nano][NANO] の使用法については、前述の z80oolong/eaw/nano の Formula についての記述を参照して下さい。
 
@@ -128,7 +128,7 @@ Unicode の規格における東アジア圏の各種文字のうち、いわゆ
 
 ### z80oolong/eaw/neomutt@20200619
 
-この Formula は、 [East Asian Ambiguous Character][EAWA] 問題）を修正した CLI に基づく多機能メールクライアントである [neomutt][MUTT] の旧安定版 [neomutt 20200619][MUTT] を導入します。
+この Formula は、 [East Asian Ambiguous Character][EAWA] 問題を修正した CLI に基づく多機能メールクライアントである [neomutt][MUTT] の旧安定版 [neomutt 20200619][MUTT] を導入します。
 
 この Formula で導入した [neomutt][MUTT] の使用法については、前述の z80oolong/eaw/neomutt の Formula についての記述を参照して下さい。
 
@@ -140,7 +140,7 @@ Unicode の規格における東アジア圏の各種文字のうち、いわゆ
 
 ### z80oolong/eaw/neomutt@20200626
 
-この Formula は、 [East Asian Ambiguous Character][EAWA] 問題）を修正した CLI に基づく多機能メールクライアントである [neomutt][MUTT] の旧安定版 [neomutt 20200626][MUTT] を導入します。
+この Formula は、 [East Asian Ambiguous Character][EAWA] 問題を修正した CLI に基づく多機能メールクライアントである [neomutt][MUTT] の旧安定版 [neomutt 20200626][MUTT] を導入します。
 
 この Formula で導入した [neomutt][MUTT] の使用法については、前述の z80oolong/eaw/neomutt の Formula についての記述を参照して下さい。
 
@@ -152,7 +152,7 @@ Unicode の規格における東アジア圏の各種文字のうち、いわゆ
 
 ### z80oolong/eaw/neomutt@20200807
 
-この Formula は、 [East Asian Ambiguous Character][EAWA] 問題）を修正した CLI に基づく多機能メールクライアントである [neomutt][MUTT] の旧安定版 [neomutt 20200807][MUTT] を導入します。
+この Formula は、 [East Asian Ambiguous Character][EAWA] 問題を修正した CLI に基づく多機能メールクライアントである [neomutt][MUTT] の旧安定版 [neomutt 20200807][MUTT] を導入します。
 
 この Formula で導入した [neomutt][MUTT] の使用法については、前述の z80oolong/eaw/neomutt の Formula についての記述を参照して下さい。
 
@@ -164,7 +164,7 @@ Unicode の規格における東アジア圏の各種文字のうち、いわゆ
 
 ### z80oolong/eaw/neomutt@20200814
 
-この Formula は、 [East Asian Ambiguous Character][EAWA] 問題）を修正した CLI に基づく多機能メールクライアントである [neomutt][MUTT] の旧安定版 [neomutt 20200814][MUTT] を導入します。
+この Formula は、 [East Asian Ambiguous Character][EAWA] 問題を修正した CLI に基づく多機能メールクライアントである [neomutt][MUTT] の旧安定版 [neomutt 20200814][MUTT] を導入します。
 
 この Formula で導入した [neomutt][MUTT] の使用法については、前述の z80oolong/eaw/neomutt の Formula についての記述を参照して下さい。
 
@@ -176,7 +176,7 @@ Unicode の規格における東アジア圏の各種文字のうち、いわゆ
 
 ### z80oolong/eaw/neomutt@20200821
 
-この Formula は、 [East Asian Ambiguous Character][EAWA] 問題）を修正した CLI に基づく多機能メールクライアントである [neomutt][MUTT] の旧安定版 [neomutt 20200821][MUTT] を導入します。
+この Formula は、 [East Asian Ambiguous Character][EAWA] 問題を修正した CLI に基づく多機能メールクライアントである [neomutt][MUTT] の旧安定版 [neomutt 20200821][MUTT] を導入します。
 
 この Formula で導入した [neomutt][MUTT] の使用法については、前述の z80oolong/eaw/neomutt の Formula についての記述を参照して下さい。
 
@@ -188,7 +188,7 @@ Unicode の規格における東アジア圏の各種文字のうち、いわゆ
 
 ### z80oolong/eaw/neomutt@20200925
 
-この Formula は、 [East Asian Ambiguous Character][EAWA] 問題）を修正した CLI に基づく多機能メールクライアントである [neomutt][MUTT] の旧安定版 [neomutt 20200925][MUTT] を導入します。
+この Formula は、 [East Asian Ambiguous Character][EAWA] 問題を修正した CLI に基づく多機能メールクライアントである [neomutt][MUTT] の旧安定版 [neomutt 20200925][MUTT] を導入します。
 
 この Formula で導入した [neomutt][MUTT] の使用法については、前述の z80oolong/eaw/neomutt の Formula についての記述を参照して下さい。
 
