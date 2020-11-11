@@ -2,9 +2,15 @@
 
 ## 概要
 
+
 [Linuxbrew][BREW] とは、Linux の各ディストリビューションにおけるソースコードの取得及びビルドに基づいたパッケージ管理システムです。 [Linuxbrew][BREW] の使用により、ソースコードからのビルドに基づいたソフトウェアの導入を単純かつ容易に行うことが出来ます。
 
-この [Linuxbrew][BREW] 向け Tap リポジトリは、軽量な CLI テキストエディタである [nano][NANO]各種 CLI アプリケーション等において、Unicode の規格における東アジア圏の各種文字のうち、いわゆる "◎" や "★" 等の記号文字及び罫線文字等、 [East_Asian_Width 特性の値が A (Ambiguous) となる文字][EAWA] (以下、 [East Asian Ambiguous Character][EAWA]) が、日本語環境で文字幅を適切に扱うことが出来ずに表示が乱れる問題の修正を適用した各種アプリケーションを導入するための Formula 群を含む Tap リポジトリです。
+この [Linuxbrew][BREW] 向け Tap リポジトリは、 Unicode の規格における東アジア圏の各種文字のうち、いわゆる "◎" や "★" 等の記号文字及び罫線文字等、 [East_Asian_Width 特性の値が A (Ambiguous) となる文字][EAWA] (以下、 [East Asian Ambiguous Character][EAWA]) が、日本語環境で文字幅を適切に扱うことが出来ずに表示が乱れる問題の修正を適用した各種 CLI アプリケーションを導入するための Formula 群を含む Tap リポジトリです。
+
+なお、現時点では、以下のアプリケーションについて、 [East Asian Ambiguous Character][EAWA] に関する問題の修正に対応しています。
+
+- 軽量な CLI テキストエディタである [nano][NANO] 
+- CLI に基づく多機能メールクライアントである [neomutt][MUTT] 
 
 ## 使用法
 
@@ -50,14 +56,11 @@
 [TMUX]:https://tmux.github.io/
 [EAWA]:http://www.unicode.org/reports/tr11/#Ambiguous
 [GST1]:https://gist.github.com/z80oolong/e65baf0d590f62fab8f4f7c358cbcc34
+[NANO]:https://www.nano-editor.org/
+[MUTT]:https://neomutt.org/
 [THER]:https://qiita.com/thermes
 [THBR]:https://qiita.com/thermes/items/926b478ff6e3758ecfea
-[WALT]:https://github.com/waltarix
 [WCWD]:http://www.cl.cam.ac.uk/~mgk25/ucs/wcwidth.c
 [DRMK]:http://www.cl.cam.ac.uk/~mgk25/
-[NICM]:https://github.com/nicm
-[GORI]:https://qiita.com/gorilla0513
-[GOT_]:https://github.com/skanehira/got
-[POWE]:https://powerline.readthedocs.io/en/latest/#
 [BSD2]:https://opensource.org/licenses/BSD-2-Clause
 [ZOOL]:http://zool.jpn.org/
