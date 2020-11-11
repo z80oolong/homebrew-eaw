@@ -54,6 +54,12 @@ Unicode の規格における東アジア圏の各種文字のうち、いわゆ
 
 なお、 [neomutt][MUTT] において [East Asian Ambiguous Character][EAWA] の全角文字幅で表示するための修正を無効化する場合は、オプション ```--without-utf8-cjk``` を指定して下さい。そして、 [nano][NANO] において、 UTF-8 において定義される絵文字を全角文字幅として表示するための修正を無効化するには、オプション ```--without-utf8-emoji``` を指定して下さい。
 
+### z80oolong/eaw/ncurses-eaw@6.2
+
+上述の Formula によって導入される各種 CUI アプリケーションに依存する ncurses ライブラリを導入するための Formula です。オリジナルの ncurses ライブラリに、 East Asian Ambiguous Character の文字幅を全角文字の幅として扱う修正を加えています。
+
+**この Formula は、 versioned formula であるため、この Formula によって導入される ncurses は、 keg only で導入されることに留意して下さい。**
+
 ### z80oolong/eaw/nano@4.9.2
 
 この Formula は、 [East Asian Ambiguous Character][EAWA] 問題を修正した軽量の CUI テキストエディタ [nano][NANO] の旧安定版 [nano 4.9.2][NANO] を導入します。
