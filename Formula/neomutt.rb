@@ -685,10 +685,10 @@ index 97fb8f6cd..68ef87619 100644
      return n;
    if (!(wc & ~0x7f))
 diff --git a/mutt_config.c b/mutt_config.c
-index 7e565f301..a7dca1d52 100644
+index 2ae78194a..683a85069 100644
 --- a/mutt_config.c
 +++ b/mutt_config.c
-@@ -748,6 +748,16 @@ struct ConfigDef MainVars[] = {
+@@ -753,6 +753,16 @@ struct ConfigDef MainVars[] = {
    { "write_inc", DT_NUMBER|DT_NOT_NEGATIVE, &C_WriteInc, 10, 0, NULL,
      "Update the progress bar after this many records written (0 to disable)"
    },
@@ -706,10 +706,10 @@ index 7e565f301..a7dca1d52 100644
    { "escape", DT_DEPRECATED|DT_STRING, &C_Escape, IP "~" },
    { "ignore_linear_white_space", DT_DEPRECATED|DT_BOOL, &C_IgnoreLinearWhiteSpace, false },
 diff --git a/mutt_globals.h b/mutt_globals.h
-index 50126eb56..e18771830 100644
+index 337e418b7..b7294242f 100644
 --- a/mutt_globals.h
 +++ b/mutt_globals.h
-@@ -169,4 +169,11 @@ WHERE bool C_WaitKey;                        ///< Config: Prompt to press a key
+@@ -170,4 +170,11 @@ WHERE bool C_WaitKey;                        ///< Config: Prompt to press a key
  WHERE bool C_WrapSearch;                     ///< Config: Wrap around when the search hits the end
  WHERE bool C_WriteBcc;                       ///< Config: Write out the 'Bcc' field when preparing to send a mail
  
