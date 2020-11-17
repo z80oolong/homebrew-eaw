@@ -524,10 +524,10 @@ index 93ffde19..37964565 100644
  		if (width < 0)
  			return 1;
 diff --git a/src/definitions.h b/src/definitions.h
-index 6d4809ac..285252c4 100644
+index b79a6218..6a7953ec 100644
 --- a/src/definitions.h
 +++ b/src/definitions.h
-@@ -535,6 +535,12 @@ enum
+@@ -531,6 +531,12 @@ enum
  	LET_THEM_ZAP,
  	BREAK_LONG_LINES,
  	JUMPY_SCROLLING,
@@ -705,7 +705,7 @@ index 3824de99..f5bebe23 100644
  	{NULL, 0}
  };
 diff --git a/src/winio.c b/src/winio.c
-index 1efbef23..1b092074 100644
+index fca08360..25c2e26f 100644
 --- a/src/winio.c
 +++ b/src/winio.c
 @@ -29,6 +29,12 @@
@@ -721,7 +721,7 @@ index 1efbef23..1b092074 100644
  #endif
  
  #ifdef REVISION
-@@ -1839,7 +1845,23 @@ char *display_string(const char *buf, size_t column, size_t span,
+@@ -1832,7 +1838,23 @@ char *display_string(const char *buf, size_t column, size_t span,
  		}
  
  		/* Determine whether the character takes zero, one, or two columns. */
