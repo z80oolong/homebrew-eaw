@@ -132,6 +132,18 @@ Unicode の規格における東アジア圏の各種文字のうち、いわゆ
 
 この Formula によって導入される [nano][NANO] を使用するには、 ```brew link --force z80oolong/eaw/nano@5.3``` コマンドを実行する必要があります。
 
+### z80oolong/eaw/nano@5.4
+
+この Formula は、 [East Asian Ambiguous Character][EAWA] 問題を修正した軽量の CUI テキストエディタ [nano][NANO] の現在の安定版 [nano 5.4][NANO] を導入します。
+
+この Formula で導入した [nano][NANO] の使用法については、前述の z80oolong/eaw/nano の Formula についての記述を参照して下さい。
+
+なお、 [nano][NANO] において [East Asian Ambiguous Character][EAWA] の全角文字幅で表示するための修正を無効化する場合は、オプション ```--without-utf8-cjk``` を指定して下さい。そして、 [nano][NANO] において、 UTF-8 において定義される絵文字を全角文字幅として表示するための修正を無効化するには、オプション ```--without-utf8-emoji``` を指定して下さい。
+
+**この Formula は、 versioned formula であるため、この Formula によって導入される [nano][NANO] は、 keg only で導入されることに留意して下さい。**
+
+この Formula によって導入される [nano][NANO] を使用するには、 ```brew link --force z80oolong/eaw/nano@5.4``` コマンドを実行する必要があります。
+
 ### z80oolong/eaw/neomutt@20200619
 
 この Formula は、 [East Asian Ambiguous Character][EAWA] 問題を修正した CLI に基づく多機能メールクライアントである [neomutt][MUTT] の旧安定版 [neomutt 20200619][MUTT] を導入します。

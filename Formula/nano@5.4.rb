@@ -1,32 +1,8 @@
-class Nano < Formula
+class NanoAT54 < Formula
   desc "Free (GNU) replacement for the Pico text editor"
   homepage "https://www.nano-editor.org/"
-
-  stable do
-    url "https://www.nano-editor.org/dist/v5/nano-5.4.tar.xz"
-    sha256 "fe993408b22286355809ce48ebecc4444d19af8203ed4959d269969112ed86e9"
-
-    def pick_diff(formula_path)
-      lines = formula_path.each_line.to_a.inject([]) do |result, line|
-        result.push(line) if ((/^__END__/ === line) || result.first)
-        result
-      end
-      lines.shift
-      return lines.join("")
-    end
-
-    patch :p1, pick_diff(Formula["z80oolong/eaw/nano@5.4"].path)
-  end
-
-  head do
-    url "https://git.savannah.gnu.org/git/nano.git"
-
-    patch :p1, :DATA
-
-    depends_on "automake" => :build
-    depends_on "autoconf" => :build
-    depends_on "texinfo"  => :build
-  end
+  url "https://www.nano-editor.org/dist/v5/nano-5.4.tar.xz"
+  sha256 "fe993408b22286355809ce48ebecc4444d19af8203ed4959d269969112ed86e9"
 
   depends_on "pkg-config" => :build
   depends_on "patchelf" => :build
@@ -35,18 +11,14 @@ class Nano < Formula
 
   depends_on "libmagic" unless OS.mac?
 
-  option "without-utf8-cjk", "Build without using East asian Ambiguous Width Character in tmux."
-  option "without-utf8-emoji", "Build without using Emoji Character in tmux."
+  keg_only :versioned_formula
+
+  patch :p1, :DATA
 
   def install
-    ENV.append "CFLAGS",     "-I#{Formula["z80oolong/eaw/ncurses-eaw@6.2"].opt_include}"
-    ENV.append "CPPFLAGS",   "-I#{Formula["z80oolong/eaw/ncurses-eaw@6.2"].opt_include}"
-    ENV.append "LDFLAGS",    "-L#{Formula["z80oolong/eaw/ncurses-eaw@6.2"].opt_lib}"
-
-    ENV.append "CPPFLAGS", "-DNO_USE_UTF8CJK" if build.without?("utf8-cjk")
-    ENV.append "CPPFLAGS", "-DNO_USE_UTF8CJK_EMOJI" if build.without?("utf8-emoji")
-
-    system "sh", "autogen.sh" if build.head?
+    ENV.append "CFLAGS",   "-I#{Formula["z80oolong/eaw/ncurses-eaw@6.2"].opt_include}"
+    ENV.append "CPPFLAGS", "-I#{Formula["z80oolong/eaw/ncurses-eaw@6.2"].opt_include}"
+    ENV.append "LDFLAGS",  "-L#{Formula["z80oolong/eaw/ncurses-eaw@6.2"].opt_lib}"
 
     system "./configure", "--disable-debug",
                           "--disable-dependency-tracking",
@@ -79,32 +51,8 @@ class Nano < Formula
 end
 
 __END__
-diff --git a/configure.ac b/configure.ac
-index 1754c432..10ce95bc 100644
---- a/configure.ac
-+++ b/configure.ac
-@@ -71,11 +71,19 @@ AM_CONDITIONAL(BUILDING_FROM_GIT, test x$from_git = xyes)
- dnl Checks for pkg-config and gettext when building from git.
- 
- if test x$from_git = xyes; then
-+	if true; then
-+	if test ! -f HOMEBREW_PREFIX/share/aclocal/pkg.m4; then
-+		AC_MSG_ERROR([
-+  *** The pkg.m4 macros are missing. ***
-+  *** The pkg-config package needs to be installed when building from git. ***])
-+	fi
-+	else
- 	if test ! -f $(aclocal --print-ac-dir)/pkg.m4; then
- 		AC_MSG_ERROR([
-   *** The pkg.m4 macros are missing.
-   *** The pkg-config package needs to be installed when building from git.
-   *** After fixing this problem, rerun ./autogen.sh.])
-+	fi
- 	fi
- 	if test "$ac_cv_path_MSGFMT" = ":"; then
- 		AC_MSG_ERROR([
 diff --git a/src/chars.c b/src/chars.c
-index c8159986..bd485899 100644
+index c815998..bd48589 100644
 --- a/src/chars.c
 +++ b/src/chars.c
 @@ -28,6 +28,391 @@
@@ -524,10 +472,10 @@ index c8159986..bd485899 100644
  		if (width < 0)
  			return 1;
 diff --git a/src/definitions.h b/src/definitions.h
-index 19e1a68f..fe178e0d 100644
+index b79a621..6a7953e 100644
 --- a/src/definitions.h
 +++ b/src/definitions.h
-@@ -342,6 +342,12 @@ enum {
+@@ -531,6 +531,12 @@ enum
  	LET_THEM_ZAP,
  	BREAK_LONG_LINES,
  	JUMPY_SCROLLING,
@@ -541,7 +489,7 @@ index 19e1a68f..fe178e0d 100644
  	INDICATOR,
  	BOOKSTYLE,
 diff --git a/src/global.c b/src/global.c
-index 8b2bb7ac..5802bd1b 100644
+index 8b2bb7a..5802bd1 100644
 --- a/src/global.c
 +++ b/src/global.c
 @@ -91,8 +91,12 @@ int didfind = 0;
@@ -558,10 +506,10 @@ index 8b2bb7ac..5802bd1b 100644
  int controlleft, controlright, controlup, controldown;
  int controlhome, controlend;
 diff --git a/src/nano.c b/src/nano.c
-index 4c97375a..d1c8fb3f 100644
+index 6febe2c..6992d13 100644
 --- a/src/nano.c
 +++ b/src/nano.c
-@@ -630,6 +630,14 @@ void usage(void)
+@@ -638,6 +638,14 @@ void usage(void)
  	print_opt("-x", "--nohelp", N_("Don't show the two help lines"));
  #ifndef NANO_TINY
  	print_opt("-y", "--afterends", N_("Make Ctrl+Right stop at word ends"));
@@ -576,7 +524,7 @@ index 4c97375a..d1c8fb3f 100644
  #endif
  	if (!ISSET(RESTRICTED))
  		print_opt("-z", "--suspendable", N_("Enable suspension"));
-@@ -1747,6 +1755,14 @@ int main(int argc, char **argv)
+@@ -1792,6 +1800,14 @@ int main(int argc, char **argv)
  #endif
  #ifdef HAVE_LIBMAGIC
  		{"magic", 0, NULL, '!'},
@@ -591,7 +539,7 @@ index 4c97375a..d1c8fb3f 100644
  #endif
  		{NULL, 0, NULL, 0}
  	};
-@@ -1776,7 +1792,16 @@ int main(int argc, char **argv)
+@@ -1826,7 +1842,16 @@ int main(int argc, char **argv)
  #endif
  
  #ifdef ENABLE_NLS
@@ -608,7 +556,7 @@ index 4c97375a..d1c8fb3f 100644
  	textdomain(PACKAGE);
  #endif
  
-@@ -1797,8 +1822,18 @@ int main(int argc, char **argv)
+@@ -1847,8 +1872,18 @@ int main(int argc, char **argv)
  	if (*(tail(argv[0])) == 'r')
  		SET(RESTRICTED);
  
@@ -627,7 +575,7 @@ index 4c97375a..d1c8fb3f 100644
  		switch (optchr) {
  #ifndef NANO_TINY
  			case 'A':
-@@ -2034,6 +2069,19 @@ int main(int argc, char **argv)
+@@ -2086,6 +2121,19 @@ int main(int argc, char **argv)
  			case 'z':
  				SET(SUSPENDABLE);
  				break;
@@ -647,7 +595,7 @@ index 4c97375a..d1c8fb3f 100644
  #ifndef NANO_TINY
  			case '%':
  				SET(STATEFLAGS);
-@@ -2050,6 +2098,21 @@ int main(int argc, char **argv)
+@@ -2102,6 +2150,21 @@ int main(int argc, char **argv)
  		}
  	}
  
@@ -670,7 +618,7 @@ index 4c97375a..d1c8fb3f 100644
  	if (initscr() == NULL)
  		exit(1);
 diff --git a/src/prototypes.h b/src/prototypes.h
-index f9ac3a9c..377456b9 100644
+index f9ac3a9..377456b 100644
 --- a/src/prototypes.h
 +++ b/src/prototypes.h
 @@ -61,7 +61,11 @@ extern int didfind;
@@ -686,10 +634,10 @@ index f9ac3a9c..377456b9 100644
  extern int controlleft, controlright;
  extern int controlup, controldown;
 diff --git a/src/rcfile.c b/src/rcfile.c
-index ef410369..a7e61f08 100644
+index 3824de9..f5bebe2 100644
 --- a/src/rcfile.c
 +++ b/src/rcfile.c
-@@ -136,6 +136,14 @@ static const rcoption rcopts[] = {
+@@ -135,6 +135,14 @@ static const rcoption rcopts[] = {
  	{"errorcolor", 0},
  	{"keycolor", 0},
  	{"functioncolor", 0},
@@ -705,7 +653,7 @@ index ef410369..a7e61f08 100644
  	{NULL, 0}
  };
 diff --git a/src/winio.c b/src/winio.c
-index e961cccb..94809779 100644
+index 8a3bfce..f667352 100644
 --- a/src/winio.c
 +++ b/src/winio.c
 @@ -29,6 +29,12 @@
@@ -721,7 +669,7 @@ index e961cccb..94809779 100644
  #endif
  
  #ifdef REVISION
-@@ -1807,7 +1813,23 @@ char *display_string(const char *buf, size_t column, size_t span,
+@@ -1837,7 +1843,23 @@ char *display_string(const char *buf, size_t column, size_t span,
  		}
  
  		/* Determine whether the character takes zero, one, or two columns. */
