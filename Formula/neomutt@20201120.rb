@@ -1,15 +1,15 @@
-class NeomuttAT20200626 < Formula
+class NeomuttAT20201120 < Formula
   desc "E-mail reader with support for Notmuch, NNTP and much more"
   homepage "https://neomutt.org/"
-  url "https://github.com/neomutt/neomutt/archive/20200626.tar.gz"
-  sha256 "94b2e59667a080cb9d531050c3ad320f9951ba7ba09eb7eda15427899627f89e"
+  url "https://github.com/neomutt/neomutt/archive/20201120.tar.gz"
+  sha256 "48191d4f17cb1e5fd094ca92c581e1bb9599f058c122cc0e35df4e1c0cb53f47"
 
   depends_on "patchelf" => :build
   depends_on "gettext"
   depends_on "gpgme"
   depends_on "libidn"
   depends_on "lmdb"
-  depends_on "lua@5.3"
+  depends_on "lua"
   depends_on "notmuch"
   depends_on "openssl@1.1"
   depends_on "tokyo-cabinet"
@@ -42,7 +42,7 @@ class NeomuttAT20200626 < Formula
                           "--with-ui=ncurses",
                           "--with-ncurses=#{Formula["z80oolong/eaw/ncurses-eaw@6.2"].opt_prefix}",
                           "--lua",
-                          "--with-lua=#{Formula["lua@5.3"].prefix}"
+                          "--with-lua=#{Formula["lua"].prefix}"
     system "make", "install"
     fix_rpath "#{bin}/neomutt", ["z80oolong/eaw/ncurses-eaw@6.2"], ["ncurses"]
   end
@@ -66,10 +66,10 @@ end
 
 __END__
 diff --git a/enter.c b/enter.c
-index cf1efc5..fef5ea6 100644
+index 9cb5e48..8fb9033 100644
 --- a/enter.c
 +++ b/enter.c
-@@ -61,7 +61,11 @@ enum EnterRedrawFlags
+@@ -63,7 +63,11 @@ enum EnterRedrawFlags
  };
  
  /* combining mark / non-spacing character */
@@ -81,7 +81,7 @@ index cf1efc5..fef5ea6 100644
  
  /**
   * my_addwch - Display one wide character on screen
-@@ -71,7 +75,11 @@ enum EnterRedrawFlags
+@@ -73,7 +77,11 @@ enum EnterRedrawFlags
   */
  static int my_addwch(wchar_t wc)
  {
@@ -93,27 +93,11 @@ index cf1efc5..fef5ea6 100644
    if (IsWPrint(wc) && (n > 0))
      return mutt_addwch(wc);
    if (!(wc & ~0x7f))
-diff --git a/globals.h b/globals.h
-index fe030ff..aedaada 100644
---- a/globals.h
-+++ b/globals.h
-@@ -282,4 +282,11 @@ WHERE bool C_XCommentTo;                     ///< Config: (nntp) Add 'X-Comment-
- WHERE bool C_VirtualSpoolfile;               ///< Config: (notmuch) Use the first virtual mailbox as a spool file
- #endif
- 
-+#ifndef NO_USE_UTF8CJK
-+WHERE bool C_Utf8Cjk;                       ///< Config: (utf8cjk) Width of East Asian Ambiguous Charactor is set 2
-+#ifndef NO_USE_UTF8CJK_EMOJI
-+WHERE bool C_Utf8Emoji;                     ///< Config: (utf8cjk) Width of UTF8 Emoji is set 2
-+#endif
-+#endif
-+
- #endif /* MUTT_GLOBALS_H */
 diff --git a/gui/curs_lib.c b/gui/curs_lib.c
-index bca175d..85edc9d 100644
+index 5124ff6..5ae2fa5 100644
 --- a/gui/curs_lib.c
 +++ b/gui/curs_lib.c
-@@ -1117,7 +1117,11 @@ void mutt_simple_format(char *buf, size_t buflen, int min_width, int max_width,
+@@ -1138,7 +1138,11 @@ void mutt_simple_format(char *buf, size_t buflen, int min_width, int max_width,
  #endif
            if (!IsWPrint(wc))
          wc = '?';
@@ -125,7 +109,7 @@ index bca175d..85edc9d 100644
      }
      if (w >= 0)
      {
-@@ -1261,7 +1265,11 @@ void mutt_paddstr(int n, const char *s)
+@@ -1282,7 +1286,11 @@ void mutt_paddstr(int n, const char *s)
      }
      if (!IsWPrint(wc))
        wc = '?';
@@ -137,7 +121,7 @@ index bca175d..85edc9d 100644
      if (w >= 0)
      {
        if (w > n)
-@@ -1307,7 +1315,11 @@ size_t mutt_wstr_trunc(const char *src, size_t maxlen, size_t maxwid, size_t *wi
+@@ -1328,7 +1336,11 @@ size_t mutt_wstr_trunc(const char *src, size_t maxlen, size_t maxwid, size_t *wi
        cl = (cl == (size_t)(-1)) ? 1 : n;
        wc = ReplacementChar;
      }
@@ -149,7 +133,7 @@ index bca175d..85edc9d 100644
      /* hack because MUTT_TREE symbols aren't turned into characters
       * until rendered by print_enriched_string() */
      if ((cw < 0) && (src[0] == MUTT_SPECIAL_INDEX))
-@@ -1377,7 +1389,11 @@ int mutt_strnwidth(const char *s, size_t n)
+@@ -1398,7 +1410,11 @@ int mutt_strnwidth(const char *s, size_t n)
      }
      if (!IsWPrint(wc))
        wc = '?';
@@ -162,10 +146,10 @@ index bca175d..85edc9d 100644
    return w;
  }
 diff --git a/help.c b/help.c
-index ca33b8f..4b27562 100644
+index f9adf97..4f23d5e 100644
 --- a/help.c
 +++ b/help.c
-@@ -157,7 +157,11 @@ static int print_macro(FILE *fp, int maxwidth, const char **macro)
+@@ -102,7 +102,11 @@ static int print_macro(FILE *fp, int maxwidth, const char **macro)
        wc = ReplacementChar;
      }
      /* glibc-2.1.3's wcwidth() returns 1 for unprintable chars! */
@@ -177,7 +161,7 @@ index ca33b8f..4b27562 100644
      if (IsWPrint(wc) && (w >= 0))
      {
        if (w > n)
-@@ -232,7 +236,11 @@ static int get_wrapped_width(const char *t, size_t wid)
+@@ -177,7 +181,11 @@ static int get_wrapped_width(const char *t, size_t wid)
      }
      if (!IsWPrint(wc))
        wc = '?';
@@ -190,10 +174,10 @@ index ca33b8f..4b27562 100644
    if (n > wid)
      n = m;
 diff --git a/main.c b/main.c
-index 398adc3..9e35de3 100644
+index e2d685a..3f131ba 100644
 --- a/main.c
 +++ b/main.c
-@@ -562,6 +562,21 @@ int main(int argc, char *argv[], char *envp[])
+@@ -563,6 +563,21 @@ int main(int argc, char *argv[], char *envp[])
      goto main_ok; // TEST04: neomutt -v
    }
  
@@ -216,7 +200,7 @@ index 398adc3..9e35de3 100644
    mutt_str_replace(&HomeDir, mutt_str_getenv("HOME"));
  
 diff --git a/mutt/mbyte.c b/mutt/mbyte.c
-index ee696b4..6ea52e3 100644
+index 97fb8f6..68ef876 100644
 --- a/mutt/mbyte.c
 +++ b/mutt/mbyte.c
 @@ -43,6 +43,426 @@
@@ -685,27 +669,47 @@ index ee696b4..6ea52e3 100644
      return n;
    if (!(wc & ~0x7f))
 diff --git a/mutt_config.c b/mutt_config.c
-index b907874..2d6360b 100644
+index 2ae7819..683a850 100644
 --- a/mutt_config.c
 +++ b/mutt_config.c
-@@ -4971,6 +4971,12 @@ struct ConfigDef MuttVars[] = {
-   ** If \fIset\fP, NeoMutt will add "X-Comment-To:" field (that contains full
-   ** name of original article author) to article that followuped to newsgroup.
-   */
-+#endif
+@@ -753,6 +753,16 @@ struct ConfigDef MainVars[] = {
+   { "write_inc", DT_NUMBER|DT_NOT_NEGATIVE, &C_WriteInc, 10, 0, NULL,
+     "Update the progress bar after this many records written (0 to disable)"
+   },
 +#ifndef NO_USE_UTF8CJK
-+  { "utf8_cjk", DT_BOOL, &C_Utf8Cjk, false },
++  { "utf8_cjk", DT_BOOL, &C_Utf8Cjk, false, 0, NULL,
++    "Width of East Asian Ambiguous Character is 2."
++  },
 +#ifndef NO_USE_UTF8CJK_EMOJI
-+  { "utf8_emoji", DT_BOOL, &C_Utf8Emoji, false },
++  { "utf8_emoji", DT_BOOL, &C_Utf8Emoji, false, 0, NULL,
++    "Width of Emoji of UTF-8 Character is 2."
++  },
 +#endif
- #endif
-   /*--*/
++#endif
  
+   { "escape", DT_DEPRECATED|DT_STRING, &C_Escape, IP "~" },
+   { "ignore_linear_white_space", DT_DEPRECATED|DT_BOOL, &C_IgnoreLinearWhiteSpace, false },
+diff --git a/mutt_globals.h b/mutt_globals.h
+index 337e418..b729424 100644
+--- a/mutt_globals.h
++++ b/mutt_globals.h
+@@ -170,4 +170,11 @@ WHERE bool C_WaitKey;                        ///< Config: Prompt to press a key
+ WHERE bool C_WrapSearch;                     ///< Config: Wrap around when the search hits the end
+ WHERE bool C_WriteBcc;                       ///< Config: Write out the 'Bcc' field when preparing to send a mail
+ 
++#ifndef NO_USE_UTF8CJK
++WHERE bool C_Utf8Cjk;                       ///< Config: (utf8cjk) Width of East Asian Ambiguous Charactor is set 2
++#ifndef NO_USE_UTF8CJK_EMOJI
++WHERE bool C_Utf8Emoji;                     ///< Config: (utf8cjk) Width of UTF8 Emoji is set 2
++#endif
++#endif
++
+ #endif /* MUTT_GLOBALS_H */
 diff --git a/pager.c b/pager.c
-index c0f239d..98d0f52 100644
+index b08dda2..3043f08 100644
 --- a/pager.c
 +++ b/pager.c
-@@ -1550,7 +1550,11 @@ static int format_line(struct Line **line_info, int n, unsigned char *buf,
+@@ -1604,7 +1604,11 @@ static int format_line(struct Line **line_info, int n, unsigned char *buf,
        {
          space = ch;
        }

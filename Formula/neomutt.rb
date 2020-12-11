@@ -3,8 +3,8 @@ class Neomutt < Formula
   homepage "https://neomutt.org/"
 
   stable do
-    url "https://github.com/neomutt/neomutt/archive/20200925.tar.gz"
-    sha256 "dcec98ea2454d7695ff92184c33a0051c2b3c46320f81f7889c4580c943140dd"
+    url "https://github.com/neomutt/neomutt/archive/20201127.tar.gz"
+    sha256 "29ac51a5ac5b4524dfdbb5ac78b59a1cc28c1090c541fb3da7bc86f838ab64cd"
 
     def pick_diff(formula_path)
       lines = formula_path.each_line.to_a.inject([]) do |result, line|
@@ -15,7 +15,7 @@ class Neomutt < Formula
       return lines.join("")
     end
 
-    patch :p1, pick_diff(Formula["z80oolong/eaw/neomutt@20200821"].path)
+    patch :p1, pick_diff(Formula["z80oolong/eaw/neomutt@20201127"].path)
   end
 
   head do
@@ -85,7 +85,7 @@ diff --git a/enter.c b/enter.c
 index 9cb5e4844..8fb90339e 100644
 --- a/enter.c
 +++ b/enter.c
-@@ -63,7 +63,11 @@ enum EnterRedrawFlags
+ -63,7 +63,11 @@ enum EnterRedrawFlags
  };
  
  /* combining mark / non-spacing character */
@@ -216,7 +216,7 @@ index e2d685a53..3f131ba01 100644
    mutt_str_replace(&HomeDir, mutt_str_getenv("HOME"));
  
 diff --git a/mutt/mbyte.c b/mutt/mbyte.c
-index 97fb8f6cd..68ef87619 100644
+index ba96704d2..17a069541 100644
 --- a/mutt/mbyte.c
 +++ b/mutt/mbyte.c
 @@ -43,6 +43,426 @@
@@ -722,7 +722,7 @@ index 337e418b7..b7294242f 100644
 +
  #endif /* MUTT_GLOBALS_H */
 diff --git a/pager.c b/pager.c
-index b08dda250..3043f08f7 100644
+index 0e333c08a..4b9d7fe75 100644
 --- a/pager.c
 +++ b/pager.c
 @@ -1604,7 +1604,11 @@ static int format_line(struct Line **line_info, int n, unsigned char *buf,

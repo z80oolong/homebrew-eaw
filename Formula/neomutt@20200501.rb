@@ -9,7 +9,7 @@ class NeomuttAT20200501 < Formula
   depends_on "gpgme"
   depends_on "libidn"
   depends_on "lmdb"
-  depends_on "lua"
+  depends_on "lua@5.3"
   depends_on "notmuch"
   depends_on "openssl@1.1"
   depends_on "tokyo-cabinet"
@@ -42,7 +42,7 @@ class NeomuttAT20200501 < Formula
                           "--with-ui=ncurses",
                           "--with-ncurses=#{Formula["z80oolong/eaw/ncurses-eaw@6.2"].opt_prefix}",
                           "--lua",
-                          "--with-lua=#{Formula["lua"].prefix}"
+                          "--with-lua=#{Formula["lua@5.3"].prefix}"
     system "make", "install"
     fix_rpath "#{bin}/neomutt", ["z80oolong/eaw/ncurses-eaw@6.2"], ["ncurses"]
   end
