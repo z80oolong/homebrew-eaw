@@ -3,8 +3,8 @@ class Nano < Formula
   homepage "https://www.nano-editor.org/"
 
   stable do
-    url "https://www.nano-editor.org/dist/v5/nano-5.5.tar.xz"
-    sha256 "390b81bf9b41ff736db997aede4d1f60b4453fbd75a519a4ddb645f6fd687e4a"
+    url "https://www.nano-editor.org/dist/v5/nano-5.6.1.tar.xz"
+    sha256 "760d7059e0881ca0ee7e2a33b09d999ec456ff7204df86bee58eb6f523ee8b09"
 
     def pick_diff(formula_path)
       lines = formula_path.each_line.to_a.inject([]) do |result, line|
@@ -15,7 +15,7 @@ class Nano < Formula
       return lines.join("")
     end
 
-    patch :p1, pick_diff(Formula["z80oolong/eaw/nano@5.5"].path)
+    patch :p1, pick_diff(Formula["z80oolong/eaw/nano@5.6.1"].path)
   end
 
   head do
@@ -80,7 +80,7 @@ end
 
 __END__
 diff --git a/configure.ac b/configure.ac
-index 4d2a5c19..3c13f0f7 100644
+index 4ddac8e1..82ae7c97 100644
 --- a/configure.ac
 +++ b/configure.ac
 @@ -71,11 +71,19 @@ AM_CONDITIONAL(BUILDING_FROM_GIT, test x$from_git = xyes)
@@ -524,10 +524,10 @@ index 5e3072d0..99311460 100644
  		if (width < 0)
  			return 1;
 diff --git a/src/definitions.h b/src/definitions.h
-index fe8175ab..49a4fe21 100644
+index fe4403ef..7415ed0a 100644
 --- a/src/definitions.h
 +++ b/src/definitions.h
-@@ -338,6 +338,12 @@ enum {
+@@ -339,6 +339,12 @@ enum {
  	LET_THEM_ZAP,
  	BREAK_LONG_LINES,
  	JUMPY_SCROLLING,
@@ -558,7 +558,7 @@ index cdef1686..8cc6cc14 100644
  int controlleft, controlright, controlup, controldown;
  int controlhome, controlend;
 diff --git a/src/nano.c b/src/nano.c
-index da195ed1..eac3b1fc 100644
+index 9f725f34..fa490b08 100644
 --- a/src/nano.c
 +++ b/src/nano.c
 @@ -636,6 +636,14 @@ void usage(void)
@@ -576,7 +576,7 @@ index da195ed1..eac3b1fc 100644
  #endif
  	if (!ISSET(RESTRICTED))
  		print_opt("-z", "--suspendable", N_("Enable suspension"));
-@@ -1764,6 +1772,14 @@ int main(int argc, char **argv)
+@@ -1771,6 +1779,14 @@ int main(int argc, char **argv)
  #endif
  #ifdef HAVE_LIBMAGIC
  		{"magic", 0, NULL, '!'},
@@ -591,7 +591,7 @@ index da195ed1..eac3b1fc 100644
  #endif
  		{NULL, 0, NULL, 0}
  	};
-@@ -1793,7 +1809,16 @@ int main(int argc, char **argv)
+@@ -1800,7 +1816,16 @@ int main(int argc, char **argv)
  #endif
  
  #ifdef ENABLE_NLS
@@ -608,26 +608,26 @@ index da195ed1..eac3b1fc 100644
  	textdomain(PACKAGE);
  #endif
  
-@@ -1814,8 +1839,18 @@ int main(int argc, char **argv)
+@@ -1821,8 +1846,18 @@ int main(int argc, char **argv)
  	if (*(tail(argv[0])) == 'r')
  		SET(RESTRICTED);
  
 +#ifndef NO_USE_UTF8CJK
 +#ifndef NO_USE_UTF8CJK_EMOJI
 +	while ((optchr = getopt_long(argc, argv, "ABC:DEFGHIJ:KLMNOPQ:RST:UVWX:Y:Z"
-+				"abcdef:ghijklmno:pqr:s:tuvwxyz80$^%_!", long_options, NULL)) != -1) {
++				"abcdef:ghijklmno:pqr:s:tuvwxyz80$%_!", long_options, NULL)) != -1) {
 +#else
 +	while ((optchr = getopt_long(argc, argv, "ABC:DEFGHIJ:KLMNOPQ:RST:UVWX:Y:Z"
-+				"abcdef:ghijklmno:pqr:s:tuvwxyz8$^%_!", long_options, NULL)) != -1) {
++				"abcdef:ghijklmno:pqr:s:tuvwxyz8$%_!", long_options, NULL)) != -1) {
 +#endif /* NO_USE_UTF8CJK_EMOJI */
 +#else
  	while ((optchr = getopt_long(argc, argv, "ABC:DEFGHIJ:KLMNOPQ:RST:UVWX:Y:Z"
- 				"abcdef:ghijklmno:pqr:s:tuvwxyz$^%_!", long_options, NULL)) != -1) {
+ 				"abcdef:ghijklmno:pqr:s:tuvwxyz$%_!", long_options, NULL)) != -1) {
 +#endif /* NO_USE_UTF8CJK */
  		switch (optchr) {
  #ifndef NANO_TINY
  			case 'A':
-@@ -2051,6 +2086,19 @@ int main(int argc, char **argv)
+@@ -2058,6 +2093,19 @@ int main(int argc, char **argv)
  			case 'z':
  				SET(SUSPENDABLE);
  				break;
@@ -645,9 +645,9 @@ index da195ed1..eac3b1fc 100644
 +#endif
 +#endif
  #ifndef NANO_TINY
- 			case '^':
- 				SET(MARK_MATCH);
-@@ -2073,6 +2121,21 @@ int main(int argc, char **argv)
+ 			case '%':
+ 				SET(STATEFLAGS);
+@@ -2077,6 +2125,21 @@ int main(int argc, char **argv)
  		}
  	}
  
@@ -670,7 +670,7 @@ index da195ed1..eac3b1fc 100644
  	if (initscr() == NULL)
  		exit(1);
 diff --git a/src/prototypes.h b/src/prototypes.h
-index 86d46840..60ea771b 100644
+index 18a2fca5..13f0758f 100644
 --- a/src/prototypes.h
 +++ b/src/prototypes.h
 @@ -62,7 +62,11 @@ extern int didfind;
@@ -686,7 +686,7 @@ index 86d46840..60ea771b 100644
  extern int controlleft, controlright;
  extern int controlup, controldown;
 diff --git a/src/rcfile.c b/src/rcfile.c
-index c1a71d1a..0bc1d8d7 100644
+index a311ebc0..da9967b6 100644
 --- a/src/rcfile.c
 +++ b/src/rcfile.c
 @@ -138,6 +138,14 @@ static const rcoption rcopts[] = {
@@ -705,7 +705,7 @@ index c1a71d1a..0bc1d8d7 100644
  	{NULL, 0}
  };
 diff --git a/src/winio.c b/src/winio.c
-index a16f8116..9666a6cf 100644
+index f7eaf1d0..b144a3e6 100644
 --- a/src/winio.c
 +++ b/src/winio.c
 @@ -29,6 +29,12 @@

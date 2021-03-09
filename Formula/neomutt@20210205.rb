@@ -1,28 +1,8 @@
-class Neomutt < Formula
+class NeomuttAT20210205 < Formula
   desc "E-mail reader with support for Notmuch, NNTP and much more"
   homepage "https://neomutt.org/"
-
-  stable do
-    url "https://github.com/neomutt/neomutt/archive/20210205.tar.gz"
-    sha256 "77e177780fc2d8abb475d9cac4342c7e61d53c243f6ce2f9bc86d819fc962cdb"
-
-    def pick_diff(formula_path)
-      lines = formula_path.each_line.to_a.inject([]) do |result, line|
-        result.push(line) if ((/^__END__/ === line) || result.first)
-        result
-      end
-      lines.shift
-      return lines.join("")
-    end
-
-    patch :p1, pick_diff(Formula["z80oolong/eaw/neomutt@20210205"].path)
-  end
-
-  head do
-    url "https://github.com/neomutt/neomutt.git"
-
-    patch :p1, :DATA
-  end
+  url "https://github.com/neomutt/neomutt/archive/20210205.tar.gz"
+  sha256 "77e177780fc2d8abb475d9cac4342c7e61d53c243f6ce2f9bc86d819fc962cdb"
 
   depends_on "patchelf" => :build
   depends_on "gettext"
@@ -38,6 +18,10 @@ class Neomutt < Formula
     depends_on "krb5"
     depends_on "libsasl2"
   end
+
+  patch :p1, :DATA
+
+  keg_only :versioned_formula
 
   def install
     ENV.append "CFLAGS",   "-I#{Formula["z80oolong/eaw/ncurses-eaw@6.2"].opt_include}"
@@ -81,9 +65,8 @@ class Neomutt < Formula
 end
 
 __END__
-warning: refname 'upstream' is ambiguous.
 diff --git a/enter.c b/enter.c
-index 7f8e80bb2..563e8c8f7 100644
+index 13fb4d5..3b5affa 100644
 --- a/enter.c
 +++ b/enter.c
 @@ -63,7 +63,11 @@ enum EnterRedrawFlags
@@ -111,10 +94,10 @@ index 7f8e80bb2..563e8c8f7 100644
      return mutt_addwch(wc);
    if (!(wc & ~0x7f))
 diff --git a/gui/curs_lib.c b/gui/curs_lib.c
-index 108c3f33f..78a038f29 100644
+index 382a0d0..b7a25b5 100644
 --- a/gui/curs_lib.c
 +++ b/gui/curs_lib.c
-@@ -1142,7 +1142,11 @@ void mutt_simple_format(char *buf, size_t buflen, int min_width, int max_width,
+@@ -1138,7 +1138,11 @@ void mutt_simple_format(char *buf, size_t buflen, int min_width, int max_width,
  #endif
            if (!IsWPrint(wc))
          wc = '?';
@@ -126,7 +109,7 @@ index 108c3f33f..78a038f29 100644
      }
      if (w >= 0)
      {
-@@ -1286,7 +1290,11 @@ void mutt_paddstr(int n, const char *s)
+@@ -1282,7 +1286,11 @@ void mutt_paddstr(int n, const char *s)
      }
      if (!IsWPrint(wc))
        wc = '?';
@@ -138,7 +121,7 @@ index 108c3f33f..78a038f29 100644
      if (w >= 0)
      {
        if (w > n)
-@@ -1332,7 +1340,11 @@ size_t mutt_wstr_trunc(const char *src, size_t maxlen, size_t maxwid, size_t *wi
+@@ -1328,7 +1336,11 @@ size_t mutt_wstr_trunc(const char *src, size_t maxlen, size_t maxwid, size_t *wi
        cl = (cl == (size_t)(-1)) ? 1 : n;
        wc = ReplacementChar;
      }
@@ -150,7 +133,7 @@ index 108c3f33f..78a038f29 100644
      /* hack because MUTT_TREE symbols aren't turned into characters
       * until rendered by print_enriched_string() */
      if ((cw < 0) && (src[0] == MUTT_SPECIAL_INDEX))
-@@ -1402,7 +1414,11 @@ int mutt_strnwidth(const char *s, size_t n)
+@@ -1398,7 +1410,11 @@ int mutt_strnwidth(const char *s, size_t n)
      }
      if (!IsWPrint(wc))
        wc = '?';
@@ -163,7 +146,7 @@ index 108c3f33f..78a038f29 100644
    return w;
  }
 diff --git a/help.c b/help.c
-index 432193ce2..53976c87c 100644
+index 3eddb0e..d054b6a 100644
 --- a/help.c
 +++ b/help.c
 @@ -102,7 +102,11 @@ static int print_macro(FILE *fp, int maxwidth, const char **macro)
@@ -191,10 +174,10 @@ index 432193ce2..53976c87c 100644
    if (n > wid)
      n = m;
 diff --git a/main.c b/main.c
-index b8ba175ca..863e950be 100644
+index f8b014d..579496a 100644
 --- a/main.c
 +++ b/main.c
-@@ -566,6 +566,21 @@ int main(int argc, char *argv[], char *envp[])
+@@ -564,6 +564,21 @@ int main(int argc, char *argv[], char *envp[])
      goto main_ok; // TEST04: neomutt -v
    }
  
@@ -217,7 +200,7 @@ index b8ba175ca..863e950be 100644
    mutt_str_replace(&HomeDir, mutt_str_getenv("HOME"));
  
 diff --git a/mutt/mbyte.c b/mutt/mbyte.c
-index ba96704d2..17a069541 100644
+index ba96704..17a0695 100644
 --- a/mutt/mbyte.c
 +++ b/mutt/mbyte.c
 @@ -43,6 +43,426 @@
@@ -686,10 +669,10 @@ index ba96704d2..17a069541 100644
      return n;
    if (!(wc & ~0x7f))
 diff --git a/mutt_config.c b/mutt_config.c
-index b3ed7c552..a78c661bd 100644
+index 352b976..fcc5d0f 100644
 --- a/mutt_config.c
 +++ b/mutt_config.c
-@@ -707,6 +707,16 @@ struct ConfigDef MainVars[] = {
+@@ -753,6 +753,16 @@ struct ConfigDef MainVars[] = {
    { "write_inc", DT_NUMBER|DT_NOT_NEGATIVE, &C_WriteInc, 10, 0, NULL,
      "Update the progress bar after this many records written (0 to disable)"
    },
@@ -707,7 +690,7 @@ index b3ed7c552..a78c661bd 100644
    { "escape", DT_DEPRECATED|DT_STRING, &C_Escape, IP "~" },
    { "ignore_linear_white_space", DT_DEPRECATED|DT_BOOL, &C_IgnoreLinearWhiteSpace, false },
 diff --git a/mutt_globals.h b/mutt_globals.h
-index 18c040b71..aba0b99c5 100644
+index 337e418..b729424 100644
 --- a/mutt_globals.h
 +++ b/mutt_globals.h
 @@ -170,4 +170,11 @@ WHERE bool C_WaitKey;                        ///< Config: Prompt to press a key
@@ -722,11 +705,11 @@ index 18c040b71..aba0b99c5 100644
 +#endif
 +
  #endif /* MUTT_GLOBALS_H */
-diff --git a/pager/pager.c b/pager/pager.c
-index 55ce8ad70..083a85de1 100644
---- a/pager/pager.c
-+++ b/pager/pager.c
-@@ -1691,7 +1691,11 @@ static int format_line(struct Line **line_info, int n, unsigned char *buf,
+diff --git a/pager.c b/pager.c
+index ce0c9c1..cecb47d 100644
+--- a/pager.c
++++ b/pager.c
+@@ -1605,7 +1605,11 @@ static int format_line(struct Line **line_info, int n, unsigned char *buf,
        {
          space = ch;
        }
