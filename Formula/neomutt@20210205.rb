@@ -4,7 +4,6 @@ class NeomuttAT20210205 < Formula
   url "https://github.com/neomutt/neomutt/archive/20210205.tar.gz"
   sha256 "77e177780fc2d8abb475d9cac4342c7e61d53c243f6ce2f9bc86d819fc962cdb"
 
-  depends_on "patchelf" => :build
   depends_on "gettext"
   depends_on "gpgme"
   depends_on "libidn"
@@ -17,6 +16,7 @@ class NeomuttAT20210205 < Formula
   unless OS.mac?
     depends_on "krb5"
     depends_on "libsasl2"
+    depends_on "patchelf" => :build
   end
 
   patch :p1, :DATA
@@ -44,7 +44,10 @@ class NeomuttAT20210205 < Formula
                           "--lua",
                           "--with-lua=#{Formula["lua"].prefix}"
     system "make", "install"
-    fix_rpath "#{bin}/neomutt", ["z80oolong/eaw/ncurses-eaw@6.2"], ["ncurses"]
+
+    if OS.linux? then
+      fix_rpath "#{bin}/tmux", ["z80oolong/tmux/tmux-ncurses@6.2"], ["ncurses"]
+    end
   end
 
   def fix_rpath(binname, append_list, delete_list)

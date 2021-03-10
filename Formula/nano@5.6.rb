@@ -5,9 +5,12 @@ class NanoAT56 < Formula
   sha256 "fce183e4a7034d07d219c79aa2f579005d1fd49f156db6e50f53543a87637a32"
 
   depends_on "pkg-config" => :build
-  depends_on "patchelf" => :build
   depends_on "gettext"
   depends_on "z80oolong/eaw/ncurses-eaw@6.2"
+
+  on_linux do
+    depends_on "patchelf" => :build
+  end
 
   depends_on "libmagic" unless OS.mac?
 
@@ -30,7 +33,11 @@ class NanoAT56 < Formula
                           "--enable-nanorc",
                           "--enable-utf8"
     system "make", "install"
-    fix_rpath "#{bin}/nano", ["z80oolong/eaw/ncurses-eaw@6.2"], ["ncurses"]
+
+    if OS.linux? then
+      fix_rpath "#{bin}/tmux", ["z80oolong/tmux/tmux-ncurses@6.2"], ["ncurses"]
+    end
+
     doc.install "doc/sample.nanorc"
   end
 
