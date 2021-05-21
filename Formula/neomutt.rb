@@ -62,7 +62,7 @@ class Neomutt < Formula
     system "make", "install"
 
     if OS.linux? then
-      fix_rpath "#{bin}/tmux", ["z80oolong/tmux/tmux-ncurses@6.2"], ["ncurses"]
+      fix_rpath "#{bin}/neomutt", ["z80oolong/eaw/ncurses-eaw@6.2"], ["ncurses"]
     end
   end
 
