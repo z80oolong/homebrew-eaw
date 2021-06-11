@@ -35,7 +35,7 @@ class NanoAT561 < Formula
     system "make", "install"
 
     if OS.linux? then
-      fix_rpath "#{bin}/nano", ["z80oolong/tmux/ncurses-eaw@6.2"], ["ncurses"]
+      fix_rpath "#{bin}/nano", ["z80oolong/eaw/ncurses-eaw@6.2"], ["ncurses"]
     end
 
     doc.install "doc/sample.nanorc"
