@@ -1,9 +1,8 @@
-class NanoAT56 < Formula
+class NanoAT58 < Formula
   desc "Free (GNU) replacement for the Pico text editor"
   homepage "https://www.nano-editor.org/"
-  url "https://www.nano-editor.org/dist/v5/nano-5.6.tar.xz"
-  sha256 "fce183e4a7034d07d219c79aa2f579005d1fd49f156db6e50f53543a87637a32"
-  revision 2
+  url "https://www.nano-editor.org/dist/v5/nano-5.8.tar.xz"
+  sha256 "e43b63db2f78336e2aa123e8d015dbabc1720a15361714bfd4b1bb4e5e87768c"
 
   depends_on "pkg-config" => :build
   depends_on "gettext"
@@ -60,10 +59,10 @@ end
 
 __END__
 diff --git a/src/chars.c b/src/chars.c
-index 5e3072d..21d00c5 100644
+index 770e64a..4706fb1 100644
 --- a/src/chars.c
 +++ b/src/chars.c
-@@ -28,6 +28,408 @@
+@@ -28,6 +28,405 @@
  #include <wchar.h>
  #include <wctype.h>
  
@@ -156,7 +155,6 @@ index 5e3072d..21d00c5 100644
 +
 +  return 0;
 +}
-+
 +
 +/* The following two functions define the column width of an ISO 10646
 + * character as follows:
@@ -274,7 +272,6 @@ index 5e3072d..21d00c5 100644
 +      (ucs >= 0x30000 && ucs <= 0x3fffd)));
 +}
 +
-+
 +int mk_wcswidth(const wchar_t *pwcs, size_t n)
 +{
 +  int w, width = 0;
@@ -287,7 +284,6 @@ index 5e3072d..21d00c5 100644
 +
 +  return width;
 +}
-+
 +
 +/*
 + * The following functions are the same as mk_wcwidth() and
@@ -472,23 +468,48 @@ index 5e3072d..21d00c5 100644
  static bool use_utf8 = FALSE;
  		/* Whether we've enabled UTF-8 support. */
  
-@@ -187,7 +589,11 @@ int mbwidth(const char *c)
- 		if (mbtowc(&wc, c, MAXCHARLEN) < 0)
- 			return 1;
+@@ -234,8 +633,11 @@ bool is_doublewidth(const char *ch)
+ 
+ 	if (mbtowide(&wc, ch) < 0)
+ 		return FALSE;
+-
++#ifndef NO_USE_UTF8CJK
++	return (nano_wcwidth(wc) == 2);
++#else
+ 	return (wcwidth(wc) == 2);
++#endif
+ }
+ 
+ /* Return TRUE when the given character occupies zero cells. */
+@@ -256,7 +658,11 @@ bool is_zerowidth(const char *ch)
+ 		return FALSE;
+ #endif
  
 +#ifndef NO_USE_UTF8CJK
-+		width = nano_wcwidth(wc);
++	return (nano_wcwidth(wc) == 0);
 +#else
- 		width = wcwidth(wc);
-+#endif /* NO_USE_UTF8CJK */
+ 	return (wcwidth(wc) == 0);
++#endif
+ }
+ #endif /* ENABLE_UTF8 */
  
- 		if (width < 0)
- 			return 1;
+@@ -341,7 +747,11 @@ int advance_over(const char *string, size_t *column)
+ 				return 1;
+ 			}
+ 
++#ifndef NO_USE_UTF8CJK
++			int width = nano_wcwidth(wc);
++#else
+ 			int width = wcwidth(wc);
++#endif
+ 
+ #if defined(__OpenBSD__)
+ 			*column += (width < 0 || wc >= 0xF0000) ? 1 : width;
 diff --git a/src/definitions.h b/src/definitions.h
-index 7345620..2b338aa 100644
+index b7b75e8..865163d 100644
 --- a/src/definitions.h
 +++ b/src/definitions.h
-@@ -339,6 +339,12 @@ enum {
+@@ -337,6 +337,12 @@ enum {
  	LET_THEM_ZAP,
  	BREAK_LONG_LINES,
  	JUMPY_SCROLLING,
@@ -502,7 +523,7 @@ index 7345620..2b338aa 100644
  	INDICATOR,
  	BOOKSTYLE,
 diff --git a/src/global.c b/src/global.c
-index cdef168..8cc6cc1 100644
+index 0e9b061..5f1852d 100644
 --- a/src/global.c
 +++ b/src/global.c
 @@ -94,8 +94,12 @@ int didfind = 0;
@@ -519,10 +540,10 @@ index cdef168..8cc6cc1 100644
  int controlleft, controlright, controlup, controldown;
  int controlhome, controlend;
 diff --git a/src/nano.c b/src/nano.c
-index f489a65..8e03946 100644
+index 1a80145..9d9c03e 100644
 --- a/src/nano.c
 +++ b/src/nano.c
-@@ -636,6 +636,14 @@ void usage(void)
+@@ -637,6 +637,14 @@ void usage(void)
  	print_opt("-x", "--nohelp", N_("Don't show the two help lines"));
  #ifndef NANO_TINY
  	print_opt("-y", "--afterends", N_("Make Ctrl+Right stop at word ends"));
@@ -537,7 +558,7 @@ index f489a65..8e03946 100644
  #endif
  	if (!ISSET(RESTRICTED))
  		print_opt("-z", "--suspendable", N_("Enable suspension"));
-@@ -1771,6 +1779,14 @@ int main(int argc, char **argv)
+@@ -1757,6 +1765,14 @@ int main(int argc, char **argv)
  #endif
  #ifdef HAVE_LIBMAGIC
  		{"magic", 0, NULL, '!'},
@@ -552,7 +573,7 @@ index f489a65..8e03946 100644
  #endif
  		{NULL, 0, NULL, 0}
  	};
-@@ -1800,7 +1816,16 @@ int main(int argc, char **argv)
+@@ -1786,7 +1802,16 @@ int main(int argc, char **argv)
  #endif
  
  #ifdef ENABLE_NLS
@@ -569,7 +590,7 @@ index f489a65..8e03946 100644
  	textdomain(PACKAGE);
  #endif
  
-@@ -1821,8 +1846,18 @@ int main(int argc, char **argv)
+@@ -1797,8 +1822,18 @@ int main(int argc, char **argv)
  	if (*(tail(argv[0])) == 'r')
  		SET(RESTRICTED);
  
@@ -588,7 +609,7 @@ index f489a65..8e03946 100644
  		switch (optchr) {
  #ifndef NANO_TINY
  			case 'A':
-@@ -2058,6 +2093,19 @@ int main(int argc, char **argv)
+@@ -2034,6 +2069,19 @@ int main(int argc, char **argv)
  			case 'z':
  				SET(SUSPENDABLE);
  				break;
@@ -608,7 +629,7 @@ index f489a65..8e03946 100644
  #ifndef NANO_TINY
  			case '%':
  				SET(STATEFLAGS);
-@@ -2077,6 +2125,21 @@ int main(int argc, char **argv)
+@@ -2053,6 +2101,21 @@ int main(int argc, char **argv)
  		}
  	}
  
@@ -631,7 +652,7 @@ index f489a65..8e03946 100644
  	if (initscr() == NULL)
  		exit(1);
 diff --git a/src/prototypes.h b/src/prototypes.h
-index 18a2fca..13f0758 100644
+index 07f8f75..1ad64ad 100644
 --- a/src/prototypes.h
 +++ b/src/prototypes.h
 @@ -62,7 +62,11 @@ extern int didfind;
@@ -647,10 +668,10 @@ index 18a2fca..13f0758 100644
  extern int controlleft, controlright;
  extern int controlup, controldown;
 diff --git a/src/rcfile.c b/src/rcfile.c
-index 08fd907..8015213 100644
+index 6b77b81..6805aef 100644
 --- a/src/rcfile.c
 +++ b/src/rcfile.c
-@@ -138,6 +138,14 @@ static const rcoption rcopts[] = {
+@@ -136,6 +136,14 @@ static const rcoption rcopts[] = {
  	{"errorcolor", 0},
  	{"keycolor", 0},
  	{"functioncolor", 0},
@@ -666,7 +687,7 @@ index 08fd907..8015213 100644
  	{NULL, 0}
  };
 diff --git a/src/winio.c b/src/winio.c
-index 5af964a..a985db6 100644
+index 72f4f95..b02ea44 100644
 --- a/src/winio.c
 +++ b/src/winio.c
 @@ -29,6 +29,9 @@
@@ -679,7 +700,7 @@ index 5af964a..a985db6 100644
  #endif
  
  #ifdef REVISION
-@@ -1833,7 +1836,11 @@ char *display_string(const char *buf, size_t column, size_t span,
+@@ -1859,7 +1862,11 @@ char *display_string(const char *text, size_t column, size_t span,
  		}
  
  		/* Determine whether the character takes zero, one, or two columns. */
@@ -689,5 +710,5 @@ index 5af964a..a985db6 100644
  		charwidth = wcwidth(wc);
 +#endif /* NO_USE_UTF8CJK */
  
- #ifdef __linux__
- 		/* On a Linux console, skip zero-width characters, as it would show
+ 		/* Watch the number of zero-widths, to keep ample memory reserved. */
+ 		if (charwidth == 0 && --stowaways == 0) {

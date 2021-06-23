@@ -3,7 +3,7 @@ class Nano < Formula
   homepage "https://www.nano-editor.org/"
 
   stable do
-    url "https://www.nano-editor.org/dist/v5/nano-5.6.1.tar.xz"
+    url "https://www.nano-editor.org/dist/v5/nano-5.8.tar.xz"
     sha256 "760d7059e0881ca0ee7e2a33b09d999ec456ff7204df86bee58eb6f523ee8b09"
 
     def pick_diff(formula_path)
@@ -15,7 +15,7 @@ class Nano < Formula
       return lines.join("")
     end
 
-    patch :p1, pick_diff(Formula["z80oolong/eaw/nano@5.6.1"].path)
+    patch :p1, pick_diff(Formula["z80oolong/eaw/nano@5.8"].path)
   end
 
   head do
@@ -87,7 +87,7 @@ end
 
 __END__
 diff --git a/configure.ac b/configure.ac
-index 4ddac8e1..82ae7c97 100644
+index c85004d4..1732d84c 100644
 --- a/configure.ac
 +++ b/configure.ac
 @@ -71,11 +71,19 @@ AM_CONDITIONAL(BUILDING_FROM_GIT, test x$from_git = xyes)
@@ -111,10 +111,10 @@ index 4ddac8e1..82ae7c97 100644
  	if test "$ac_cv_path_MSGFMT" = ":"; then
  		AC_MSG_ERROR([
 diff --git a/src/chars.c b/src/chars.c
-index 5e3072d0..99311460 100644
+index 74caae19..504a42cd 100644
 --- a/src/chars.c
 +++ b/src/chars.c
-@@ -28,6 +28,391 @@
+@@ -28,6 +28,408 @@
  #include <wchar.h>
  #include <wctype.h>
  
@@ -501,40 +501,69 @@ index 5e3072d0..99311460 100644
 +  return mk_wcwidth_cjk(ucs);
 +}
 +#endif /* NO_USE_UTF8CJK_EMOJI */
++
++int nano_wcwidth(wchar_t wc)
++{
++#ifndef NO_USE_UTF8CJK_EMOJI
++	if (ISSET(UTF8EMOJI))
++		return mk_wcwidth_cjk_emoji(wc);
++	else if (ISSET(UTF8CJK))
++		return mk_wcwidth_cjk(wc);
++	else
++		return mk_wcwidth(wc);
++#else
++	if (ISSET(UTF8CJK))
++		return mk_wcwidth_cjk(wc);
++	else
++		return mk_wcwidth(wc);
++#endif /* NO_USE_UTF8CJK_EMOJI */
++}
 +#endif /* NO_USE_UTF8CJK */
 +
  static bool use_utf8 = FALSE;
  		/* Whether we've enabled UTF-8 support. */
  
-@@ -187,7 +572,23 @@ int mbwidth(const char *c)
- 		if (mbtowc(&wc, c, MAXCHARLEN) < 0)
- 			return 1;
+@@ -235,7 +637,11 @@ bool is_doublewidth(const char *ch)
+ 	if (mbtowide(&wc, ch) < 0)
+ 		return FALSE;
  
 +#ifndef NO_USE_UTF8CJK
-+#ifndef NO_USE_UTF8CJK_EMOJI
-+		if (ISSET(UTF8EMOJI))
-+			width = mk_wcwidth_cjk_emoji(wc);
-+		else if (ISSET(UTF8CJK))
-+			width = mk_wcwidth_cjk(wc);
-+		else
-+			width = mk_wcwidth(wc);
++	return (nano_wcwidth(wc) == 2);
 +#else
-+		if (ISSET(UTF8CJK))
-+			width = mk_wcwidth_cjk(wc);
-+		else
-+			width = mk_wcwidth(wc);
-+#endif /* NO_USE_UTF8CJK_EMOJI */
-+#else
- 		width = wcwidth(wc);
-+#endif /* NO_USE_UTF8CJK */
+ 	return (wcwidth(wc) == 2);
++#endif
+ }
  
- 		if (width < 0)
- 			return 1;
+ /* Return TRUE when the given character occupies zero cells. */
+@@ -256,7 +662,11 @@ bool is_zerowidth(const char *ch)
+ 		return FALSE;
+ #endif
+ 
++#ifndef NO_USE_UTF8CJK
++	return (nano_wcwidth(wc) == 0);
++#else
+ 	return (wcwidth(wc) == 0);
++#endif
+ }
+ #endif /* ENABLE_UTF8 */
+ 
+@@ -341,7 +751,11 @@ int advance_over(const char *string, size_t *column)
+ 				return 1;
+ 			}
+ 
++#ifndef NO_USE_UTF8CJK
++			int width = nano_wcwidth(wc);
++#else
+ 			int width = wcwidth(wc);
++#endif
+ 
+ #if defined(__OpenBSD__)
+ 			*column += (width < 0 || wc >= 0xF0000) ? 1 : width;
 diff --git a/src/definitions.h b/src/definitions.h
-index fe4403ef..7415ed0a 100644
+index b7b75e86..865163dd 100644
 --- a/src/definitions.h
 +++ b/src/definitions.h
-@@ -339,6 +339,12 @@ enum {
+@@ -337,6 +337,12 @@ enum {
  	LET_THEM_ZAP,
  	BREAK_LONG_LINES,
  	JUMPY_SCROLLING,
@@ -548,7 +577,7 @@ index fe4403ef..7415ed0a 100644
  	INDICATOR,
  	BOOKSTYLE,
 diff --git a/src/global.c b/src/global.c
-index cdef1686..8cc6cc14 100644
+index 0e9b0618..5f1852d4 100644
 --- a/src/global.c
 +++ b/src/global.c
 @@ -94,8 +94,12 @@ int didfind = 0;
@@ -565,10 +594,10 @@ index cdef1686..8cc6cc14 100644
  int controlleft, controlright, controlup, controldown;
  int controlhome, controlend;
 diff --git a/src/nano.c b/src/nano.c
-index 9f725f34..fa490b08 100644
+index e974f34b..17d30b37 100644
 --- a/src/nano.c
 +++ b/src/nano.c
-@@ -636,6 +636,14 @@ void usage(void)
+@@ -637,6 +637,14 @@ void usage(void)
  	print_opt("-x", "--nohelp", N_("Don't show the two help lines"));
  #ifndef NANO_TINY
  	print_opt("-y", "--afterends", N_("Make Ctrl+Right stop at word ends"));
@@ -583,7 +612,7 @@ index 9f725f34..fa490b08 100644
  #endif
  	if (!ISSET(RESTRICTED))
  		print_opt("-z", "--suspendable", N_("Enable suspension"));
-@@ -1771,6 +1779,14 @@ int main(int argc, char **argv)
+@@ -1757,6 +1765,14 @@ int main(int argc, char **argv)
  #endif
  #ifdef HAVE_LIBMAGIC
  		{"magic", 0, NULL, '!'},
@@ -598,7 +627,7 @@ index 9f725f34..fa490b08 100644
  #endif
  		{NULL, 0, NULL, 0}
  	};
-@@ -1800,7 +1816,16 @@ int main(int argc, char **argv)
+@@ -1786,7 +1802,16 @@ int main(int argc, char **argv)
  #endif
  
  #ifdef ENABLE_NLS
@@ -615,7 +644,7 @@ index 9f725f34..fa490b08 100644
  	textdomain(PACKAGE);
  #endif
  
-@@ -1821,8 +1846,18 @@ int main(int argc, char **argv)
+@@ -1797,8 +1822,18 @@ int main(int argc, char **argv)
  	if (*(tail(argv[0])) == 'r')
  		SET(RESTRICTED);
  
@@ -634,7 +663,7 @@ index 9f725f34..fa490b08 100644
  		switch (optchr) {
  #ifndef NANO_TINY
  			case 'A':
-@@ -2058,6 +2093,19 @@ int main(int argc, char **argv)
+@@ -2034,6 +2069,19 @@ int main(int argc, char **argv)
  			case 'z':
  				SET(SUSPENDABLE);
  				break;
@@ -654,7 +683,7 @@ index 9f725f34..fa490b08 100644
  #ifndef NANO_TINY
  			case '%':
  				SET(STATEFLAGS);
-@@ -2077,6 +2125,21 @@ int main(int argc, char **argv)
+@@ -2053,6 +2101,21 @@ int main(int argc, char **argv)
  		}
  	}
  
@@ -677,7 +706,7 @@ index 9f725f34..fa490b08 100644
  	if (initscr() == NULL)
  		exit(1);
 diff --git a/src/prototypes.h b/src/prototypes.h
-index 18a2fca5..13f0758f 100644
+index 07f8f75e..1ad64ad2 100644
 --- a/src/prototypes.h
 +++ b/src/prototypes.h
 @@ -62,7 +62,11 @@ extern int didfind;
@@ -693,10 +722,10 @@ index 18a2fca5..13f0758f 100644
  extern int controlleft, controlright;
  extern int controlup, controldown;
 diff --git a/src/rcfile.c b/src/rcfile.c
-index a311ebc0..da9967b6 100644
+index 6b77b810..6805aef9 100644
 --- a/src/rcfile.c
 +++ b/src/rcfile.c
-@@ -138,6 +138,14 @@ static const rcoption rcopts[] = {
+@@ -136,6 +136,14 @@ static const rcoption rcopts[] = {
  	{"errorcolor", 0},
  	{"keycolor", 0},
  	{"functioncolor", 0},
@@ -712,43 +741,28 @@ index a311ebc0..da9967b6 100644
  	{NULL, 0}
  };
 diff --git a/src/winio.c b/src/winio.c
-index f7eaf1d0..b144a3e6 100644
+index 2b526447..a2479b6f 100644
 --- a/src/winio.c
 +++ b/src/winio.c
-@@ -29,6 +29,12 @@
+@@ -29,6 +29,9 @@
  #include <string.h>
  #ifdef ENABLE_UTF8
  #include <wchar.h>
 +#ifndef NO_USE_UTF8CJK
-+extern int mk_wcwidth_cjk(wchar_t ucs);
-+#ifndef NO_USE_UTF8CJK_EMOJI
-+extern int mk_wcwidth_cjk_emoji(wchar_t ucs);
-+#endif /* NO_USE_UTF8CJK_EMOJI */
++extern int nano_wcwidth(wchar_t ucs);
 +#endif /* NO_USE_UTF8CJK */
  #endif
  
  #ifdef REVISION
-@@ -1833,7 +1839,23 @@ char *display_string(const char *buf, size_t column, size_t span,
+@@ -1859,7 +1862,11 @@ char *display_string(const char *text, size_t column, size_t span,
  		}
  
  		/* Determine whether the character takes zero, one, or two columns. */
 +#ifndef NO_USE_UTF8CJK
-+#ifndef NO_USE_UTF8CJK_EMOJI
-+		if (ISSET(UTF8EMOJI))
-+			charwidth = mk_wcwidth_cjk_emoji(wc);
-+		else if (ISSET(UTF8CJK))
-+			charwidth = mk_wcwidth_cjk(wc);
-+		else
-+			charwidth = mk_wcwidth(wc);
-+#else
-+		if (ISSET(UTF8CJK))
-+			charwidth = mk_wcwidth_cjk(wc);
-+		else
-+			charwidth = mk_wcwidth(wc);
-+#endif /* NO_USE_UTF8CJK_EMOJI */
++		charwidth = nano_wcwidth(wc);
 +#else
  		charwidth = wcwidth(wc);
 +#endif /* NO_USE_UTF8CJK */
  
- #ifdef __linux__
- 		/* On a Linux console, skip zero-width characters, as it would show
+ 		/* Watch the number of zero-widths, to keep ample memory reserved. */
+ 		if (charwidth == 0 && --stowaways == 0) {

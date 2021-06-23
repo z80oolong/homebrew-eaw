@@ -3,6 +3,7 @@ class NanoAT493 < Formula
   homepage "https://www.nano-editor.org/"
   url "https://www.nano-editor.org/dist/v4/nano-4.9.3.tar.xz"
   sha256 "6e3438f033a0ed07d3d74c30d0803cbda3d2366ba1601b7bbf9b16ac371f51b4"
+  revision 2
 
   depends_on "pkg-config" => :build
   depends_on "gettext"
@@ -59,10 +60,10 @@ end
 
 __END__
 diff --git a/src/chars.c b/src/chars.c
-index 91f960b..d6d15a8 100644
+index 91f960b..97768a6 100644
 --- a/src/chars.c
 +++ b/src/chars.c
-@@ -28,6 +28,391 @@
+@@ -28,6 +28,408 @@
  #include <wchar.h>
  #include <wctype.h>
  
@@ -449,29 +450,34 @@ index 91f960b..d6d15a8 100644
 +  return mk_wcwidth_cjk(ucs);
 +}
 +#endif /* NO_USE_UTF8CJK_EMOJI */
++
++int nano_wcwidth(wchar_t wc)
++{
++#ifndef NO_USE_UTF8CJK_EMOJI
++	if (ISSET(UTF8EMOJI))
++		return mk_wcwidth_cjk_emoji(wc);
++	else if (ISSET(UTF8CJK))
++		return mk_wcwidth_cjk(wc);
++	else
++		return mk_wcwidth(wc);
++#else
++	if (ISSET(UTF8CJK))
++		return mk_wcwidth_cjk(wc);
++	else
++		return mk_wcwidth(wc);
++#endif /* NO_USE_UTF8CJK_EMOJI */
++}
 +#endif /* NO_USE_UTF8CJK */
 +
  static bool use_utf8 = FALSE;
  		/* Whether we've enabled UTF-8 support. */
  
-@@ -187,7 +572,23 @@ int mbwidth(const char *c)
+@@ -187,7 +589,11 @@ int mbwidth(const char *c)
  		if (mbtowc(&wc, c, MAXCHARLEN) < 0)
  			return 1;
  
 +#ifndef NO_USE_UTF8CJK
-+#ifndef NO_USE_UTF8CJK_EMOJI
-+		if (ISSET(UTF8EMOJI))
-+			width = mk_wcwidth_cjk_emoji(wc);
-+		else if (ISSET(UTF8CJK))
-+			width = mk_wcwidth_cjk(wc);
-+		else
-+			width = mk_wcwidth(wc);
-+#else
-+		if (ISSET(UTF8CJK))
-+			width = mk_wcwidth_cjk(wc);
-+		else
-+			width = mk_wcwidth(wc);
-+#endif /* NO_USE_UTF8CJK_EMOJI */
++		width = nano_wcwidth(wc);
 +#else
  		width = wcwidth(wc);
 +#endif /* NO_USE_UTF8CJK */
@@ -660,40 +666,25 @@ index 722a65f..eeaa532 100644
  	{NULL, 0}
  };
 diff --git a/src/winio.c b/src/winio.c
-index 4b9e9ea..2455bcb 100644
+index 4b9e9ea..bdb8c28 100644
 --- a/src/winio.c
 +++ b/src/winio.c
-@@ -29,6 +29,12 @@
+@@ -29,6 +29,9 @@
  #include <string.h>
  #ifdef ENABLE_UTF8
  #include <wchar.h>
 +#ifndef NO_USE_UTF8CJK
-+extern int mk_wcwidth_cjk(wchar_t ucs);
-+#ifndef NO_USE_UTF8CJK_EMOJI
-+extern int mk_wcwidth_cjk_emoji(wchar_t ucs);
-+#endif /* NO_USE_UTF8CJK_EMOJI */
++extern int nano_wcwidth(wchar_t ucs);
 +#endif /* NO_USE_UTF8CJK */
  #endif
  
  #ifdef REVISION
-@@ -1957,7 +1963,23 @@ char *display_string(const char *buf, size_t column, size_t span,
+@@ -1957,7 +1960,11 @@ char *display_string(const char *buf, size_t column, size_t span,
  		}
  
  		/* Determine whether the character takes zero, one, or two columns. */
 +#ifndef NO_USE_UTF8CJK
-+#ifndef NO_USE_UTF8CJK_EMOJI
-+		if (ISSET(UTF8EMOJI))
-+			charwidth = mk_wcwidth_cjk_emoji(wc);
-+		else if (ISSET(UTF8CJK))
-+			charwidth = mk_wcwidth_cjk(wc);
-+		else
-+			charwidth = mk_wcwidth(wc);
-+#else
-+		if (ISSET(UTF8CJK))
-+			charwidth = mk_wcwidth_cjk(wc);
-+		else
-+			charwidth = mk_wcwidth(wc);
-+#endif /* NO_USE_UTF8CJK_EMOJI */
++		charwidth = nano_wcwidth(wc);
 +#else
  		charwidth = wcwidth(wc);
 +#endif /* NO_USE_UTF8CJK */
