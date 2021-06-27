@@ -4,7 +4,7 @@ class Nano < Formula
 
   stable do
     url "https://www.nano-editor.org/dist/v5/nano-5.8.tar.xz"
-    sha256 "760d7059e0881ca0ee7e2a33b09d999ec456ff7204df86bee58eb6f523ee8b09"
+    sha256 "e43b63db2f78336e2aa123e8d015dbabc1720a15361714bfd4b1bb4e5e87768c"
 
     def pick_diff(formula_path)
       lines = formula_path.each_line.to_a.inject([]) do |result, line|
