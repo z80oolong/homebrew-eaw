@@ -3,6 +3,7 @@ class NeomuttAT20200925 < Formula
   homepage "https://neomutt.org/"
   url "https://github.com/neomutt/neomutt/archive/20200925.tar.gz"
   sha256 "dcec98ea2454d7695ff92184c33a0051c2b3c46320f81f7889c4580c943140dd"
+  revision 2
 
   depends_on "gettext"
   depends_on "gpgme"
@@ -176,32 +177,6 @@ index f9adf97..4f23d5e 100644
    }
    if (n > wid)
      n = m;
-diff --git a/main.c b/main.c
-index 8d6ef8c..95d2a1a 100644
---- a/main.c
-+++ b/main.c
-@@ -563,6 +563,21 @@ int main(int argc, char *argv[], char *envp[])
-     goto main_ok; // TEST04: neomutt -v
-   }
- 
-+#ifndef NO_USE_UTF8CJK
-+  const char *lc_ctype;
-+
-+  if ((lc_ctype = setlocale(LC_CTYPE, "")) != NULL)
-+  {
-+    if (!strncmp(lc_ctype, "ja", 2) || !strncmp(lc_ctype, "ko", 2) || !strncmp(lc_ctype, "zh", 2))
-+    {
-+                        C_Utf8Cjk = true;
-+#ifndef NO_USE_UTF8CJK_EMOJI
-+                        C_Utf8Emoji = true;
-+#endif
-+    }
-+  }
-+#endif
-+
-   mutt_str_replace(&Username, mutt_str_getenv("USER"));
-   mutt_str_replace(&HomeDir, mutt_str_getenv("HOME"));
- 
 diff --git a/mutt/mbyte.c b/mutt/mbyte.c
 index 97fb8f6..68ef876 100644
 --- a/mutt/mbyte.c
