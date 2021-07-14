@@ -11,6 +11,7 @@
 
 - 軽量な CLI テキストエディタである [nano][NANO] 
 - CLI に基づく多機能メールクライアントである [neomutt][MUTT] 
+- Unicode 対応の端末エミュレータである [rxvt-unicode][RXVT]
 
 ## 使用法
 
@@ -44,7 +45,7 @@
 
 [http://www.cl.cam.ac.uk/~mgk25/ucs/wcwidth.c][WCWD]
 
-そして、
+そして、概要にて前述した各種アプリケーションの開発者及び開発コニュニティの各位に心より感謝致します。
 
 ## 使用条件
 
@@ -58,6 +59,7 @@
 [GST1]:https://gist.github.com/z80oolong/e65baf0d590f62fab8f4f7c358cbcc34
 [NANO]:https://www.nano-editor.org/
 [MUTT]:https://neomutt.org/
+[RXVT]:https://github.com/exg/rxvt-unicode
 [THER]:https://qiita.com/thermes
 [THBR]:https://qiita.com/thermes/items/926b478ff6e3758ecfea
 [WCWD]:http://www.cl.cam.ac.uk/~mgk25/ucs/wcwidth.c
