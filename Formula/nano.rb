@@ -38,16 +38,10 @@ class Nano < Formula
 
   depends_on "libmagic" unless OS.mac?
 
-  option "without-utf8-cjk", "Build without using East asian Ambiguous Width Character in tmux."
-  option "without-utf8-emoji", "Build without using Emoji Character in tmux."
-
   def install
     ENV.append "CFLAGS",     "-I#{Formula["z80oolong/eaw/ncurses-eaw@6.2"].opt_include}"
     ENV.append "CPPFLAGS",   "-I#{Formula["z80oolong/eaw/ncurses-eaw@6.2"].opt_include}"
     ENV.append "LDFLAGS",    "-L#{Formula["z80oolong/eaw/ncurses-eaw@6.2"].opt_lib}"
-
-    ENV.append "CPPFLAGS", "-DNO_USE_UTF8CJK" if build.without?("utf8-cjk")
-    ENV.append "CPPFLAGS", "-DNO_USE_UTF8CJK_EMOJI" if build.without?("utf8-emoji")
 
     system "sh", "autogen.sh" if build.head?
 

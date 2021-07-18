@@ -12,6 +12,7 @@
 - 軽量な CLI テキストエディタである [nano][NANO] 
 - CLI に基づく多機能メールクライアントである [neomutt][MUTT] 
 - Unicode 対応の端末エミュレータである [rxvt-unicode][RXVT]
+- CLI に基づく多機能メールクライアントである [mutt][OMUT] 
 
 ## 使用法
 
@@ -66,3 +67,4 @@
 [DRMK]:http://www.cl.cam.ac.uk/~mgk25/
 [BSD2]:https://opensource.org/licenses/BSD-2-Clause
 [ZOOL]:http://zool.jpn.org/
+[OMUT]:http://www.mutt.org/
