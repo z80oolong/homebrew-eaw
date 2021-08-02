@@ -85,7 +85,6 @@ class Neomutt < Formula
 end
 
 __END__
-warning: refname 'upstream' is ambiguous.
 diff --git a/enter.c b/enter.c
 index bce0b137b..9ea392d60 100644
 --- a/enter.c
@@ -167,7 +166,7 @@ index ba4d92270..c698e1624 100644
    return w;
  }
 diff --git a/help.c b/help.c
-index 13d3de3bc..a9ec4ba8e 100644
+index 7d46fddb7..0aaeea9c0 100644
 --- a/help.c
 +++ b/help.c
 @@ -104,7 +104,11 @@ static int print_macro(FILE *fp, int maxwidth, const char **macro)
@@ -660,10 +659,10 @@ index e698e0402..3918279f5 100644
      return n;
    if (!(wc & ~0x7f))
 diff --git a/mutt_config.c b/mutt_config.c
-index 6f19c7561..c22c93276 100644
+index b1aca97d2..f5a833387 100644
 --- a/mutt_config.c
 +++ b/mutt_config.c
-@@ -674,6 +674,16 @@ static struct ConfigDef MainVars[] = {
+@@ -658,6 +658,16 @@ static struct ConfigDef MainVars[] = {
    { "write_inc", DT_NUMBER|DT_NOT_NEGATIVE, 10, 0, NULL,
      "Update the progress bar after this many records written (0 to disable)"
    },
@@ -681,10 +680,10 @@ index 6f19c7561..c22c93276 100644
    { "escape",                    DT_DEPRECATED|DT_STRING,            IP "~" },
    { "ignore_linear_white_space", DT_DEPRECATED|DT_BOOL,              false },
 diff --git a/pager/dlg_pager.c b/pager/dlg_pager.c
-index 503f8863f..3cedc7fda 100644
+index 0003822bc..c3bddb8f4 100644
 --- a/pager/dlg_pager.c
 +++ b/pager/dlg_pager.c
-@@ -1612,7 +1612,11 @@ static int format_line(struct MuttWindow *win, struct Line **line_info, int n,
+@@ -1618,7 +1618,11 @@ static int format_line(struct MuttWindow *win, struct Line **line_info, int n,
        {
          space = ch;
        }

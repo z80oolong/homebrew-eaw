@@ -115,6 +115,7 @@ class Mutt < Formula
 end
 
 __END__
+warning: refname 'upstream' is ambiguous.
 diff --git a/curs_lib.c b/curs_lib.c
 index b43438a3..5b0ff1b2 100644
 --- a/curs_lib.c
@@ -230,7 +231,7 @@ index ad3a4e11..b0f06e97 100644
      return mutt_addwch (wc);
    if (!(wc & ~0x7f))
 diff --git a/help.c b/help.c
-index cda1b996..4b649b3f 100644
+index 29dda797..0734d23a 100644
 --- a/help.c
 +++ b/help.c
 @@ -109,7 +109,11 @@ static int print_macro (FILE *f, int maxwidth, const char **macro)
@@ -333,7 +334,7 @@ index 88b71da5..361faf53 100644
    /* pseudo options */
  
 diff --git a/pager.c b/pager.c
-index bb5d495b..759a7068 100644
+index 0444beb8..043a7efb 100644
 --- a/pager.c
 +++ b/pager.c
 @@ -1402,7 +1402,11 @@ static int format_line (struct line_t **lineInfo, int n, unsigned char *buf,
@@ -349,7 +350,7 @@ index bb5d495b..759a7068 100644
  	break;
        col += t;
 diff --git a/sendlib.c b/sendlib.c
-index 41c1c780..6de14b14 100644
+index 8cbf011d..742b48ab 100644
 --- a/sendlib.c
 +++ b/sendlib.c
 @@ -1875,7 +1875,11 @@ static int my_width (const char *str, int col, int flags)

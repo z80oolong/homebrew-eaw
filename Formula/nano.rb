@@ -588,10 +588,10 @@ index 0e9b0618..5f1852d4 100644
  int controlleft, controlright, controlup, controldown;
  int controlhome, controlend;
 diff --git a/src/nano.c b/src/nano.c
-index e974f34b..17d30b37 100644
+index 3dd9f917..e4f1862f 100644
 --- a/src/nano.c
 +++ b/src/nano.c
-@@ -637,6 +637,14 @@ void usage(void)
+@@ -639,6 +639,14 @@ void usage(void)
  	print_opt("-x", "--nohelp", N_("Don't show the two help lines"));
  #ifndef NANO_TINY
  	print_opt("-y", "--afterends", N_("Make Ctrl+Right stop at word ends"));
@@ -606,7 +606,7 @@ index e974f34b..17d30b37 100644
  #endif
  	if (!ISSET(RESTRICTED))
  		print_opt("-z", "--suspendable", N_("Enable suspension"));
-@@ -1757,6 +1765,14 @@ int main(int argc, char **argv)
+@@ -1759,6 +1767,14 @@ int main(int argc, char **argv)
  #endif
  #ifdef HAVE_LIBMAGIC
  		{"magic", 0, NULL, '!'},
@@ -621,7 +621,7 @@ index e974f34b..17d30b37 100644
  #endif
  		{NULL, 0, NULL, 0}
  	};
-@@ -1786,7 +1802,16 @@ int main(int argc, char **argv)
+@@ -1788,7 +1804,16 @@ int main(int argc, char **argv)
  #endif
  
  #ifdef ENABLE_NLS
@@ -638,7 +638,7 @@ index e974f34b..17d30b37 100644
  	textdomain(PACKAGE);
  #endif
  
-@@ -1797,8 +1822,18 @@ int main(int argc, char **argv)
+@@ -1799,8 +1824,18 @@ int main(int argc, char **argv)
  	if (*(tail(argv[0])) == 'r')
  		SET(RESTRICTED);
  
@@ -657,7 +657,7 @@ index e974f34b..17d30b37 100644
  		switch (optchr) {
  #ifndef NANO_TINY
  			case 'A':
-@@ -2034,6 +2069,19 @@ int main(int argc, char **argv)
+@@ -2036,6 +2071,19 @@ int main(int argc, char **argv)
  			case 'z':
  				SET(SUSPENDABLE);
  				break;
@@ -677,7 +677,7 @@ index e974f34b..17d30b37 100644
  #ifndef NANO_TINY
  			case '%':
  				SET(STATEFLAGS);
-@@ -2053,6 +2101,21 @@ int main(int argc, char **argv)
+@@ -2055,6 +2103,21 @@ int main(int argc, char **argv)
  		}
  	}
  
@@ -735,7 +735,7 @@ index 6b77b810..6805aef9 100644
  	{NULL, 0}
  };
 diff --git a/src/winio.c b/src/winio.c
-index 2b526447..a2479b6f 100644
+index 6984a247..56ce4122 100644
 --- a/src/winio.c
 +++ b/src/winio.c
 @@ -29,6 +29,9 @@

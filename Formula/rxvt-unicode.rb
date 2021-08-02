@@ -43,13 +43,6 @@ class RxvtUnicode < Formula
 
   uses_from_macos "perl"
 
-  # Patches 1 and 2 remove -arch flags for compiling perl support
-  # Patch 3 fixes `make install` target on case-insensitive filesystems
-  patch do
-    url "https://raw.githubusercontent.com/Homebrew/formula-patches/85fa66a9/rxvt-unicode/9.22.patch"
-    sha256 "a266a5776b67420eb24c707674f866cf80a6146aaef6d309721b6ab1edb8c9bb"
-  end
-
   def install
     args = %W[
       --prefix=#{prefix}
@@ -75,24 +68,62 @@ class RxvtUnicode < Formula
 end
 
 __END__
+diff --git a/Makefile.in b/Makefile.in
+index ee97cef5..6112e8b3 100644
+--- a/Makefile.in
++++ b/Makefile.in
+@@ -31,6 +31,7 @@ subdirs = src doc
+ 
+ RECURSIVE_TARGETS = all allbin alldoc tags clean distclean realclean install
+ 
++.PHONY: install
+ #-------------------------------------------------------------------------
+ 
+ $(RECURSIVE_TARGETS):
+diff --git a/configure b/configure
+index 2a3fe4b0..972ebe63 100755
+--- a/configure
++++ b/configure
+@@ -7928,8 +7928,8 @@ printf %s "checking for $PERL suitability... " >&6; }
+ 
+      save_CXXFLAGS="$CXXFLAGS"
+      save_LIBS="$LIBS"
+-     CXXFLAGS="$CXXFLAGS `$PERL -MExtUtils::Embed -e ccopts`"
+-     LIBS="$LIBS `$PERL -MExtUtils::Embed -e ldopts`"
++     CXXFLAGS="$CXXFLAGS `$PERL -MExtUtils::Embed -e ccopts|sed -E 's/ -arch [^ ]+//g'`"
++     LIBS="$LIBS `$PERL -MExtUtils::Embed -e ldopts|sed -E 's/ -arch [^ ]+//g'`"
+      cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+ /* end confdefs.h.  */
+ 
+@@ -7966,8 +7966,8 @@ printf "%s\n" "#define ENABLE_PERL 1" >>confdefs.h
+ 
+         IF_PERL=
+         PERL_O=rxvtperl.o
+-        PERLFLAGS="`$PERL -MExtUtils::Embed -e ccopts`"
+-        PERLLIB="`$PERL -MExtUtils::Embed -e ldopts`"
++        PERLFLAGS="`$PERL -MExtUtils::Embed -e ccopts|sed -E 's/ -arch [^ ]+//g'`"
++        PERLLIB="`$PERL -MExtUtils::Embed -e ldopts|sed -E 's/ -arch [^ ]+//g'`"
+         PERLPRIVLIBEXP="`$PERL -MConfig -e 'print $Config{privlibexp}'`"
+      else
+         as_fn_error $? "no, unable to link" "$LINENO" 5
 diff --git a/src/Makefile.in b/src/Makefile.in
-index c3d88e23..76612a8a 100644
+index f6e474bd..41615f15 100644
 --- a/src/Makefile.in
 +++ b/src/Makefile.in
 @@ -40,7 +40,7 @@ COMMON = \
  	screen.o scrollbar.o scrollbar-next.o scrollbar-rxvt.o \
  	scrollbar-xterm.o scrollbar-plain.o xdefaults.o encoding.o \
  	rxvttoolkit.o rxvtutil.o keyboard.o rxvtimg.o \
--	ev_cpp.o fdpass_wrapper.o ptytty_wrapper.o @PERL_O@
-+	ev_cpp.o fdpass_wrapper.o ptytty_wrapper.o wcwidth.o @PERL_O@
+-	ev_cpp.o @PERL_O@
++	ev_cpp.o wcwidth.o @PERL_O@
  
  COMMON_DAEMON = rxvtdaemon.o
  
 diff --git a/src/rxvt.h b/src/rxvt.h
-index aa4caf70..11c31bdf 100644
+index 043b7c18..ba5e6952 100644
 --- a/src/rxvt.h
 +++ b/src/rxvt.h
-@@ -645,7 +645,17 @@ typedef struct _mwmhints
+@@ -654,7 +654,17 @@ typedef struct _mwmhints
  
  // for speed reasons, we assume that all codepoints 32 to 126 are
  // single-width.
