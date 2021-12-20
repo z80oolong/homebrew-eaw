@@ -27,13 +27,6 @@ class RxvtUnicodeAT922 < Formula
 
   patch :p1, :DATA 
 
-  # Patches 1 and 2 remove -arch flags for compiling perl support
-  # Patch 3 fixes `make install` target on case-insensitive filesystems
-  patch do
-    url "https://raw.githubusercontent.com/Homebrew/formula-patches/85fa66a9/rxvt-unicode/9.22.patch"
-    sha256 "a266a5776b67420eb24c707674f866cf80a6146aaef6d309721b6ab1edb8c9bb"
-  end
-
   def install
     ENV.append "CFLAGS", "-std=c++11"
     ENV.append "CPPFLAGS", "-std=c++11"

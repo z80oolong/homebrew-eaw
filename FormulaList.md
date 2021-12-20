@@ -25,7 +25,7 @@ Unicode の規格における東アジア圏の各種文字のうち、いわゆ
   set utf8emoji                 # 絵文字の幅を２にする。
   ...
   ```
-  なお、この設定は、 ```nano``` の起動時にオプション ```-0, --utf8emoji``` を指定しても同じ効果が得られます。
+  なお、この設定は、 ```nano``` の起動時にオプション ```-4, --utf8emoji``` を指定しても同じ効果が得られます。
 
 以上のオプションの初期値は、 locale に関する環境変数 ```LC_CTYPE``` の値が ```"ja*", "ko*", "zh*"``` の場合はオプションの設定が有効であり、それ以外の場合は無効となります。
 
@@ -199,6 +199,46 @@ Unicode の規格における東アジア圏の各種文字のうち、いわゆ
 
 この Formula によって導入される [nano][NANO] を使用するには、 ```brew link --force z80oolong/eaw/nano@5.6.1``` コマンドを実行する必要があります。
 
+### z80oolong/eaw/nano@5.7
+
+この Formula は、 [East Asian Ambiguous Character][EAWA] 問題を修正した軽量の CUI テキストエディタ [nano][NANO] の安定版 [nano 5.7][NANO] を導入します。
+
+この Formula で導入した [nano][NANO] の使用法については、前述の z80oolong/eaw/nano の Formula についての記述を参照して下さい。
+
+**この Formula は、 versioned formula であるため、この Formula によって導入される [nano][NANO] は、 keg only で導入されることに留意して下さい。**
+
+この Formula によって導入される [nano][NANO] を使用するには、 ```brew link --force z80oolong/eaw/nano@5.7``` コマンドを実行する必要があります。
+
+### z80oolong/eaw/nano@5.8
+
+この Formula は、 [East Asian Ambiguous Character][EAWA] 問題を修正した軽量の CUI テキストエディタ [nano][NANO] の安定版 [nano 5.8][NANO] を導入します。
+
+この Formula で導入した [nano][NANO] の使用法については、前述の z80oolong/eaw/nano の Formula についての記述を参照して下さい。
+
+**この Formula は、 versioned formula であるため、この Formula によって導入される [nano][NANO] は、 keg only で導入されることに留意して下さい。**
+
+この Formula によって導入される [nano][NANO] を使用するには、 ```brew link --force z80oolong/eaw/nano@5.8``` コマンドを実行する必要があります。
+
+### z80oolong/eaw/nano@5.9
+
+この Formula は、 [East Asian Ambiguous Character][EAWA] 問題を修正した軽量の CUI テキストエディタ [nano][NANO] の安定版 [nano 5.9][NANO] を導入します。
+
+この Formula で導入した [nano][NANO] の使用法については、前述の z80oolong/eaw/nano の Formula についての記述を参照して下さい。
+
+**この Formula は、 versioned formula であるため、この Formula によって導入される [nano][NANO] は、 keg only で導入されることに留意して下さい。**
+
+この Formula によって導入される [nano][NANO] を使用するには、 ```brew link --force z80oolong/eaw/nano@5.9``` コマンドを実行する必要があります。
+
+### z80oolong/eaw/nano@6.0
+
+この Formula は、 [East Asian Ambiguous Character][EAWA] 問題を修正した軽量の CUI テキストエディタ [nano][NANO] の安定版 [nano 6.0][NANO] を導入します。
+
+この Formula で導入した [nano][NANO] の使用法については、前述の z80oolong/eaw/nano の Formula についての記述を参照して下さい。
+
+**この Formula は、 versioned formula であるため、この Formula によって導入される [nano][NANO] は、 keg only で導入されることに留意して下さい。**
+
+この Formula によって導入される [nano][NANO] を使用するには、 ```brew link --force z80oolong/eaw/nano@6.0``` コマンドを実行する必要があります。
+
 ### z80oolong/eaw/neomutt@20200619
 
 この Formula は、 [East Asian Ambiguous Character][EAWA] 問題を修正した CLI に基づく多機能メールクライアントである [neomutt][MUTT] の安定版 [neomutt 20200619][MUTT] を導入します。
@@ -289,6 +329,46 @@ Unicode の規格における東アジア圏の各種文字のうち、いわゆ
 
 この Formula によって導入される [neomutt][MUTT] を使用するには、 ```brew link --force z80oolong/eaw/neomutt@20210205``` コマンドを実行する必要があります。
 
+### z80oolong/eaw/neomutt@20210205
+
+この Formula は、 [East Asian Ambiguous Character][EAWA] 問題を修正した CLI に基づく多機能メールクライアントである [neomutt][MUTT] の安定版 [neomutt 20210205][MUTT] を導入します。
+
+この Formula で導入した [neomutt][MUTT] の使用法については、前述の z80oolong/eaw/neomutt の Formula についての記述を参照して下さい。
+
+**この Formula は、 versioned formula であるため、この Formula によって導入される [neomutt][MUTT] は、 keg only で導入されることに留意して下さい。**
+
+この Formula によって導入される [neomutt][MUTT] を使用するには、 ```brew link --force z80oolong/eaw/neomutt@20210205``` コマンドを実行する必要があります。
+
+### z80oolong/eaw/neomutt@20211015
+
+この Formula は、 [East Asian Ambiguous Character][EAWA] 問題を修正した CLI に基づく多機能メールクライアントである [neomutt][MUTT] の安定版 [neomutt 20211015][MUTT] を導入します。
+
+この Formula で導入した [neomutt][MUTT] の使用法については、前述の z80oolong/eaw/neomutt の Formula についての記述を参照して下さい。
+
+**この Formula は、 versioned formula であるため、この Formula によって導入される [neomutt][MUTT] は、 keg only で導入されることに留意して下さい。**
+
+この Formula によって導入される [neomutt][MUTT] を使用するには、 ```brew link --force z80oolong/eaw/neomutt@20211015``` コマンドを実行する必要があります。
+
+### z80oolong/eaw/neomutt@20211022
+
+この Formula は、 [East Asian Ambiguous Character][EAWA] 問題を修正した CLI に基づく多機能メールクライアントである [neomutt][MUTT] の安定版 [neomutt 20211022][MUTT] を導入します。
+
+この Formula で導入した [neomutt][MUTT] の使用法については、前述の z80oolong/eaw/neomutt の Formula についての記述を参照して下さい。
+
+**この Formula は、 versioned formula であるため、この Formula によって導入される [neomutt][MUTT] は、 keg only で導入されることに留意して下さい。**
+
+この Formula によって導入される [neomutt][MUTT] を使用するには、 ```brew link --force z80oolong/eaw/neomutt@20211022``` コマンドを実行する必要があります。
+
+### z80oolong/eaw/neomutt@20211029
+
+この Formula は、 [East Asian Ambiguous Character][EAWA] 問題を修正した CLI に基づく多機能メールクライアントである [neomutt][MUTT] の安定版 [neomutt 20211029][MUTT] を導入します。
+
+この Formula で導入した [neomutt][MUTT] の使用法については、前述の z80oolong/eaw/neomutt の Formula についての記述を参照して下さい。
+
+**この Formula は、 versioned formula であるため、この Formula によって導入される [neomutt][MUTT] は、 keg only で導入されることに留意して下さい。**
+
+この Formula によって導入される [neomutt][MUTT] を使用するには、 ```brew link --force z80oolong/eaw/neomutt@20211029``` コマンドを実行する必要があります。
+
 ### z80oolong/eaw/rxvt-unicode@9.22
 
 この Formula は、 [East Asian Ambiguous Character][EAWA] 問題を修正した Unicode 対応端末エミュレータである [rxvt-unicode][RXVT] の安定版 [rxvt-unicode 9.22][RXVT] を導入します。
@@ -348,6 +428,36 @@ Unicode の規格における東アジア圏の各種文字のうち、いわゆ
 **この Formula は、 versioned formula であるため、この Formula によって導入される [mutt][OMUT] は、 keg only で導入されることに留意して下さい。**
 
 この Formula によって導入される [mutt][MUTT] を使用するには、 ```brew link --force z80oolong/eaw/mutt@2.1.1``` コマンドを実行する必要があります。
+
+### z80oolong/eaw/mutt@2.1.2
+
+この Formula は、 [East Asian Ambiguous Character][EAWA] 問題を修正した CLI に基づく多機能メールクライアントである [mutt][OMUT] の安定版 [mutt 2.1.2][MUTT] を導入します。
+
+この Formula で導入した [mutt][OMUT] の使用法については、前述の z80oolong/eaw/mutt の Formula についての記述を参照して下さい。
+
+**この Formula は、 versioned formula であるため、この Formula によって導入される [mutt][OMUT] は、 keg only で導入されることに留意して下さい。**
+
+この Formula によって導入される [mutt][MUTT] を使用するには、 ```brew link --force z80oolong/eaw/mutt@2.1.2``` コマンドを実行する必要があります。
+
+### z80oolong/eaw/mutt@2.1.3
+
+この Formula は、 [East Asian Ambiguous Character][EAWA] 問題を修正した CLI に基づく多機能メールクライアントである [mutt][OMUT] の安定版 [mutt 2.1.3][MUTT] を導入します。
+
+この Formula で導入した [mutt][OMUT] の使用法については、前述の z80oolong/eaw/mutt の Formula についての記述を参照して下さい。
+
+**この Formula は、 versioned formula であるため、この Formula によって導入される [mutt][OMUT] は、 keg only で導入されることに留意して下さい。**
+
+この Formula によって導入される [mutt][MUTT] を使用するには、 ```brew link --force z80oolong/eaw/mutt@2.1.3``` コマンドを実行する必要があります。
+
+### z80oolong/eaw/mutt@2.1.4
+
+この Formula は、 [East Asian Ambiguous Character][EAWA] 問題を修正した CLI に基づく多機能メールクライアントである [mutt][OMUT] の安定版 [mutt 2.1.4][MUTT] を導入します。
+
+この Formula で導入した [mutt][OMUT] の使用法については、前述の z80oolong/eaw/mutt の Formula についての記述を参照して下さい。
+
+**この Formula は、 versioned formula であるため、この Formula によって導入される [mutt][OMUT] は、 keg only で導入されることに留意して下さい。**
+
+この Formula によって導入される [mutt][MUTT] を使用するには、 ```brew link --force z80oolong/eaw/mutt@2.1.4``` コマンドを実行する必要があります。
 
 <!-- 外部リンク一覧 -->
 

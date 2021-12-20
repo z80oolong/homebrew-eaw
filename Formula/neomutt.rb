@@ -4,8 +4,8 @@ class Neomutt < Formula
   revision 2
 
   stable do
-    url "https://github.com/neomutt/neomutt/archive/20210205.tar.gz"
-    sha256 "77e177780fc2d8abb475d9cac4342c7e61d53c243f6ce2f9bc86d819fc962cdb"
+    url "https://github.com/neomutt/neomutt/archive/20211029.tar.gz"
+    sha256 "08245cfa7aec80b895771fd1adcbb7b86e9c0434dfa64574e3c8c4d692aaa078"
 
     def pick_diff(formula_path)
       lines = formula_path.each_line.to_a.inject([]) do |result, line|
@@ -16,7 +16,7 @@ class Neomutt < Formula
       return lines.join("")
     end
 
-    patch :p1, pick_diff(Formula["z80oolong/eaw/neomutt@20210205"].path)
+    patch :p1, pick_diff(Formula["z80oolong/eaw/neomutt@20211029"].path)
   end
 
   head do
@@ -85,10 +85,11 @@ class Neomutt < Formula
 end
 
 __END__
-diff --git a/enter.c b/enter.c
-index bce0b137b..9ea392d60 100644
---- a/enter.c
-+++ b/enter.c
+warning: refname 'upstream' is ambiguous.
+diff --git a/enter/enter.c b/enter/enter.c
+index e39ee0f05..d96083883 100644
+--- a/enter/enter.c
++++ b/enter/enter.c
 @@ -64,7 +64,11 @@ enum EnterRedrawFlags
  };
  
@@ -114,10 +115,10 @@ index bce0b137b..9ea392d60 100644
      return mutt_addwch(win, wc);
    if (!(wc & ~0x7f))
 diff --git a/gui/curs_lib.c b/gui/curs_lib.c
-index ba4d92270..c698e1624 100644
+index 4dac58d19..089cdff7b 100644
 --- a/gui/curs_lib.c
 +++ b/gui/curs_lib.c
-@@ -761,7 +761,11 @@ void mutt_simple_format(char *buf, size_t buflen, int min_width, int max_width,
+@@ -766,7 +766,11 @@ void mutt_simple_format(char *buf, size_t buflen, int min_width, int max_width,
  #endif
            if (!IsWPrint(wc))
          wc = '?';
@@ -129,7 +130,7 @@ index ba4d92270..c698e1624 100644
      }
      if (w >= 0)
      {
-@@ -906,7 +910,11 @@ void mutt_paddstr(struct MuttWindow *win, int n, const char *s)
+@@ -911,7 +915,11 @@ void mutt_paddstr(struct MuttWindow *win, int n, const char *s)
      }
      if (!IsWPrint(wc))
        wc = '?';
@@ -141,7 +142,7 @@ index ba4d92270..c698e1624 100644
      if (w >= 0)
      {
        if (w > n)
-@@ -952,7 +960,11 @@ size_t mutt_wstr_trunc(const char *src, size_t maxlen, size_t maxwid, size_t *wi
+@@ -957,7 +965,11 @@ size_t mutt_wstr_trunc(const char *src, size_t maxlen, size_t maxwid, size_t *wi
        cl = (cl == (size_t) (-1)) ? 1 : n;
        wc = ReplacementChar;
      }
@@ -153,7 +154,7 @@ index ba4d92270..c698e1624 100644
      /* hack because MUTT_TREE symbols aren't turned into characters
       * until rendered by print_enriched_string() */
      if ((cw < 0) && (src[0] == MUTT_SPECIAL_INDEX))
-@@ -1022,7 +1034,11 @@ int mutt_strnwidth(const char *s, size_t n)
+@@ -1027,7 +1039,11 @@ int mutt_strnwidth(const char *s, size_t n)
      }
      if (!IsWPrint(wc))
        wc = '?';
@@ -659,10 +660,10 @@ index e698e0402..3918279f5 100644
      return n;
    if (!(wc & ~0x7f))
 diff --git a/mutt_config.c b/mutt_config.c
-index b1aca97d2..f5a833387 100644
+index 69c1cc72e..fb8454946 100644
 --- a/mutt_config.c
 +++ b/mutt_config.c
-@@ -658,6 +658,16 @@ static struct ConfigDef MainVars[] = {
+@@ -641,6 +641,16 @@ static struct ConfigDef MainVars[] = {
    { "write_inc", DT_NUMBER|DT_NOT_NEGATIVE, 10, 0, NULL,
      "Update the progress bar after this many records written (0 to disable)"
    },
@@ -677,13 +678,13 @@ index b1aca97d2..f5a833387 100644
 +#endif
 +#endif
  
-   { "escape",                    DT_DEPRECATED|DT_STRING,            IP "~" },
-   { "ignore_linear_white_space", DT_DEPRECATED|DT_BOOL,              false },
-diff --git a/pager/dlg_pager.c b/pager/dlg_pager.c
-index 0003822bc..c3bddb8f4 100644
---- a/pager/dlg_pager.c
-+++ b/pager/dlg_pager.c
-@@ -1618,7 +1618,11 @@ static int format_line(struct MuttWindow *win, struct Line **line_info, int n,
+   { "escape",                    DT_DEPRECATED|DT_STRING,            IP "~", IP "2021-03-18" },
+   { "ignore_linear_white_space", DT_DEPRECATED|DT_BOOL,              false,  IP "2021-03-18" },
+diff --git a/pager/display.c b/pager/display.c
+index c01710b46..5fdf5731e 100644
+--- a/pager/display.c
++++ b/pager/display.c
+@@ -968,7 +968,11 @@ static int format_line(struct MuttWindow *win, struct Line **lines, int line_num
        {
          space = ch;
        }
