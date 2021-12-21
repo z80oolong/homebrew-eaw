@@ -4,8 +4,8 @@ class RxvtUnicode < Formula
   revision 2
 
   stable do
-    url "http://dist.schmorp.de/rxvt-unicode/Attic/rxvt-unicode-9.30.tar.bz2"
-    sha256 "fe1c93d12f385876457a989fc3ae05c0915d2692efc59289d0f70fabe5b44d2d"
+    url "http://dist.schmorp.de/rxvt-unicode/Attic/rxvt-unicode-9.26.tar.bz2"
+    sha256 "643116b9a25d29ad29f4890131796d42e6d2d21312282a613ef66c80c5b8c98b"
 
     def pick_diff(formula_path)
       lines = formula_path.each_line.to_a.inject([]) do |result, line|
@@ -16,7 +16,7 @@ class RxvtUnicode < Formula
       return lines.join("")
     end
 
-    patch :p1, pick_diff(Formula["z80oolong/eaw/rxvt-unicode@9.30"].path)
+    patch :p1, pick_diff(Formula["z80oolong/eaw/rxvt-unicode@9.26"].path)
   end
 
   license "GPL-3.0-only"
