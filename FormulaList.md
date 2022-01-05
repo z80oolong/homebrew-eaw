@@ -95,7 +95,19 @@ Unicode の規格における東アジア圏の各種文字のうち、いわゆ
 
 ### z80oolong/eaw/ncurses-eaw@6.2
 
-上述の Formula によって導入される各種 CUI アプリケーションに依存する ncurses ライブラリを導入するための Formula です。オリジナルの ncurses ライブラリに、 East Asian Ambiguous Character の文字幅を全角文字の幅として扱う修正を加えています。
+上述の Formula によって導入される各種 CUI アプリケーションが依存する ncurses ライブラリを導入するための Formula です。オリジナルの ncurses ライブラリに、 East Asian Ambiguous Character の文字幅を全角文字の幅として扱う修正を加えています。
+
+**この Formula は、 versioned formula であるため、この Formula によって導入される ncurses は、 keg only で導入されることに留意して下さい。**
+
+### z80oolong/eaw/libptytty@2.0
+
+疑似端末及び wtmp, utmp 等を用意に扱う為の C++ ライブラリを導入するための Formula です。 ```rxvt-unicode``` のバージョン 9.29 以降及び HEAD 版がこのライブラリに依存します。
+
+**この Formula は、 versioned formula であるため、この Formula によって導入される ncurses は、 keg only で導入されることに留意して下さい。**
+
+### z80oolong/eaw/libev@4.33
+
+イベントループの実装を扱うライブラリを導入するための Formula です。 ```rxvt-unicode``` の HEAD 版がこのライブラリに依存します。
 
 **この Formula は、 versioned formula であるため、この Formula によって導入される ncurses は、 keg only で導入されることに留意して下さい。**
 
@@ -398,6 +410,26 @@ Unicode の規格における東アジア圏の各種文字のうち、いわゆ
 **この Formula は、 versioned formula であるため、この Formula によって導入される [rxvt-unicode][RXVT] は、 keg only で導入されることに留意して下さい。**
 
 この Formula によって導入される [rxvt-unicode][RXVT] を使用するには、 ```brew link --force z80oolong/eaw/rxvt-unicode@9.26``` コマンドを実行する必要があります。
+
+### z80oolong/eaw/rxvt-unicode@9.29
+
+この Formula は、 [East Asian Ambiguous Character][EAWA] 問題を修正した Unicode 対応端末エミュレータである [rxvt-unicode][RXVT] の安定版 [rxvt-unicode 9.29][RXVT] を導入します。
+
+この Formula で導入した [rxvt-unicode][RXVT] の使用法については、前述の z80oolong/eaw/rxvt-unicode の Formula についての記述を参照して下さい。
+
+**この Formula は、 versioned formula であるため、この Formula によって導入される [rxvt-unicode][RXVT] は、 keg only で導入されることに留意して下さい。**
+
+この Formula によって導入される [rxvt-unicode][RXVT] を使用するには、 ```brew link --force z80oolong/eaw/rxvt-unicode@9.29``` コマンドを実行する必要があります。
+
+### z80oolong/eaw/rxvt-unicode@9.30
+
+この Formula は、 [East Asian Ambiguous Character][EAWA] 問題を修正した Unicode 対応端末エミュレータである [rxvt-unicode][RXVT] の安定版 [rxvt-unicode 9.30][RXVT] を導入します。
+
+この Formula で導入した [rxvt-unicode][RXVT] の使用法については、前述の z80oolong/eaw/rxvt-unicode の Formula についての記述を参照して下さい。
+
+**この Formula は、 versioned formula であるため、この Formula によって導入される [rxvt-unicode][RXVT] は、 keg only で導入されることに留意して下さい。**
+
+この Formula によって導入される [rxvt-unicode][RXVT] を使用するには、 ```brew link --force z80oolong/eaw/rxvt-unicode@9.30``` コマンドを実行する必要があります。
 
 ### z80oolong/eaw/mutt@2.0.7
 

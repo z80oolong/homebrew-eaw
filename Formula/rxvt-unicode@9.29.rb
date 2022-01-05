@@ -1,8 +1,8 @@
-class RxvtUnicodeAT925 < Formula
+class RxvtUnicodeAT929 < Formula
   desc "Rxvt fork with Unicode support"
   homepage "http://software.schmorp.de/pkg/rxvt-unicode.html"
-  url "http://dist.schmorp.de/rxvt-unicode/Attic/rxvt-unicode-9.25.tar.bz2"
-  sha256 "0c79c6c0056d51528ac8f96916794959b7fe0a0f785795f2130e2e8b99e12146"
+  url "http://dist.schmorp.de/rxvt-unicode/Attic/rxvt-unicode-9.29.tar.bz2"
+  sha256 "c18bc9de0c319db1f85748ecc2f255ff9eb2be0fbe9e15fe0eabefc063c4157c"
   license "GPL-3.0-only"
   revision 2
 
@@ -22,6 +22,7 @@ class RxvtUnicodeAT925 < Formula
   depends_on "libxmu"
   depends_on "libxrender"
   depends_on "libxt"
+  depends_on "z80oolong/eaw/libptytty@2.0"
   depends_on "z80oolong/eaw/ncurses-eaw@6.2"
 
   uses_from_macos "perl"
@@ -54,7 +55,7 @@ end
 
 __END__
 diff --git a/Makefile.in b/Makefile.in
-index eee5969..c230930 100644
+index ee97cef..6112e8b 100644
 --- a/Makefile.in
 +++ b/Makefile.in
 @@ -31,6 +31,7 @@ subdirs = src doc
@@ -66,10 +67,10 @@ index eee5969..c230930 100644
  
  $(RECURSIVE_TARGETS):
 diff --git a/configure b/configure
-index d610e73..1639856 100755
+index be1d355..7a3f41d 100755
 --- a/configure
 +++ b/configure
-@@ -8705,8 +8705,8 @@ printf %s "checking for $PERL suitability... " >&6; }
+@@ -7842,8 +7842,8 @@ printf %s "checking for $PERL suitability... " >&6; }
  
       save_CXXFLAGS="$CXXFLAGS"
       save_LIBS="$LIBS"
@@ -80,7 +81,7 @@ index d610e73..1639856 100755
       cat confdefs.h - <<_ACEOF >conftest.$ac_ext
  /* end confdefs.h.  */
  
-@@ -8743,8 +8743,8 @@ printf "%s\n" "#define ENABLE_PERL 1" >>confdefs.h
+@@ -7880,8 +7880,8 @@ printf "%s\n" "#define ENABLE_PERL 1" >>confdefs.h
  
          IF_PERL=
          PERL_O=rxvtperl.o
@@ -92,27 +93,62 @@ index d610e73..1639856 100755
       else
          as_fn_error $? "no, unable to link" "$LINENO" 5
 diff --git a/src/Makefile.in b/src/Makefile.in
-index 974101a..2f3ffe0 100644
+index 5eb5aa0..a1aa40d 100644
 --- a/src/Makefile.in
 +++ b/src/Makefile.in
 @@ -40,7 +40,7 @@ COMMON = \
  	screen.o scrollbar.o scrollbar-next.o scrollbar-rxvt.o \
  	scrollbar-xterm.o scrollbar-plain.o xdefaults.o encoding.o \
  	rxvttoolkit.o rxvtutil.o keyboard.o rxvtimg.o \
--	ev_cpp.o fdpass_wrapper.o ptytty_wrapper.o @PERL_O@
-+	ev_cpp.o fdpass_wrapper.o ptytty_wrapper.o wcwidth.o @PERL_O@
+-	ev_cpp.o @PERL_O@
++	ev_cpp.o wcwidth.o @PERL_O@
  
  COMMON_DAEMON = rxvtdaemon.o
  
+diff --git a/src/optinc.h b/src/optinc.h
+index e478434..bf80e1d 100644
+--- a/src/optinc.h
++++ b/src/optinc.h
+@@ -60,6 +60,12 @@
+ #else
+  nodef(iso14755)
+  nodef(iso14755_52)
++#endif
++#ifndef NO_USE_UTF8CJK
++ def(utf8cjk)
++#ifndef NO_USE_UTF8CJK_EMOJI
++ def(utf8cjk_emoji)
++#endif
+ #endif
+  def(console)
+ #if XFT
+diff --git a/src/rsinc.h b/src/rsinc.h
+index a9abb0a..0878623 100644
+--- a/src/rsinc.h
++++ b/src/rsinc.h
+@@ -115,6 +115,12 @@
+   def (iso14755)
+   def (iso14755_52)
+ #endif
++#ifndef NO_USE_UTF8CJK
++ def(utf8cjk)
++#ifndef NO_USE_UTF8CJK_EMOJI
++ def(utf8cjk_emoji)
++#endif
++#endif
+ #if ENABLE_EWMH
+   def (iconfile)
+ #endif
 diff --git a/src/rxvt.h b/src/rxvt.h
-index aa4caf7..11c31bd 100644
+index bad5eae..7d84656 100644
 --- a/src/rxvt.h
 +++ b/src/rxvt.h
-@@ -645,7 +645,17 @@ typedef struct _mwmhints
+@@ -655,7 +655,18 @@ typedef struct _mwmhints
  
  // for speed reasons, we assume that all codepoints 32 to 126 are
  // single-width.
 +#ifndef NO_USE_UTF8_CJK
++// wcwidth.C
 +extern int urxvt_wcwidth(wchar_t c);
 +extern int urxvt_wcswidth(const wchar_t *s, size_t n);
 +
@@ -128,10 +164,10 @@ index aa4caf7..11c31bd 100644
  #define Pixel2Col(x)            Pixel2Width((int32_t)(x))
 diff --git a/src/wcwidth.C b/src/wcwidth.C
 new file mode 100644
-index 0000000..2f41de5
+index 0000000..db35007
 --- /dev/null
 +++ b/src/wcwidth.C
-@@ -0,0 +1,488 @@
+@@ -0,0 +1,497 @@
 +#ifndef NO_USE_UTF8CJK
 +/*
 + * This is an implementation of wcwidth() and wcswidth() (defined in
@@ -198,6 +234,10 @@ index 0000000..2f41de5
 +#include <wchar.h>
 +#include <stdlib.h>
 +#include <string.h>
++
++#define NO_CJK 0
++#define CJK    1
++#define EMOJI  2
 +
 +struct interval {
 +  int first;
@@ -537,10 +577,6 @@ index 0000000..2f41de5
 +}
 +#endif
 +
-+#define NO_CJK 0
-+#define CJK    1
-+#define EMOJI  2
-+
 +static int urxvt_use_wcwidth(void)
 +{
 +  char *lang = NULL, *cjk = NULL;
@@ -558,33 +594,42 @@ index 0000000..2f41de5
 +  emoji = getenv("URXVT_USE_UTF8_CJK_EMOJI");
 +#endif
 +
-+  if (lang == NULL || *lang =='\0')
++  if (lang == NULL || *lang =='\0') {
 +    lang = getenv("LANG");
-+  if (lang == NULL || *lang == '\0')
++  }
++  if (lang == NULL || *lang == '\0') {
 +    lang = getenv("LC_ALL");
-+  if (lang == NULL || *lang == '\0')
++  }
++  if (lang == NULL || *lang == '\0') {
 +    lang = "";
++  }
 +
-+  if (cjk == NULL || *cjk == '\0')
++  if (cjk == NULL || *cjk == '\0') {
 +    cjk = "";
++  }
 +#ifndef NO_USE_UTF8CJK_EMOJI
-+  if (emoji == NULL || *emoji == '\0')
++  if (emoji == NULL || *emoji == '\0') {
 +    emoji = "";
++  }
 +#endif
 +
-+  if (!strncmp(lang, "ja", 2) || !strncmp(lang, "ko", 2) || !strncmp(lang, "zh", 2))
++  if (!strncmp(lang, "ja", 2) || !strncmp(lang, "ko", 2) || !strncmp(lang, "zh", 2)) {
 +    use_wcwidth = CJK;
-+  else
++  } else {
 +    use_wcwidth = NO_CJK;
-+
-+  if (!strncmp(cjk, "1", 1))
++  }
++  if (!strncmp(cjk, "1", 1)) {
 +    use_wcwidth = CJK;
-+  else if(!strncmp(cjk, "0", 1))
++  } else if(!strncmp(cjk, "0", 1)) {
 +    use_wcwidth = NO_CJK;
++  }
 +
 +#ifndef NO_USE_UTF8CJK_EMOJI
-+  if (!strncmp(emoji, "1", 1))
++  if (!strncmp(emoji, "1", 1)) {
 +    use_wcwidth = EMOJI;
++  } else if(!strncmp(emoji, "0", 1)) {
++    use_wcwidth = CJK;
++  }
 +#endif
 +
 +  return use_wcwidth;
@@ -620,3 +665,33 @@ index 0000000..2f41de5
 +  }
 +}
 +#endif /* NO_USE_UTF8CJK */
+diff --git a/src/xdefaults.C b/src/xdefaults.C
+index 970b8ac..9f634f1 100644
+--- a/src/xdefaults.C
++++ b/src/xdefaults.C
+@@ -271,6 +271,12 @@ optList[] = {
+               BOOL (Rs_iso14755, "iso14755", NULL, Opt_iso14755, 0, NULL),
+               BOOL (Rs_iso14755_52, "iso14755_52", NULL, Opt_iso14755_52, 0, NULL),
+ #endif
++#ifndef NO_USE_UTF8CJK
++              BOOL (Rs_utf8cjk, "utf8-cjk", NULL, Opt_utf8cjk, 0, NULL),
++#ifndef NO_USE_UTF8CJK_EMOJI
++              BOOL (Rs_utf8cjk_emoji, "utf8-cjk-emoji", NULL, Opt_utf8cjk_emoji, 0, NULL),
++#endif
++#endif
+ #ifndef NO_RESOURCES
+               RINFO ("xrm", "string"),
+ #endif
+@@ -317,6 +323,12 @@ static const char optionsstring[] = "options: "
+ #if ENCODING_JP_EXT
+                                     "+jp-ext"
+ #endif
++#ifndef NO_USE_UTF8CJK
++				    "+utf8cjk"
++#ifndef NO_USE_UTF8CJK_EMOJI
++				    "+utf8cjk-emoji"
++#endif
++#endif
+ #if ENCODING_KR
+                                     "+kr"
+ #endif

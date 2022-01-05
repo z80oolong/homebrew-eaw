@@ -22,6 +22,7 @@ class RxvtUnicodeAT926 < Formula
   depends_on "libxmu"
   depends_on "libxrender"
   depends_on "libxt"
+  depends_on "z80oolong/eaw/ncurses-eaw@6.2"
 
   uses_from_macos "perl"
 
@@ -31,8 +32,8 @@ class RxvtUnicodeAT926 < Formula
     args = %W[
       --prefix=#{prefix}
       --enable-256-color
-      --with-term=rxvt-unicode-256color
-      --with-terminfo=/usr/share/terminfo
+      --with-term=xterm-256color
+      --with-terminfo=#{Formula["z80oolong/eaw/ncurses-eaw@6.2"].opt_share}/terminfo
       --enable-smart-resize
       --enable-unicode3
     ]
