@@ -571,7 +571,7 @@ index eed5f105..8990ff08 100644
  	INDICATOR,
  	BOOKSTYLE,
 diff --git a/src/global.c b/src/global.c
-index d608a773..e184af61 100644
+index a74edba7..6dfae2cc 100644
 --- a/src/global.c
 +++ b/src/global.c
 @@ -92,8 +92,12 @@ int didfind = 0;
