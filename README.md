@@ -2,7 +2,6 @@
 
 ## 概要
 
-
 [Linuxbrew][BREW] とは、Linux の各ディストリビューションにおけるソースコードの取得及びビルドに基づいたパッケージ管理システムです。 [Linuxbrew][BREW] の使用により、ソースコードからのビルドに基づいたソフトウェアの導入を単純かつ容易に行うことが出来ます。
 
 この [Linuxbrew][BREW] 向け Tap リポジトリは、 Unicode の規格における東アジア圏の各種文字のうち、いわゆる "◎" や "★" 等の記号文字及び罫線文字等、 [East_Asian_Width 特性の値が A (Ambiguous) となる文字][EAWA] (以下、 [East Asian Ambiguous Character][EAWA]) が、日本語環境で文字幅を適切に扱うことが出来ずに表示が乱れる問題の修正を適用した各種 CLI アプリケーションを導入するための Formula 群を含む Tap リポジトリです。
@@ -42,7 +41,7 @@
 
 ## 謝辞
 
-まず最初に、 [tmux][TMUX] に関する差分ファイルを作成するに当たっては、下記の URL にある、 Markus Kuhn 氏が作成した [East Asian Ambiguous Character][EAWA] の扱いを考慮した wcwidth(3) 関数の実装を使用しました。 [Markus Kuhn][DRMK] 氏には心より感謝いたします。
+まず最初に、各種 CLI アプリケーションに関する差分ファイルを作成するに当たっては、下記の URL にある、 Markus Kuhn 氏が作成した [East Asian Ambiguous Character][EAWA] の扱いを考慮した wcwidth(3) 関数の実装を使用しました。 [Markus Kuhn][DRMK] 氏には心より感謝いたします。
 
 [http://www.cl.cam.ac.uk/~mgk25/ucs/wcwidth.c][WCWD]
 
