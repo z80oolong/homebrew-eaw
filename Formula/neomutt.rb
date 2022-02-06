@@ -85,7 +85,6 @@ class Neomutt < Formula
 end
 
 __END__
-warning: refname 'upstream' is ambiguous.
 diff --git a/enter/enter.c b/enter/enter.c
 index 0b0c179d5..17bbb1597 100644
 --- a/enter/enter.c
@@ -115,10 +114,10 @@ index 0b0c179d5..17bbb1597 100644
      return mutt_addwch(win, wc);
    if (!(wc & ~0x7f))
 diff --git a/gui/curs_lib.c b/gui/curs_lib.c
-index 9b20ba49d..98b4f111a 100644
+index 72de0f637..5e837f888 100644
 --- a/gui/curs_lib.c
 +++ b/gui/curs_lib.c
-@@ -736,7 +736,11 @@ void mutt_simple_format(char *buf, size_t buflen, int min_width, int max_width,
+@@ -742,7 +742,11 @@ void mutt_simple_format(char *buf, size_t buflen, int min_width, int max_width,
  #endif
            if (!IsWPrint(wc))
          wc = '?';
@@ -130,7 +129,7 @@ index 9b20ba49d..98b4f111a 100644
      }
      if (w >= 0)
      {
-@@ -880,7 +884,11 @@ void mutt_paddstr(struct MuttWindow *win, int n, const char *s)
+@@ -886,7 +890,11 @@ void mutt_paddstr(struct MuttWindow *win, int n, const char *s)
      }
      if (!IsWPrint(wc))
        wc = '?';
@@ -142,7 +141,7 @@ index 9b20ba49d..98b4f111a 100644
      if (w >= 0)
      {
        if (w > n)
-@@ -925,7 +933,11 @@ size_t mutt_wstr_trunc(const char *src, size_t maxlen, size_t maxwid, size_t *wi
+@@ -931,7 +939,11 @@ size_t mutt_wstr_trunc(const char *src, size_t maxlen, size_t maxwid, size_t *wi
        cl = (cl == (size_t) (-1)) ? 1 : n;
        wc = ReplacementChar;
      }
@@ -154,7 +153,7 @@ index 9b20ba49d..98b4f111a 100644
      /* hack because MUTT_TREE symbols aren't turned into characters
       * until rendered by print_enriched_string() */
      if ((cw < 0) && (src[0] == MUTT_SPECIAL_INDEX))
-@@ -994,7 +1006,11 @@ int mutt_strnwidth(const char *s, size_t n)
+@@ -1000,7 +1012,11 @@ int mutt_strnwidth(const char *s, size_t n)
      }
      if (!IsWPrint(wc))
        wc = '?';
@@ -167,10 +166,10 @@ index 9b20ba49d..98b4f111a 100644
    return w;
  }
 diff --git a/help.c b/help.c
-index 0f4a0fc84..b0ff2f0b5 100644
+index 76adcddc8..fd6b05a48 100644
 --- a/help.c
 +++ b/help.c
-@@ -103,7 +103,11 @@ static int print_macro(FILE *fp, int maxwidth, const char **macro)
+@@ -101,7 +101,11 @@ static int print_macro(FILE *fp, int maxwidth, const char **macro)
        wc = ReplacementChar;
      }
      /* glibc-2.1.3's wcwidth() returns 1 for unprintable chars! */
@@ -182,7 +181,7 @@ index 0f4a0fc84..b0ff2f0b5 100644
      if (IsWPrint(wc) && (w >= 0))
      {
        if (w > n)
-@@ -177,7 +181,11 @@ static int get_wrapped_width(const char *t, size_t wid)
+@@ -175,7 +179,11 @@ static int get_wrapped_width(const char *t, size_t wid)
      }
      if (!IsWPrint(wc))
        wc = '?';
@@ -195,7 +194,7 @@ index 0f4a0fc84..b0ff2f0b5 100644
    if (n > wid)
      n = m;
 diff --git a/mutt/mbyte.c b/mutt/mbyte.c
-index 2e84f4fac..0ce0ecaf2 100644
+index fae7e72c1..e76369746 100644
 --- a/mutt/mbyte.c
 +++ b/mutt/mbyte.c
 @@ -42,6 +42,422 @@

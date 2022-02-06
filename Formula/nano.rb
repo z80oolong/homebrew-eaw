@@ -81,7 +81,7 @@ end
 
 __END__
 diff --git a/configure.ac b/configure.ac
-index 7c7624a3..1dfc486a 100644
+index 64384996..9d40d1a7 100644
 --- a/configure.ac
 +++ b/configure.ac
 @@ -71,11 +71,19 @@ AM_CONDITIONAL(BUILDING_FROM_GIT, test x$from_git = xyes)
@@ -105,7 +105,7 @@ index 7c7624a3..1dfc486a 100644
  	if test "$ac_cv_path_MSGFMT" = ":"; then
  		AC_MSG_ERROR([
 diff --git a/src/chars.c b/src/chars.c
-index 49b1d5ce..6f1a2382 100644
+index 2b8714c8..7294175c 100644
 --- a/src/chars.c
 +++ b/src/chars.c
 @@ -28,6 +28,408 @@
@@ -554,10 +554,10 @@ index 49b1d5ce..6f1a2382 100644
  #if defined(__OpenBSD__)
  			*column += (width < 0 || wc >= 0xF0000) ? 1 : width;
 diff --git a/src/definitions.h b/src/definitions.h
-index eed5f105..8990ff08 100644
+index 2bdc782f..20053cb8 100644
 --- a/src/definitions.h
 +++ b/src/definitions.h
-@@ -352,6 +352,12 @@ enum {
+@@ -360,6 +360,12 @@ enum {
  	LET_THEM_ZAP,
  	BREAK_LONG_LINES,
  	JUMPY_SCROLLING,
@@ -571,7 +571,7 @@ index eed5f105..8990ff08 100644
  	INDICATOR,
  	BOOKSTYLE,
 diff --git a/src/global.c b/src/global.c
-index a74edba7..6dfae2cc 100644
+index 0a32f139..729e344a 100644
 --- a/src/global.c
 +++ b/src/global.c
 @@ -92,8 +92,12 @@ int didfind = 0;
@@ -588,7 +588,7 @@ index a74edba7..6dfae2cc 100644
  int controlleft, controlright, controlup, controldown;
  int controlhome, controlend;
 diff --git a/src/nano.c b/src/nano.c
-index 9f614c6b..86c72096 100644
+index 04ecdbbf..7b0420b2 100644
 --- a/src/nano.c
 +++ b/src/nano.c
 @@ -658,6 +658,14 @@ void usage(void)
@@ -606,7 +606,7 @@ index 9f614c6b..86c72096 100644
  }
  
  /* Display the version number of this nano, a copyright notice, some contact
-@@ -1792,6 +1800,14 @@ int main(int argc, char **argv)
+@@ -1773,6 +1781,14 @@ int main(int argc, char **argv)
  #ifdef HAVE_LIBMAGIC
  		{"magic", 0, NULL, '!'},
  #endif
@@ -621,7 +621,7 @@ index 9f614c6b..86c72096 100644
  		{NULL, 0, NULL, 0}
  	};
  
-@@ -1820,7 +1836,16 @@ int main(int argc, char **argv)
+@@ -1801,7 +1817,16 @@ int main(int argc, char **argv)
  #endif
  
  #ifdef ENABLE_NLS
@@ -638,7 +638,7 @@ index 9f614c6b..86c72096 100644
  	textdomain(PACKAGE);
  #endif
  
-@@ -1831,8 +1856,18 @@ int main(int argc, char **argv)
+@@ -1812,8 +1837,18 @@ int main(int argc, char **argv)
  	if (*(tail(argv[0])) == 'r')
  		SET(RESTRICTED);
  
@@ -657,7 +657,7 @@ index 9f614c6b..86c72096 100644
  		switch (optchr) {
  #ifndef NANO_TINY
  			case 'A':
-@@ -2067,6 +2102,19 @@ int main(int argc, char **argv)
+@@ -2048,6 +2083,19 @@ int main(int argc, char **argv)
  #endif
  			case 'z':
  				break;
@@ -677,7 +677,7 @@ index 9f614c6b..86c72096 100644
  #ifndef NANO_TINY
  			case '%':
  				SET(STATEFLAGS);
-@@ -2093,6 +2141,21 @@ int main(int argc, char **argv)
+@@ -2074,6 +2122,21 @@ int main(int argc, char **argv)
  	if (getenv("TERM") == NULL)
  		setenv("TERM", "vt220", 0);
  
@@ -700,7 +700,7 @@ index 9f614c6b..86c72096 100644
  	if (initscr() == NULL)
  		exit(1);
 diff --git a/src/prototypes.h b/src/prototypes.h
-index c6fb9333..8d73a11b 100644
+index cf79680e..d50b1ee8 100644
 --- a/src/prototypes.h
 +++ b/src/prototypes.h
 @@ -61,7 +61,11 @@ extern int didfind;
@@ -716,7 +716,7 @@ index c6fb9333..8d73a11b 100644
  extern int controlleft, controlright;
  extern int controlup, controldown;
 diff --git a/src/rcfile.c b/src/rcfile.c
-index 52351d09..24508b07 100644
+index 049a2886..61390c59 100644
 --- a/src/rcfile.c
 +++ b/src/rcfile.c
 @@ -137,6 +137,14 @@ static const rcoption rcopts[] = {
@@ -735,7 +735,7 @@ index 52351d09..24508b07 100644
  	{NULL, 0}
  };
 diff --git a/src/winio.c b/src/winio.c
-index 22eb2afd..492aa7b1 100644
+index f910b38f..29782f10 100644
 --- a/src/winio.c
 +++ b/src/winio.c
 @@ -29,6 +29,9 @@
@@ -748,7 +748,7 @@ index 22eb2afd..492aa7b1 100644
  #endif
  
  #ifdef REVISION
-@@ -1862,7 +1865,11 @@ char *display_string(const char *text, size_t column, size_t span,
+@@ -1855,7 +1858,11 @@ char *display_string(const char *text, size_t column, size_t span,
  		}
  
  		/* Determine whether the character takes zero, one, or two columns. */

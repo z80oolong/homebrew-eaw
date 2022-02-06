@@ -115,7 +115,6 @@ class Mutt < Formula
 end
 
 __END__
-warning: refname 'upstream' is ambiguous.
 diff --git a/curs_lib.c b/curs_lib.c
 index c1ae937e..56f4190b 100644
 --- a/curs_lib.c
@@ -181,7 +180,7 @@ index c1ae937e..56f4190b 100644
    return w;
  }
 diff --git a/enter.c b/enter.c
-index ad3a4e11..b0f06e97 100644
+index 1daa10b2..795fed72 100644
 --- a/enter.c
 +++ b/enter.c
 @@ -27,6 +27,9 @@
@@ -259,10 +258,10 @@ index 29dda797..0734d23a 100644
    if (n > wid)
      n = m;
 diff --git a/init.h b/init.h
-index bfd93e38..df1dc409 100644
+index fa1e3b7d..d98e0201 100644
 --- a/init.h
 +++ b/init.h
-@@ -4841,6 +4841,12 @@ struct option_t MuttVars[] = {
+@@ -4892,6 +4892,12 @@ struct option_t MuttVars[] = {
    {"xterm_set_titles",	DT_SYN,  R_NONE, {.p="ts_enabled"}, {.p=0} },
    /*
    */
@@ -317,10 +316,10 @@ index 9c58c9ec..b3dd79a8 100644
  
  # ifndef HAVE_WC_FUNCS
 diff --git a/mutt.h b/mutt.h
-index 4aa92e85..64f0e1ee 100644
+index cdeafb6c..a3eff9b2 100644
 --- a/mutt.h
 +++ b/mutt.h
-@@ -614,6 +614,12 @@ enum
+@@ -616,6 +616,12 @@ enum
    OPTPGPSHOWUNUSABLE,
    OPTPGPAUTOINLINE,
    OPTPGPREPLYINLINE,
@@ -350,10 +349,10 @@ index e9255cc7..16221c71 100644
  	break;
        col += t;
 diff --git a/sendlib.c b/sendlib.c
-index d520af65..48c8befa 100644
+index f9df2680..d83ed19d 100644
 --- a/sendlib.c
 +++ b/sendlib.c
-@@ -1888,7 +1888,11 @@ static int my_width (const char *str, int col, int flags)
+@@ -1891,7 +1891,11 @@ static int my_width (const char *str, int col, int flags)
    {
      if (mbtowc (&wc, p, MB_CUR_MAX) >= 0)
      {
