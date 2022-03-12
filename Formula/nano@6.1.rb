@@ -1,32 +1,8 @@
-class Nano < Formula
+class NanoAT61 < Formula
   desc "Free (GNU) replacement for the Pico text editor"
   homepage "https://www.nano-editor.org/"
-
-  stable do
-    url "https://www.nano-editor.org/dist/v6/nano-6.2.tar.xz"
-    sha256 "2bca1804bead6aaf4ad791f756e4749bb55ed860eec105a97fba864bc6a77cb3"
-
-    def pick_diff(formula_path)
-      lines = formula_path.each_line.to_a.inject([]) do |result, line|
-        result.push(line) if ((/^__END__/ === line) || result.first)
-        result
-      end
-      lines.shift
-      return lines.join("")
-    end
-
-    patch :p1, pick_diff(Formula["z80oolong/eaw/nano@6.2"].path)
-  end
-
-  head do
-    url "https://git.savannah.gnu.org/git/nano.git"
-
-    patch :p1, :DATA
-
-    depends_on "automake" => :build
-    depends_on "autoconf" => :build
-    depends_on "texinfo"  => :build
-  end
+  url "https://www.nano-editor.org/dist/v6/nano-6.1.tar.xz"
+  sha256 "3d57ec893fbfded12665b7f0d563d74431fc43abeaccacedea23b66af704db40"
 
   depends_on "pkg-config" => :build
   depends_on "gettext"
@@ -38,12 +14,14 @@ class Nano < Formula
 
   depends_on "libmagic" unless OS.mac?
 
-  def install
-    ENV.append "CFLAGS",     "-I#{Formula["z80oolong/eaw/ncurses-eaw@6.2"].opt_include}"
-    ENV.append "CPPFLAGS",   "-I#{Formula["z80oolong/eaw/ncurses-eaw@6.2"].opt_include}"
-    ENV.append "LDFLAGS",    "-L#{Formula["z80oolong/eaw/ncurses-eaw@6.2"].opt_lib}"
+  keg_only :versioned_formula
 
-    system "sh", "autogen.sh" if build.head?
+  patch :p1, :DATA
+
+  def install
+    ENV.append "CFLAGS",   "-I#{Formula["z80oolong/eaw/ncurses-eaw@6.2"].opt_include}"
+    ENV.append "CPPFLAGS", "-I#{Formula["z80oolong/eaw/ncurses-eaw@6.2"].opt_include}"
+    ENV.append "LDFLAGS",  "-L#{Formula["z80oolong/eaw/ncurses-eaw@6.2"].opt_lib}"
 
     system "./configure", "--disable-debug",
                           "--disable-dependency-tracking",
@@ -80,35 +58,11 @@ class Nano < Formula
 end
 
 __END__
-diff --git a/configure.ac b/configure.ac
-index 23fee876..56d388de 100644
---- a/configure.ac
-+++ b/configure.ac
-@@ -72,11 +72,19 @@ AM_CONDITIONAL(BUILDING_FROM_GIT, test x$from_git = xyes)
- dnl Checks for pkg-config and gettext when building from git.
- 
- if test x$from_git = xyes; then
-+	if true; then
-+	if test ! -f HOMEBREW_PREFIX/share/aclocal/pkg.m4; then
-+		AC_MSG_ERROR([
-+  *** The pkg.m4 macros are missing. ***
-+  *** The pkg-config package needs to be installed when building from git. ***])
-+	fi
-+	else
- 	if test ! -f $(aclocal --print-ac-dir)/pkg.m4; then
- 		AC_MSG_ERROR([
-   *** The pkg.m4 macros are missing.
-   *** The pkg-config package needs to be installed when building from git.
-   *** After fixing this problem, rerun ./autogen.sh.])
-+	fi
- 	fi
- 	if test "$ac_cv_path_MSGFMT" = ":"; then
- 		AC_MSG_ERROR([
 diff --git a/src/chars.c b/src/chars.c
-index 2b8714c8..7294175c 100644
+index 2b8714c..0a035aa 100644
 --- a/src/chars.c
 +++ b/src/chars.c
-@@ -28,6 +28,408 @@
+@@ -28,6 +28,405 @@
  #include <wchar.h>
  #include <wctype.h>
  
@@ -201,7 +155,6 @@ index 2b8714c8..7294175c 100644
 +
 +  return 0;
 +}
-+
 +
 +/* The following two functions define the column width of an ISO 10646
 + * character as follows:
@@ -319,7 +272,6 @@ index 2b8714c8..7294175c 100644
 +      (ucs >= 0x30000 && ucs <= 0x3fffd)));
 +}
 +
-+
 +int mk_wcswidth(const wchar_t *pwcs, size_t n)
 +{
 +  int w, width = 0;
@@ -332,7 +284,6 @@ index 2b8714c8..7294175c 100644
 +
 +  return width;
 +}
-+
 +
 +/*
 + * The following functions are the same as mk_wcwidth() and
@@ -517,10 +468,11 @@ index 2b8714c8..7294175c 100644
  static bool use_utf8 = FALSE;
  		/* Whether we've enabled UTF-8 support. */
  
-@@ -235,7 +637,11 @@ bool is_doublewidth(const char *ch)
+@@ -234,8 +633,11 @@ bool is_doublewidth(const char *ch)
+ 
  	if (mbtowide(&wc, ch) < 0)
  		return FALSE;
- 
+-
 +#ifndef NO_USE_UTF8CJK
 +	return (nano_wcwidth(wc) == 2);
 +#else
@@ -529,7 +481,7 @@ index 2b8714c8..7294175c 100644
  }
  
  /* Return TRUE when the given character occupies zero cells. */
-@@ -256,7 +662,11 @@ bool is_zerowidth(const char *ch)
+@@ -256,7 +658,11 @@ bool is_zerowidth(const char *ch)
  		return FALSE;
  #endif
  
@@ -541,7 +493,7 @@ index 2b8714c8..7294175c 100644
  }
  #endif /* ENABLE_UTF8 */
  
-@@ -341,7 +751,11 @@ int advance_over(const char *string, size_t *column)
+@@ -341,7 +747,11 @@ int advance_over(const char *string, size_t *column)
  				return 1;
  			}
  
@@ -554,7 +506,7 @@ index 2b8714c8..7294175c 100644
  #if defined(__OpenBSD__)
  			*column += (width < 0 || wc >= 0xF0000) ? 1 : width;
 diff --git a/src/definitions.h b/src/definitions.h
-index 2bdc782f..20053cb8 100644
+index 2bdc782..20053cb 100644
 --- a/src/definitions.h
 +++ b/src/definitions.h
 @@ -360,6 +360,12 @@ enum {
@@ -571,7 +523,7 @@ index 2bdc782f..20053cb8 100644
  	INDICATOR,
  	BOOKSTYLE,
 diff --git a/src/global.c b/src/global.c
-index 4bb7535c..0a9690d9 100644
+index 0a32f13..729e344 100644
 --- a/src/global.c
 +++ b/src/global.c
 @@ -92,8 +92,12 @@ int didfind = 0;
@@ -588,7 +540,7 @@ index 4bb7535c..0a9690d9 100644
  int controlleft, controlright, controlup, controldown;
  int controlhome, controlend;
 diff --git a/src/nano.c b/src/nano.c
-index 5d39b2c3..9204a2bf 100644
+index 04ecdbb..87adac1 100644
 --- a/src/nano.c
 +++ b/src/nano.c
 @@ -658,6 +658,14 @@ void usage(void)
@@ -602,11 +554,11 @@ index 5d39b2c3..9204a2bf 100644
 +	print_opt("-4", "--utf8emoji", N_("Set width of UTF-8 Emoji Character to 2."));
 +#endif /* NO_USE_UTF8CJK_EMOJI */
 +#endif /* NO_USE_UTF8CJK */ 
-+#endif /* ENABLE_UTF8 */
++#endif
  }
  
  /* Display the version number of this nano, a copyright notice, some contact
-@@ -1776,6 +1784,14 @@ int main(int argc, char **argv)
+@@ -1773,6 +1781,14 @@ int main(int argc, char **argv)
  #ifdef HAVE_LIBMAGIC
  		{"magic", 0, NULL, '!'},
  #endif
@@ -621,7 +573,7 @@ index 5d39b2c3..9204a2bf 100644
  		{NULL, 0, NULL, 0}
  	};
  
-@@ -1806,7 +1822,16 @@ int main(int argc, char **argv)
+@@ -1801,7 +1817,16 @@ int main(int argc, char **argv)
  #endif
  
  #ifdef ENABLE_NLS
@@ -638,7 +590,7 @@ index 5d39b2c3..9204a2bf 100644
  	textdomain(PACKAGE);
  #endif
  
-@@ -1817,8 +1842,18 @@ int main(int argc, char **argv)
+@@ -1812,8 +1837,18 @@ int main(int argc, char **argv)
  	if (*(tail(argv[0])) == 'r')
  		SET(RESTRICTED);
  
@@ -657,7 +609,7 @@ index 5d39b2c3..9204a2bf 100644
  		switch (optchr) {
  #ifndef NANO_TINY
  			case 'A':
-@@ -2053,6 +2088,19 @@ int main(int argc, char **argv)
+@@ -2048,6 +2083,19 @@ int main(int argc, char **argv)
  #endif
  			case 'z':
  				break;
@@ -677,9 +629,9 @@ index 5d39b2c3..9204a2bf 100644
  #ifndef NANO_TINY
  			case '%':
  				SET(STATEFLAGS);
-@@ -2079,6 +2127,21 @@ int main(int argc, char **argv)
+@@ -2074,6 +2122,21 @@ int main(int argc, char **argv)
  	if (getenv("TERM") == NULL)
- 		putenv("TERM=vt220");
+ 		setenv("TERM", "vt220", 0);
  
 +#ifdef ENABLE_UTF8
 +#ifndef NO_USE_UTF8CJK
@@ -700,7 +652,7 @@ index 5d39b2c3..9204a2bf 100644
  	if (initscr() == NULL)
  		exit(1);
 diff --git a/src/prototypes.h b/src/prototypes.h
-index c43981af..d5d1039b 100644
+index cf79680..d50b1ee 100644
 --- a/src/prototypes.h
 +++ b/src/prototypes.h
 @@ -61,7 +61,11 @@ extern int didfind;
@@ -716,7 +668,7 @@ index c43981af..d5d1039b 100644
  extern int controlleft, controlright;
  extern int controlup, controldown;
 diff --git a/src/rcfile.c b/src/rcfile.c
-index 049a2886..61390c59 100644
+index 049a288..61390c5 100644
 --- a/src/rcfile.c
 +++ b/src/rcfile.c
 @@ -137,6 +137,14 @@ static const rcoption rcopts[] = {
@@ -735,7 +687,7 @@ index 049a2886..61390c59 100644
  	{NULL, 0}
  };
 diff --git a/src/winio.c b/src/winio.c
-index 9497b10d..1d000c1b 100644
+index f910b38..29782f1 100644
 --- a/src/winio.c
 +++ b/src/winio.c
 @@ -29,6 +29,9 @@

@@ -1,8 +1,8 @@
 class Mutt < Formula
   desc "Mongrel of mail user agents (part elm, pine, mush, mh, etc.)"
   homepage "http://www.mutt.org/"
-  url "https://bitbucket.org/mutt/mutt/downloads/mutt-2.1.5.tar.gz"
-  sha256 "92a309e47e363a97d62425bcb71adceae5ab5c4c413dbcac37fa98ed70c12be0"
+  url "https://bitbucket.org/mutt/mutt/downloads/mutt-2.2.1.tar.gz"
+  sha256 "b76d30d42b6c90aa9abf9f330e41800934eedf7b858a32c120ee3ae63587abb5"
   license "GPL-2.0-or-later"
 
   stable do
@@ -15,7 +15,7 @@ class Mutt < Formula
       return lines.join("")
     end
 
-    patch :p1, pick_diff(Formula["z80oolong/eaw/mutt@2.1.5"].path)
+    patch :p1, pick_diff(Formula["z80oolong/eaw/mutt@2.2.1"].path)
   end
 
   head do
@@ -116,7 +116,7 @@ end
 
 __END__
 diff --git a/curs_lib.c b/curs_lib.c
-index c1ae937e..56f4190b 100644
+index 38f58870..0cafb619 100644
 --- a/curs_lib.c
 +++ b/curs_lib.c
 @@ -1384,7 +1384,11 @@ void mutt_format_string (char *dest, size_t destlen,
@@ -180,7 +180,7 @@ index c1ae937e..56f4190b 100644
    return w;
  }
 diff --git a/enter.c b/enter.c
-index 1daa10b2..795fed72 100644
+index f09dd265..294ef43d 100644
 --- a/enter.c
 +++ b/enter.c
 @@ -27,6 +27,9 @@
