@@ -42,6 +42,15 @@ class RxvtUnicodeAT926 < Formula
     system "make", "install"
   end
 
+  def diff_data
+    lines = self.path.each_line.inject([]) do |result, line|
+      result.push(line) if ((/^__END__/ === line) || result.first)
+      result
+    end
+    lines.shift
+    return lines.join("")
+  end
+
   test do
     daemon = fork do
       system bin/"urxvtd"

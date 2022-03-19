@@ -1,6 +1,7 @@
 class NeomuttAT20200626 < Formula
   desc "E-mail reader with support for Notmuch, NNTP and much more"
   homepage "https://neomutt.org/"
+  license "GPL-2.0-or-later"
   url "https://github.com/neomutt/neomutt/archive/20200626.tar.gz"
   sha256 "94b2e59667a080cb9d531050c3ad320f9951ba7ba09eb7eda15427899627f89e"
   revision 2
@@ -16,7 +17,7 @@ class NeomuttAT20200626 < Formula
   depends_on "z80oolong/eaw/ncurses-eaw@6.2"
   unless OS.mac?
     depends_on "krb5"
-    depends_on "libsasl2"
+    depends_on "cyrus-sasl"
     depends_on "patchelf" => :build
   end
 
@@ -46,12 +47,12 @@ class NeomuttAT20200626 < Formula
                           "--with-lua=#{Formula["lua@5.3"].prefix}"
     system "make", "install"
 
-    if OS.linux? then
-      fix_rpath "#{bin}/neomutt", ["z80oolong/eaw/ncurses-eaw@6.2"], ["ncurses"]
-    end
+    fix_rpath "#{bin}/neomutt", ["z80oolong/eaw/ncurses-eaw@6.2"], ["ncurses"]
   end
 
   def fix_rpath(binname, append_list, delete_list)
+    return unless OS.linux?
+
     delete_list_hash = {}
     rpath = %x{#{Formula["patchelf"].opt_bin}/patchelf --print-rpath #{binname}}.chomp.split(":")
 
@@ -60,6 +61,15 @@ class NeomuttAT20200626 < Formula
     append_list.each {|name| rpath.unshift("#{Formula[name].opt_lib}")}
 
     system "#{Formula["patchelf"].opt_bin}/patchelf", "--set-rpath", "#{rpath.join(":")}", "#{binname}"
+  end
+
+  def diff_data
+    lines = self.path.each_line.inject([]) do |result, line|
+      result.push(line) if ((/^__END__/ === line) || result.first)
+      result
+    end
+    lines.shift
+    return lines.join("")
   end
 
   test do

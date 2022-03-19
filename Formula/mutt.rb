@@ -1,21 +1,12 @@
 class Mutt < Formula
   desc "Mongrel of mail user agents (part elm, pine, mush, mh, etc.)"
   homepage "http://www.mutt.org/"
-  url "https://bitbucket.org/mutt/mutt/downloads/mutt-2.2.1.tar.gz"
-  sha256 "b76d30d42b6c90aa9abf9f330e41800934eedf7b858a32c120ee3ae63587abb5"
   license "GPL-2.0-or-later"
 
   stable do
-    def pick_diff(formula_path)
-      lines = formula_path.each_line.to_a.inject([]) do |result, line|
-        result.push(line) if ((/^__END__/ === line) || result.first)
-        result
-      end
-      lines.shift
-      return lines.join("")
-    end
-
-    patch :p1, pick_diff(Formula["z80oolong/eaw/mutt@2.2.1"].path)
+    url "https://bitbucket.org/mutt/mutt/downloads/mutt-2.2.1.tar.gz"
+    sha256 "b76d30d42b6c90aa9abf9f330e41800934eedf7b858a32c120ee3ae63587abb5"
+    patch :p1, Formula["z80oolong/eaw/mutt@2.2.1"].diff_data
   end
 
   head do
@@ -77,12 +68,12 @@ class Mutt < Formula
     system "make", "install"
     doc.install resource("html") if build.head?
 
-    if OS.linux? then
-      fix_rpath "#{bin}/mutt", ["z80oolong/eaw/ncurses-eaw@6.2"], ["ncurses"]
-    end
+    fix_rpath "#{bin}/mutt", ["z80oolong/eaw/ncurses-eaw@6.2"], ["ncurses"]
   end
 
   def fix_rpath(binname, append_list, delete_list)
+    return unless OS.linux?
+
     delete_list_hash = {}
     rpath = %x{#{Formula["patchelf"].opt_bin}/patchelf --print-rpath #{binname}}.chomp.split(":")
 
@@ -104,6 +95,15 @@ class Mutt < Formula
       Alternatively, you may configure `spoolfile` in your .muttrc to a file inside
       your home directory.
     EOS
+  end
+
+  def diff_data
+    lines = self.path.each_line.inject([]) do |result, line|
+      result.push(line) if ((/^__END__/ === line) || result.first)
+      result
+    end
+    lines.shift
+    return lines.join("")
   end
 
   test do

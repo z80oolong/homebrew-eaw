@@ -1,22 +1,14 @@
 class RxvtUnicode < Formula
   desc "Rxvt fork with Unicode support"
   homepage "http://software.schmorp.de/pkg/rxvt-unicode.html"
+  license "GPL-3.0-only"
   revision 2
 
   stable do
     url "http://dist.schmorp.de/rxvt-unicode/Attic/rxvt-unicode-9.30.tar.bz2"
     sha256 "fe1c93d12f385876457a989fc3ae05c0915d2692efc59289d0f70fabe5b44d2d"
 
-    def pick_diff(formula_path)
-      lines = formula_path.each_line.to_a.inject([]) do |result, line|
-        result.push(line) if ((/^__END__/ === line) || result.first)
-        result
-      end
-      lines.shift
-      return lines.join("")
-    end
-
-    patch :p1, pick_diff(Formula["z80oolong/eaw/rxvt-unicode@9.30"].path)
+    patch :p1, Formula["z80oolong/eaw/rxvt-unicode@9.30"].diff_data
   end
 
   head do
@@ -27,8 +19,6 @@ class RxvtUnicode < Formula
     depends_on "autoconf" => :build
     depends_on "z80oolong/eaw/libev@4.33"
   end
-
-  license "GPL-3.0-only"
 
   livecheck do
     url "http://dist.schmorp.de/rxvt-unicode/"
@@ -66,6 +56,15 @@ class RxvtUnicode < Formula
 
     system "./configure", *args
     system "make", "install"
+  end
+
+  def diff_data
+    lines = self.path.each_line.inject([]) do |result, line|
+      result.push(line) if ((/^__END__/ === line) || result.first)
+      result
+    end
+    lines.shift
+    return lines.join("")
   end
 
   test do

@@ -1,21 +1,13 @@
 class Nano < Formula
   desc "Free (GNU) replacement for the Pico text editor"
   homepage "https://www.nano-editor.org/"
+  license "GPL-3.0-or-later"
 
   stable do
     url "https://www.nano-editor.org/dist/v6/nano-6.2.tar.xz"
     sha256 "2bca1804bead6aaf4ad791f756e4749bb55ed860eec105a97fba864bc6a77cb3"
 
-    def pick_diff(formula_path)
-      lines = formula_path.each_line.to_a.inject([]) do |result, line|
-        result.push(line) if ((/^__END__/ === line) || result.first)
-        result
-      end
-      lines.shift
-      return lines.join("")
-    end
-
-    patch :p1, pick_diff(Formula["z80oolong/eaw/nano@6.2"].path)
+    patch :p1, Formula["z80oolong/eaw/nano@6.2"].diff_data
   end
 
   head do
@@ -56,14 +48,13 @@ class Nano < Formula
                           "--enable-utf8"
     system "make", "install"
 
-    if OS.linux? then
-      fix_rpath "#{bin}/nano", ["z80oolong/eaw/ncurses-eaw@6.2"], ["ncurses"]
-    end
-
+    fix_rpath "#{bin}/nano", ["z80oolong/eaw/ncurses-eaw@6.2"], ["ncurses"]
     doc.install "doc/sample.nanorc"
   end
 
   def fix_rpath(binname, append_list, delete_list)
+    return unless OS.linux?
+
     delete_list_hash = {}
     rpath = %x{#{Formula["patchelf"].opt_bin}/patchelf --print-rpath #{binname}}.chomp.split(":")
 
@@ -72,6 +63,15 @@ class Nano < Formula
     append_list.each {|name| rpath.unshift("#{Formula[name].opt_lib}")}
 
     system "#{Formula["patchelf"].opt_bin}/patchelf", "--set-rpath", "#{rpath.join(":")}", "#{binname}"
+  end
+
+  def diff_data
+    lines = self.path.each_line.inject([]) do |result, line|
+      result.push(line) if ((/^__END__/ === line) || result.first)
+      result
+    end
+    lines.shift
+    return lines.join("")
   end
 
   test do

@@ -1,9 +1,9 @@
 class RxvtUnicodeAT922 < Formula
   desc "Rxvt fork with Unicode support"
   homepage "http://software.schmorp.de/pkg/rxvt-unicode.html"
+  license "GPL-3.0-only"
   url "http://dist.schmorp.de/rxvt-unicode/Attic/rxvt-unicode-9.22.tar.bz2"
   sha256 "e94628e9bcfa0adb1115d83649f898d6edb4baced44f5d5b769c2eeb8b95addd"
-  license "GPL-3.0-only"
   revision 2
 
   keg_only :versioned_formula
@@ -43,6 +43,15 @@ class RxvtUnicodeAT922 < Formula
 
     system "./configure", *args
     system "make", "install"
+  end
+
+  def diff_data
+    lines = self.path.each_line.inject([]) do |result, line|
+      result.push(line) if ((/^__END__/ === line) || result.first)
+      result
+    end
+    lines.shift
+    return lines.join("")
   end
 
   test do

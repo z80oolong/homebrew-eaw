@@ -1,9 +1,9 @@
 class MuttAT220 < Formula
   desc "Mongrel of mail user agents (part elm, pine, mush, mh, etc.)"
   homepage "http://www.mutt.org/"
+  license "GPL-2.0-or-later"
   url "https://bitbucket.org/mutt/mutt/downloads/mutt-2.2.0.tar.gz"
   sha256 "e84597f06d03ca82f8ca3b5ec8bc294c150709b43ed2a0177bf479c3e3345314"
-  license "GPL-2.0-or-later"
 
   keg_only :versioned_formula
 
@@ -57,12 +57,12 @@ class MuttAT220 < Formula
     system "make", "install"
     doc.install resource("html") if build.head?
 
-    if OS.linux? then
-      fix_rpath "#{bin}/mutt", ["z80oolong/eaw/ncurses-eaw@6.2"], ["ncurses"]
-    end
+    fix_rpath "#{bin}/mutt", ["z80oolong/eaw/ncurses-eaw@6.2"], ["ncurses"]
   end
 
   def fix_rpath(binname, append_list, delete_list)
+    return unless OS.linux?
+
     delete_list_hash = {}
     rpath = %x{#{Formula["patchelf"].opt_bin}/patchelf --print-rpath #{binname}}.chomp.split(":")
 
@@ -84,6 +84,15 @@ class MuttAT220 < Formula
       Alternatively, you may configure `spoolfile` in your .muttrc to a file inside
       your home directory.
     EOS
+  end
+
+  def diff_data
+    lines = self.path.each_line.inject([]) do |result, line|
+      result.push(line) if ((/^__END__/ === line) || result.first)
+      result
+    end
+    lines.shift
+    return lines.join("")
   end
 
   test do
