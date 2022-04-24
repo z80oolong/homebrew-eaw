@@ -4,9 +4,9 @@ class Mutt < Formula
   license "GPL-2.0-or-later"
 
   stable do
-    url "https://bitbucket.org/mutt/mutt/downloads/mutt-2.2.1.tar.gz"
-    sha256 "b76d30d42b6c90aa9abf9f330e41800934eedf7b858a32c120ee3ae63587abb5"
-    patch :p1, Formula["z80oolong/eaw/mutt@2.2.1"].diff_data
+    url "https://bitbucket.org/mutt/mutt/downloads/mutt-2.2.3.tar.gz"
+    sha256 "978addcdab454f447ed7d1de84b5767e714c30714285bf82e4a1745071d18d89"
+    patch :p1, Formula["z80oolong/eaw/mutt@2.2.3"].diff_data
   end
 
   head do
@@ -115,6 +115,7 @@ class Mutt < Formula
 end
 
 __END__
+warning: refname 'upstream' is ambiguous.
 diff --git a/curs_lib.c b/curs_lib.c
 index 38f58870..0cafb619 100644
 --- a/curs_lib.c
@@ -349,7 +350,7 @@ index e9255cc7..16221c71 100644
  	break;
        col += t;
 diff --git a/sendlib.c b/sendlib.c
-index f9df2680..d83ed19d 100644
+index 430b5d73..b7030cb3 100644
 --- a/sendlib.c
 +++ b/sendlib.c
 @@ -1891,7 +1891,11 @@ static int my_width (const char *str, int col, int flags)

@@ -78,7 +78,6 @@ class RxvtUnicode < Formula
 end
 
 __END__
-
 diff --git a/Makefile.in b/Makefile.in
 index ee97cef5..6112e8b3 100644
 --- a/Makefile.in

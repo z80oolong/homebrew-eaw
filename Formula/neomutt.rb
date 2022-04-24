@@ -5,14 +5,14 @@ class Neomutt < Formula
   revision 2
 
   stable do
-    url "https://github.com/neomutt/neomutt/archive/20211029.tar.gz"
-    sha256 "08245cfa7aec80b895771fd1adcbb7b86e9c0434dfa64574e3c8c4d692aaa078"
+    url "https://github.com/neomutt/neomutt/archive/20220415.tar.gz"
+    sha256 "84982cb4c2fed63e90d71fab45faa90738bfc58050430606135cbd8924d94682"
 
-    patch :p1, Formula["z80oolong/eaw/neomutt@20211029"].diff_data
+    patch :p1, Formula["z80oolong/eaw/neomutt@20220415"].diff_data
   end
 
   head do
-    url "https://github.com/neomutt/neomutt.git"
+    url "https://github.com/neomutt/neomutt.git", :branch => "main"
 
     patch :p1, :DATA
   end
@@ -86,8 +86,9 @@ class Neomutt < Formula
 end
 
 __END__
+warning: refname 'upstream' is ambiguous.
 diff --git a/enter/enter.c b/enter/enter.c
-index ebc60f3e7..6955ce096 100644
+index d32394128..59fbe2dfb 100644
 --- a/enter/enter.c
 +++ b/enter/enter.c
 @@ -64,7 +64,11 @@ enum EnterRedrawFlags
@@ -115,7 +116,7 @@ index ebc60f3e7..6955ce096 100644
      return mutt_addwch(win, wc);
    if (!(wc & ~0x7f))
 diff --git a/gui/curs_lib.c b/gui/curs_lib.c
-index 906123e99..2a6f8b010 100644
+index 004d1b675..f2e3f9885 100644
 --- a/gui/curs_lib.c
 +++ b/gui/curs_lib.c
 @@ -747,7 +747,11 @@ void mutt_simple_format(char *buf, size_t buflen, int min_width, int max_width,
@@ -154,7 +155,7 @@ index 906123e99..2a6f8b010 100644
      /* hack because MUTT_TREE symbols aren't turned into characters
       * until rendered by print_enriched_string() */
      if ((cw < 0) && (src[0] == MUTT_SPECIAL_INDEX))
-@@ -1005,7 +1017,11 @@ int mutt_strnwidth(const char *s, size_t n)
+@@ -1005,7 +1017,11 @@ size_t mutt_strnwidth(const char *s, size_t n)
      }
      if (!IsWPrint(wc))
        wc = '?';
@@ -167,7 +168,7 @@ index 906123e99..2a6f8b010 100644
    return w;
  }
 diff --git a/help.c b/help.c
-index 728933d0e..ca0584143 100644
+index c071e7b32..1a34df859 100644
 --- a/help.c
 +++ b/help.c
 @@ -101,7 +101,11 @@ static int print_macro(FILE *fp, int maxwidth, const char **macro)
@@ -689,10 +690,10 @@ index 49c4749d1..14dd0b283 100644
    { "escape",                    DT_DEPRECATED|DT_STRING,            IP "~", IP "2021-03-18" },
    { "ignore_linear_white_space", DT_DEPRECATED|DT_BOOL,              false,  IP "2021-03-18" },
 diff --git a/pager/display.c b/pager/display.c
-index 2e3689c67..bec42e08e 100644
+index b78aa7e28..fd29be8cb 100644
 --- a/pager/display.c
 +++ b/pager/display.c
-@@ -857,7 +857,11 @@ static int format_line(struct MuttWindow *win, struct Line **lines, int line_num
+@@ -899,7 +899,11 @@ static int format_line(struct MuttWindow *win, struct Line **lines, int line_num
        {
          space = ch;
        }
