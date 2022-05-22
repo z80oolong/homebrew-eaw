@@ -4,9 +4,9 @@ class Mutt < Formula
   license "GPL-2.0-or-later"
 
   stable do
-    url "https://bitbucket.org/mutt/mutt/downloads/mutt-2.2.3.tar.gz"
-    sha256 "978addcdab454f447ed7d1de84b5767e714c30714285bf82e4a1745071d18d89"
-    patch :p1, Formula["z80oolong/eaw/mutt@2.2.3"].diff_data
+    url "https://bitbucket.org/mutt/mutt/downloads/mutt-2.2.5.tar.gz"
+    sha256 "ff8b781159794adcca126b551d5e419174b7b38a582a159bfe4e13451a757e47"
+    patch :p1, Formula["z80oolong/eaw/mutt@2.2.5"].diff_data
   end
 
   head do
@@ -115,7 +115,6 @@ class Mutt < Formula
 end
 
 __END__
-warning: refname 'upstream' is ambiguous.
 diff --git a/curs_lib.c b/curs_lib.c
 index 38f58870..0cafb619 100644
 --- a/curs_lib.c
@@ -259,10 +258,10 @@ index 29dda797..0734d23a 100644
    if (n > wid)
      n = m;
 diff --git a/init.h b/init.h
-index fa1e3b7d..d98e0201 100644
+index e3d43851..a9648dea 100644
 --- a/init.h
 +++ b/init.h
-@@ -4892,6 +4892,12 @@ struct option_t MuttVars[] = {
+@@ -4900,6 +4900,12 @@ struct option_t MuttVars[] = {
    {"xterm_set_titles",	DT_SYN,  R_NONE, {.p="ts_enabled"}, {.p=0} },
    /*
    */
@@ -317,10 +316,10 @@ index 9c58c9ec..b3dd79a8 100644
  
  # ifndef HAVE_WC_FUNCS
 diff --git a/mutt.h b/mutt.h
-index cdeafb6c..a3eff9b2 100644
+index bb29e7a6..38b4313a 100644
 --- a/mutt.h
 +++ b/mutt.h
-@@ -616,6 +616,12 @@ enum
+@@ -621,6 +621,12 @@ enum
    OPTPGPSHOWUNUSABLE,
    OPTPGPAUTOINLINE,
    OPTPGPREPLYINLINE,

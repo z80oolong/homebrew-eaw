@@ -4,10 +4,10 @@ class Nano < Formula
   license "GPL-3.0-or-later"
 
   stable do
-    url "https://www.nano-editor.org/dist/v6/nano-6.2.tar.xz"
-    sha256 "2bca1804bead6aaf4ad791f756e4749bb55ed860eec105a97fba864bc6a77cb3"
+    url "https://www.nano-editor.org/dist/v6/nano-6.3.tar.xz"
+    sha256 "eb532da4985672730b500f685dbaab885a466d08fbbf7415832b95805e6f8687"
 
-    patch :p1, Formula["z80oolong/eaw/nano@6.2"].diff_data
+    patch :p1, Formula["z80oolong/eaw/nano@6.3"].diff_data
   end
 
   head do
@@ -81,7 +81,7 @@ end
 
 __END__
 diff --git a/configure.ac b/configure.ac
-index 23fee876..56d388de 100644
+index 7c63ed70..a69fb654 100644
 --- a/configure.ac
 +++ b/configure.ac
 @@ -72,11 +72,19 @@ AM_CONDITIONAL(BUILDING_FROM_GIT, test x$from_git = xyes)
