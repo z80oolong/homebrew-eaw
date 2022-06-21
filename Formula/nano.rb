@@ -588,7 +588,7 @@ index a3c90fe7..0075e8d8 100644
  int controlleft, controlright, controlup, controldown;
  int controlhome, controlend;
 diff --git a/src/nano.c b/src/nano.c
-index 81334784..200b3da2 100644
+index 93f32eed..105f332c 100644
 --- a/src/nano.c
 +++ b/src/nano.c
 @@ -658,6 +658,14 @@ void usage(void)
@@ -606,7 +606,7 @@ index 81334784..200b3da2 100644
  }
  
  /* Display the version number of this nano, a copyright notice, some contact
-@@ -1776,6 +1784,14 @@ int main(int argc, char **argv)
+@@ -1773,6 +1781,14 @@ int main(int argc, char **argv)
  #ifdef HAVE_LIBMAGIC
  		{"magic", 0, NULL, '!'},
  #endif
@@ -621,7 +621,7 @@ index 81334784..200b3da2 100644
  		{NULL, 0, NULL, 0}
  	};
  
-@@ -1806,7 +1822,16 @@ int main(int argc, char **argv)
+@@ -1803,7 +1819,16 @@ int main(int argc, char **argv)
  #endif
  
  #ifdef ENABLE_NLS
@@ -638,7 +638,7 @@ index 81334784..200b3da2 100644
  	textdomain(PACKAGE);
  #endif
  
-@@ -1817,8 +1842,18 @@ int main(int argc, char **argv)
+@@ -1814,8 +1839,18 @@ int main(int argc, char **argv)
  	if (*(tail(argv[0])) == 'r')
  		SET(RESTRICTED);
  
@@ -657,7 +657,7 @@ index 81334784..200b3da2 100644
  		switch (optchr) {
  #ifndef NANO_TINY
  			case 'A':
-@@ -2053,6 +2088,19 @@ int main(int argc, char **argv)
+@@ -2050,6 +2085,19 @@ int main(int argc, char **argv)
  #endif
  			case 'z':
  				break;
@@ -677,7 +677,7 @@ index 81334784..200b3da2 100644
  #ifndef NANO_TINY
  			case '%':
  				SET(STATEFLAGS);
-@@ -2079,6 +2127,21 @@ int main(int argc, char **argv)
+@@ -2076,6 +2124,21 @@ int main(int argc, char **argv)
  	if (getenv("TERM") == NULL)
  		putenv("TERM=vt220");
  
@@ -716,10 +716,10 @@ index 0708ded0..890d94d6 100644
  extern int controlleft, controlright;
  extern int controlup, controldown;
 diff --git a/src/rcfile.c b/src/rcfile.c
-index 049a2886..61390c59 100644
+index 88a71c78..eafaec99 100644
 --- a/src/rcfile.c
 +++ b/src/rcfile.c
-@@ -137,6 +137,14 @@ static const rcoption rcopts[] = {
+@@ -134,6 +134,14 @@ static const rcoption rcopts[] = {
  	{"errorcolor", 0},
  	{"keycolor", 0},
  	{"functioncolor", 0},

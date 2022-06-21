@@ -4,9 +4,9 @@ class Mutt < Formula
   license "GPL-2.0-or-later"
 
   stable do
-    url "https://bitbucket.org/mutt/mutt/downloads/mutt-2.2.5.tar.gz"
-    sha256 "ff8b781159794adcca126b551d5e419174b7b38a582a159bfe4e13451a757e47"
-    patch :p1, Formula["z80oolong/eaw/mutt@2.2.5"].diff_data
+    url "https://bitbucket.org/mutt/mutt/downloads/mutt-2.2.6.tar.gz"
+    sha256 "ffa2d93517cfc606fe01daffc5f12e42062a1c134d3b9af78484ebc5430888d3"
+    patch :p1, Formula["z80oolong/eaw/mutt@2.2.6"].diff_data
   end
 
   head do
@@ -115,6 +115,7 @@ class Mutt < Formula
 end
 
 __END__
+warning: refname 'upstream' is ambiguous.
 diff --git a/curs_lib.c b/curs_lib.c
 index 38f58870..0cafb619 100644
 --- a/curs_lib.c
@@ -275,7 +276,7 @@ index e3d43851..a9648dea 100644
    { NULL, 0, 0, {.l=0}, {.l=0} }
  };
 diff --git a/mbyte.c b/mbyte.c
-index 5aa7fc40..5c5ae9f1 100644
+index 16645feb..4442fc99 100644
 --- a/mbyte.c
 +++ b/mbyte.c
 @@ -88,6 +88,22 @@ void mutt_set_charset (char *charset)
@@ -349,21 +350,21 @@ index e9255cc7..16221c71 100644
  	break;
        col += t;
 diff --git a/sendlib.c b/sendlib.c
-index 430b5d73..b7030cb3 100644
+index d9429c2e..773eb7ea 100644
 --- a/sendlib.c
 +++ b/sendlib.c
-@@ -1891,7 +1891,11 @@ static int my_width (const char *str, int col, int flags)
-   {
-     if (mbtowc (&wc, p, MB_CUR_MAX) >= 0)
-     {
+@@ -1907,7 +1907,11 @@ static int my_width (const char *p, int col, int flags)
+       consumed = (consumed == (size_t)(-1)) ? 1 : n;
+     }
+ 
 +#ifndef NO_USE_MKWCWIDTH
-+      l = mutt_wcwidth (wc);
++    l = mutt_wcwidth (wc);
 +#else
-       l = wcwidth (wc);
+     l = wcwidth (wc);
 +#endif
-       if (l < 0)
- 	l = 1;
-       /* correctly calc tab stop, even for sending as the
+     if (l < 0)
+       l = 1;
+     /* correctly calc tab stop, even for sending as the
 diff --git a/wcwidth.c b/wcwidth.c
 index 75e1b9a8..55dd98ae 100644
 --- a/wcwidth.c
