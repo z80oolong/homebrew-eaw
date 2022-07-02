@@ -104,10 +104,10 @@ index fa4f10b4c..1367810cd 100644
  /**
   * editor_backspace - Delete the char in front of the cursor
 diff --git a/enter/wdata.h b/enter/wdata.h
-index 71598aa31..6a1158957 100644
+index 6cb541782..de63f4ad7 100644
 --- a/enter/wdata.h
 +++ b/enter/wdata.h
-@@ -42,6 +42,13 @@ enum EnterRedrawFlags
+@@ -43,6 +43,13 @@ enum EnterRedrawFlags
    ENTER_REDRAW_LINE,     ///< Redraw entire line
  };
  
