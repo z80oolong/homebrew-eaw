@@ -81,7 +81,7 @@ end
 
 __END__
 diff --git a/configure.ac b/configure.ac
-index 7c63ed70..a69fb654 100644
+index 3b37b3d8..73019e22 100644
 --- a/configure.ac
 +++ b/configure.ac
 @@ -72,11 +72,19 @@ AM_CONDITIONAL(BUILDING_FROM_GIT, test x$from_git = xyes)
@@ -554,10 +554,10 @@ index 2b8714c8..7294175c 100644
  #if defined(__OpenBSD__)
  			*column += (width < 0 || wc >= 0xF0000) ? 1 : width;
 diff --git a/src/definitions.h b/src/definitions.h
-index 5c517a3e..bf72656b 100644
+index 776fd4f7..9346cca5 100644
 --- a/src/definitions.h
 +++ b/src/definitions.h
-@@ -358,6 +358,12 @@ enum {
+@@ -365,6 +365,12 @@ enum {
  	LET_THEM_ZAP,
  	BREAK_LONG_LINES,
  	JUMPY_SCROLLING,
@@ -571,7 +571,7 @@ index 5c517a3e..bf72656b 100644
  	INDICATOR,
  	BOOKSTYLE,
 diff --git a/src/global.c b/src/global.c
-index a3c90fe7..0075e8d8 100644
+index 8af8dc8d..95e2a3b1 100644
 --- a/src/global.c
 +++ b/src/global.c
 @@ -92,8 +92,12 @@ int didfind = 0;
@@ -588,10 +588,10 @@ index a3c90fe7..0075e8d8 100644
  int controlleft, controlright, controlup, controldown;
  int controlhome, controlend;
 diff --git a/src/nano.c b/src/nano.c
-index 93f32eed..105f332c 100644
+index 0302e971..e6797aed 100644
 --- a/src/nano.c
 +++ b/src/nano.c
-@@ -658,6 +658,14 @@ void usage(void)
+@@ -654,6 +654,14 @@ void usage(void)
  #ifdef HAVE_LIBMAGIC
  	print_opt("-!", "--magic", N_("Also try magic to determine syntax"));
  #endif
@@ -603,10 +603,10 @@ index 93f32eed..105f332c 100644
 +#endif /* NO_USE_UTF8CJK_EMOJI */
 +#endif /* NO_USE_UTF8CJK */ 
 +#endif /* ENABLE_UTF8 */
- }
- 
- /* Display the version number of this nano, a copyright notice, some contact
-@@ -1773,6 +1781,14 @@ int main(int argc, char **argv)
+ #ifndef NANO_TINY
+ 	print_opt("-%", "--stateflags", N_("Show some states on the title bar"));
+ 	print_opt("-_", "--minibar", N_("Show a feedback bar at the bottom"));
+@@ -1797,6 +1805,14 @@ int main(int argc, char **argv)
  #ifdef HAVE_LIBMAGIC
  		{"magic", 0, NULL, '!'},
  #endif
@@ -621,7 +621,7 @@ index 93f32eed..105f332c 100644
  		{NULL, 0, NULL, 0}
  	};
  
-@@ -1803,7 +1819,16 @@ int main(int argc, char **argv)
+@@ -1827,7 +1843,16 @@ int main(int argc, char **argv)
  #endif
  
  #ifdef ENABLE_NLS
@@ -638,29 +638,29 @@ index 93f32eed..105f332c 100644
  	textdomain(PACKAGE);
  #endif
  
-@@ -1814,8 +1839,18 @@ int main(int argc, char **argv)
+@@ -1838,8 +1863,18 @@ int main(int argc, char **argv)
  	if (*(tail(argv[0])) == 'r')
  		SET(RESTRICTED);
  
 +#ifndef NO_USE_UTF8CJK
 +#ifndef NO_USE_UTF8CJK_EMOJI
-+	while ((optchr = getopt_long(argc, argv, "0ABC:DEFGHIJ:KLMNOPQ:RST:UVWX:Y:Z"
-+				"abcdef:ghijklmno:pqr:s:tuvwxyz84$%_!", long_options, NULL)) != -1) {
++	while ((optchr = getopt_long(argc, argv, "ABC:DEFGHIJ:KLMNOPQ:RS$T:UVWX:Y:Z"
++				"abcdef:ghijklmno:pqr:s:tuvwxy84!%_0", long_options, NULL)) != -1) {
 +#else
-+	while ((optchr = getopt_long(argc, argv, "0ABC:DEFGHIJ:KLMNOPQ:RST:UVWX:Y:Z"
-+				"abcdef:ghijklmno:pqr:s:tuvwxyz8$%_!", long_options, NULL)) != -1) {
++	while ((optchr = getopt_long(argc, argv, "ABC:DEFGHIJ:KLMNOPQ:RS$T:UVWX:Y:Z"
++				"abcdef:ghijklmno:pqr:s:tuvwxy8!%_0", long_options, NULL)) != -1) {
 +#endif /* NO_USE_UTF8CJK_EMOJI */
 +#else
- 	while ((optchr = getopt_long(argc, argv, "0ABC:DEFGHIJ:KLMNOPQ:RST:UVWX:Y:Z"
- 				"abcdef:ghijklmno:pqr:s:tuvwxyz$%_!", long_options, NULL)) != -1) {
+ 	while ((optchr = getopt_long(argc, argv, "ABC:DEFGHIJ:KLMNOPQ:RS$T:UVWX:Y:Z"
+ 				"abcdef:ghijklmno:pqr:s:tuvwxy!%_0", long_options, NULL)) != -1) {
 +#endif /* NO_USE_UTF8CJK */
  		switch (optchr) {
  #ifndef NANO_TINY
  			case 'A':
-@@ -2050,6 +2085,19 @@ int main(int argc, char **argv)
- #endif
- 			case 'z':
+@@ -2077,6 +2112,19 @@ int main(int argc, char **argv)
+ 				SET(USE_MAGIC);
  				break;
+ #endif
 +#ifdef ENABLE_UTF8
 +#ifndef NO_USE_UTF8CJK
 +			case '8':
@@ -677,7 +677,7 @@ index 93f32eed..105f332c 100644
  #ifndef NANO_TINY
  			case '%':
  				SET(STATEFLAGS);
-@@ -2076,6 +2124,21 @@ int main(int argc, char **argv)
+@@ -2098,6 +2146,21 @@ int main(int argc, char **argv)
  	if (getenv("TERM") == NULL)
  		putenv("TERM=vt220");
  
@@ -700,7 +700,7 @@ index 93f32eed..105f332c 100644
  	if (initscr() == NULL)
  		exit(1);
 diff --git a/src/prototypes.h b/src/prototypes.h
-index 0708ded0..890d94d6 100644
+index 03ae8fa6..d4cb15d8 100644
 --- a/src/prototypes.h
 +++ b/src/prototypes.h
 @@ -61,7 +61,11 @@ extern int didfind;
@@ -716,7 +716,7 @@ index 0708ded0..890d94d6 100644
  extern int controlleft, controlright;
  extern int controlup, controldown;
 diff --git a/src/rcfile.c b/src/rcfile.c
-index 88a71c78..eafaec99 100644
+index 966da5d8..a79ccdc5 100644
 --- a/src/rcfile.c
 +++ b/src/rcfile.c
 @@ -134,6 +134,14 @@ static const rcoption rcopts[] = {
@@ -735,7 +735,7 @@ index 88a71c78..eafaec99 100644
  	{NULL, 0}
  };
 diff --git a/src/winio.c b/src/winio.c
-index dee54851..e4f4367a 100644
+index 904e9915..b33bd62e 100644
 --- a/src/winio.c
 +++ b/src/winio.c
 @@ -29,6 +29,9 @@
@@ -748,7 +748,7 @@ index dee54851..e4f4367a 100644
  #endif
  
  #ifdef REVISION
-@@ -1855,7 +1858,11 @@ char *display_string(const char *text, size_t column, size_t span,
+@@ -1877,7 +1880,11 @@ char *display_string(const char *text, size_t column, size_t span,
  		}
  
  		/* Determine whether the character takes zero, one, or two columns. */
