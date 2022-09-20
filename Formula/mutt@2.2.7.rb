@@ -1,22 +1,11 @@
-class Mutt < Formula
+class MuttAT227 < Formula
   desc "Mongrel of mail user agents (part elm, pine, mush, mh, etc.)"
   homepage "http://www.mutt.org/"
   license "GPL-2.0-or-later"
+  url "https://bitbucket.org/mutt/mutt/downloads/mutt-2.2.7.tar.gz"
+  sha256 "eb13858f58bb369f477bf652d90e9b6aaddd0d610acbea3455049e5efad36df1"
 
-  stable do
-    url "https://bitbucket.org/mutt/mutt/downloads/mutt-2.2.7.tar.gz"
-    sha256 "eb13858f58bb369f477bf652d90e9b6aaddd0d610acbea3455049e5efad36df1"
-    patch :p1, Formula["z80oolong/eaw/mutt@2.2.7"].diff_data
-  end
-
-  head do
-    url "https://gitlab.com/muttmua/mutt.git"
-    patch :p1, :DATA
-
-    resource "html" do
-      url "https://muttmua.gitlab.io/mutt/manual-dev.html"
-    end
-  end
+  keg_only :versioned_formula
 
   depends_on "autoconf" => :build
   depends_on "automake" => :build
@@ -115,9 +104,8 @@ class Mutt < Formula
 end
 
 __END__
-warning: refname 'upstream' is ambiguous.
 diff --git a/curs_lib.c b/curs_lib.c
-index 38f58870..0cafb619 100644
+index 38f5887..0cafb61 100644
 --- a/curs_lib.c
 +++ b/curs_lib.c
 @@ -1384,7 +1384,11 @@ void mutt_format_string (char *dest, size_t destlen,
@@ -181,7 +169,7 @@ index 38f58870..0cafb619 100644
    return w;
  }
 diff --git a/enter.c b/enter.c
-index f09dd265..294ef43d 100644
+index f09dd26..294ef43 100644
 --- a/enter.c
 +++ b/enter.c
 @@ -27,6 +27,9 @@
@@ -231,7 +219,7 @@ index f09dd265..294ef43d 100644
      return mutt_addwch (wc);
    if (!(wc & ~0x7f))
 diff --git a/help.c b/help.c
-index 29dda797..0734d23a 100644
+index 29dda79..0734d23 100644
 --- a/help.c
 +++ b/help.c
 @@ -109,7 +109,11 @@ static int print_macro (FILE *f, int maxwidth, const char **macro)
@@ -259,7 +247,7 @@ index 29dda797..0734d23a 100644
    if (n > wid)
      n = m;
 diff --git a/init.h b/init.h
-index 08283eb1..ee33fbe8 100644
+index 08283eb..ee33fbe 100644
 --- a/init.h
 +++ b/init.h
 @@ -4907,6 +4907,12 @@ struct option_t MuttVars[] = {
@@ -276,7 +264,7 @@ index 08283eb1..ee33fbe8 100644
    { NULL, 0, 0, {.l=0}, {.l=0} }
  };
 diff --git a/mbyte.c b/mbyte.c
-index 16645feb..4442fc99 100644
+index 16645fe..4442fc9 100644
 --- a/mbyte.c
 +++ b/mbyte.c
 @@ -88,6 +88,22 @@ void mutt_set_charset (char *charset)
@@ -303,7 +291,7 @@ index 16645feb..4442fc99 100644
  
  /*
 diff --git a/mbyte.h b/mbyte.h
-index 9c58c9ec..b3dd79a8 100644
+index 9c58c9e..b3dd79a 100644
 --- a/mbyte.h
 +++ b/mbyte.h
 @@ -8,6 +8,9 @@
@@ -317,7 +305,7 @@ index 9c58c9ec..b3dd79a8 100644
  
  # ifndef HAVE_WC_FUNCS
 diff --git a/mutt.h b/mutt.h
-index bb29e7a6..38b4313a 100644
+index bb29e7a..38b4313 100644
 --- a/mutt.h
 +++ b/mutt.h
 @@ -621,6 +621,12 @@ enum
@@ -334,7 +322,7 @@ index bb29e7a6..38b4313a 100644
    /* pseudo options */
  
 diff --git a/pager.c b/pager.c
-index e9255cc7..16221c71 100644
+index e9255cc..16221c7 100644
 --- a/pager.c
 +++ b/pager.c
 @@ -1402,7 +1402,11 @@ static int format_line (struct line_t **lineInfo, int n, unsigned char *buf,
@@ -350,7 +338,7 @@ index e9255cc7..16221c71 100644
  	break;
        col += t;
 diff --git a/sendlib.c b/sendlib.c
-index d9429c2e..773eb7ea 100644
+index d9429c2..773eb7e 100644
 --- a/sendlib.c
 +++ b/sendlib.c
 @@ -1907,7 +1907,11 @@ static int my_width (const char *p, int col, int flags)
@@ -366,7 +354,7 @@ index d9429c2e..773eb7ea 100644
        l = 1;
      /* correctly calc tab stop, even for sending as the
 diff --git a/wcwidth.c b/wcwidth.c
-index 75e1b9a8..55dd98ae 100644
+index 75e1b9a..55dd98a 100644
 --- a/wcwidth.c
 +++ b/wcwidth.c
 @@ -184,3 +184,338 @@ int wcswidth(const wchar_t *pwcs, size_t n)
