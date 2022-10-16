@@ -4,10 +4,10 @@ class Nano < Formula
   license "GPL-3.0-or-later"
 
   stable do
-    url "https://www.nano-editor.org/dist/v6/nano-6.3.tar.xz"
-    sha256 "eb532da4985672730b500f685dbaab885a466d08fbbf7415832b95805e6f8687"
+    url "https://www.nano-editor.org/dist/v6/nano-6.4.tar.xz"
+    sha256 "4199ae8ca78a7796de56de1a41b821dc47912c0307e9816b56cc317df34661c0"
 
-    patch :p1, Formula["z80oolong/eaw/nano@6.3"].diff_data
+    patch :p1, Formula["z80oolong/eaw/nano@6.4"].diff_data
   end
 
   head do
@@ -588,7 +588,7 @@ index 8af8dc8d..95e2a3b1 100644
  int controlleft, controlright, controlup, controldown;
  int controlhome, controlend;
 diff --git a/src/nano.c b/src/nano.c
-index 0302e971..e6797aed 100644
+index 62aa2771..60a5639d 100644
 --- a/src/nano.c
 +++ b/src/nano.c
 @@ -654,6 +654,14 @@ void usage(void)
@@ -606,7 +606,7 @@ index 0302e971..e6797aed 100644
  #ifndef NANO_TINY
  	print_opt("-%", "--stateflags", N_("Show some states on the title bar"));
  	print_opt("-_", "--minibar", N_("Show a feedback bar at the bottom"));
-@@ -1797,6 +1805,14 @@ int main(int argc, char **argv)
+@@ -1801,6 +1809,14 @@ int main(int argc, char **argv)
  #ifdef HAVE_LIBMAGIC
  		{"magic", 0, NULL, '!'},
  #endif
@@ -621,7 +621,7 @@ index 0302e971..e6797aed 100644
  		{NULL, 0, NULL, 0}
  	};
  
-@@ -1827,7 +1843,16 @@ int main(int argc, char **argv)
+@@ -1831,7 +1847,16 @@ int main(int argc, char **argv)
  #endif
  
  #ifdef ENABLE_NLS
@@ -638,7 +638,7 @@ index 0302e971..e6797aed 100644
  	textdomain(PACKAGE);
  #endif
  
-@@ -1838,8 +1863,18 @@ int main(int argc, char **argv)
+@@ -1842,8 +1867,18 @@ int main(int argc, char **argv)
  	if (*(tail(argv[0])) == 'r')
  		SET(RESTRICTED);
  
@@ -657,7 +657,7 @@ index 0302e971..e6797aed 100644
  		switch (optchr) {
  #ifndef NANO_TINY
  			case 'A':
-@@ -2077,6 +2112,19 @@ int main(int argc, char **argv)
+@@ -2081,6 +2116,19 @@ int main(int argc, char **argv)
  				SET(USE_MAGIC);
  				break;
  #endif
@@ -677,7 +677,7 @@ index 0302e971..e6797aed 100644
  #ifndef NANO_TINY
  			case '%':
  				SET(STATEFLAGS);
-@@ -2098,6 +2146,21 @@ int main(int argc, char **argv)
+@@ -2102,6 +2150,21 @@ int main(int argc, char **argv)
  	if (getenv("TERM") == NULL)
  		putenv("TERM=vt220");
  
@@ -700,7 +700,7 @@ index 0302e971..e6797aed 100644
  	if (initscr() == NULL)
  		exit(1);
 diff --git a/src/prototypes.h b/src/prototypes.h
-index 03ae8fa6..d4cb15d8 100644
+index 530c4b9f..36759220 100644
 --- a/src/prototypes.h
 +++ b/src/prototypes.h
 @@ -61,7 +61,11 @@ extern int didfind;
@@ -735,7 +735,7 @@ index 966da5d8..a79ccdc5 100644
  	{NULL, 0}
  };
 diff --git a/src/winio.c b/src/winio.c
-index 904e9915..b33bd62e 100644
+index 644e79fd..e9c88908 100644
 --- a/src/winio.c
 +++ b/src/winio.c
 @@ -29,6 +29,9 @@
@@ -748,7 +748,7 @@ index 904e9915..b33bd62e 100644
  #endif
  
  #ifdef REVISION
-@@ -1877,7 +1880,11 @@ char *display_string(const char *text, size_t column, size_t span,
+@@ -1892,7 +1895,11 @@ char *display_string(const char *text, size_t column, size_t span,
  		}
  
  		/* Determine whether the character takes zero, one, or two columns. */
