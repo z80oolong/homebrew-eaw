@@ -86,7 +86,6 @@ class Neomutt < Formula
 end
 
 __END__
-warning: refname 'upstream' is ambiguous.
 diff --git a/enter/enter.c b/enter/enter.c
 index 22de4b491..689b93a84 100644
 --- a/enter/enter.c
