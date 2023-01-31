@@ -4,10 +4,10 @@ class Nano < Formula
   license "GPL-3.0-or-later"
 
   stable do
-    url "https://www.nano-editor.org/dist/v6/nano-6.4.tar.xz"
-    sha256 "4199ae8ca78a7796de56de1a41b821dc47912c0307e9816b56cc317df34661c0"
+    url "https://www.nano-editor.org/dist/v7/nano-7.2.tar.xz"
+    sha256 "86f3442768bd2873cec693f83cdf80b4b444ad3cc14760b74361474fc87a4526"
 
-    patch :p1, Formula["z80oolong/eaw/nano@6.4"].diff_data
+    patch :p1, Formula["z80oolong/eaw/nano@7.2"].diff_data
   end
 
   head do
@@ -81,7 +81,7 @@ end
 
 __END__
 diff --git a/configure.ac b/configure.ac
-index 3b37b3d8..73019e22 100644
+index b08dade5..2be8e733 100644
 --- a/configure.ac
 +++ b/configure.ac
 @@ -72,11 +72,19 @@ AM_CONDITIONAL(BUILDING_FROM_GIT, test x$from_git = xyes)
@@ -105,7 +105,7 @@ index 3b37b3d8..73019e22 100644
  	if test "$ac_cv_path_MSGFMT" = ":"; then
  		AC_MSG_ERROR([
 diff --git a/src/chars.c b/src/chars.c
-index 2b8714c8..7294175c 100644
+index f08b0f1d..b686bba2 100644
 --- a/src/chars.c
 +++ b/src/chars.c
 @@ -28,6 +28,408 @@
@@ -554,7 +554,7 @@ index 2b8714c8..7294175c 100644
  #if defined(__OpenBSD__)
  			*column += (width < 0 || wc >= 0xF0000) ? 1 : width;
 diff --git a/src/definitions.h b/src/definitions.h
-index 776fd4f7..9346cca5 100644
+index 288f1ff9..c52d2494 100644
 --- a/src/definitions.h
 +++ b/src/definitions.h
 @@ -365,6 +365,12 @@ enum {
@@ -571,7 +571,7 @@ index 776fd4f7..9346cca5 100644
  	INDICATOR,
  	BOOKSTYLE,
 diff --git a/src/global.c b/src/global.c
-index 8af8dc8d..95e2a3b1 100644
+index ed93fa31..4ddd6da3 100644
 --- a/src/global.c
 +++ b/src/global.c
 @@ -92,8 +92,12 @@ int didfind = 0;
@@ -588,7 +588,7 @@ index 8af8dc8d..95e2a3b1 100644
  int controlleft, controlright, controlup, controldown;
  int controlhome, controlend;
 diff --git a/src/nano.c b/src/nano.c
-index 62aa2771..60a5639d 100644
+index c6db6dd3..55cb43a3 100644
 --- a/src/nano.c
 +++ b/src/nano.c
 @@ -654,6 +654,14 @@ void usage(void)
@@ -606,7 +606,7 @@ index 62aa2771..60a5639d 100644
  #ifndef NANO_TINY
  	print_opt("-%", "--stateflags", N_("Show some states on the title bar"));
  	print_opt("-_", "--minibar", N_("Show a feedback bar at the bottom"));
-@@ -1801,6 +1809,14 @@ int main(int argc, char **argv)
+@@ -1807,6 +1815,14 @@ int main(int argc, char **argv)
  #ifdef HAVE_LIBMAGIC
  		{"magic", 0, NULL, '!'},
  #endif
@@ -621,7 +621,7 @@ index 62aa2771..60a5639d 100644
  		{NULL, 0, NULL, 0}
  	};
  
-@@ -1831,7 +1847,16 @@ int main(int argc, char **argv)
+@@ -1837,7 +1853,16 @@ int main(int argc, char **argv)
  #endif
  
  #ifdef ENABLE_NLS
@@ -638,7 +638,7 @@ index 62aa2771..60a5639d 100644
  	textdomain(PACKAGE);
  #endif
  
-@@ -1842,8 +1867,18 @@ int main(int argc, char **argv)
+@@ -1848,8 +1873,18 @@ int main(int argc, char **argv)
  	if (*(tail(argv[0])) == 'r')
  		SET(RESTRICTED);
  
@@ -657,7 +657,7 @@ index 62aa2771..60a5639d 100644
  		switch (optchr) {
  #ifndef NANO_TINY
  			case 'A':
-@@ -2081,6 +2116,19 @@ int main(int argc, char **argv)
+@@ -2087,6 +2122,19 @@ int main(int argc, char **argv)
  				SET(USE_MAGIC);
  				break;
  #endif
@@ -677,7 +677,7 @@ index 62aa2771..60a5639d 100644
  #ifndef NANO_TINY
  			case '%':
  				SET(STATEFLAGS);
-@@ -2102,6 +2150,21 @@ int main(int argc, char **argv)
+@@ -2108,6 +2156,21 @@ int main(int argc, char **argv)
  	if (getenv("TERM") == NULL)
  		putenv("TERM=vt220");
  
@@ -700,7 +700,7 @@ index 62aa2771..60a5639d 100644
  	if (initscr() == NULL)
  		exit(1);
 diff --git a/src/prototypes.h b/src/prototypes.h
-index 530c4b9f..36759220 100644
+index d2b2e1a5..e0be587a 100644
 --- a/src/prototypes.h
 +++ b/src/prototypes.h
 @@ -61,7 +61,11 @@ extern int didfind;
@@ -716,7 +716,7 @@ index 530c4b9f..36759220 100644
  extern int controlleft, controlright;
  extern int controlup, controldown;
 diff --git a/src/rcfile.c b/src/rcfile.c
-index 966da5d8..a79ccdc5 100644
+index c225a565..6709ec48 100644
 --- a/src/rcfile.c
 +++ b/src/rcfile.c
 @@ -134,6 +134,14 @@ static const rcoption rcopts[] = {
@@ -735,7 +735,7 @@ index 966da5d8..a79ccdc5 100644
  	{NULL, 0}
  };
 diff --git a/src/winio.c b/src/winio.c
-index 644e79fd..e9c88908 100644
+index fee2a84e..26de53e9 100644
 --- a/src/winio.c
 +++ b/src/winio.c
 @@ -29,6 +29,9 @@
@@ -748,7 +748,7 @@ index 644e79fd..e9c88908 100644
  #endif
  
  #ifdef REVISION
-@@ -1892,7 +1895,11 @@ char *display_string(const char *text, size_t column, size_t span,
+@@ -1893,7 +1896,11 @@ char *display_string(const char *text, size_t column, size_t span,
  		}
  
  		/* Determine whether the character takes zero, one, or two columns. */
