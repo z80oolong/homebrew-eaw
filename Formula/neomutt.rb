@@ -87,7 +87,7 @@ end
 
 __END__
 diff --git a/enter/enter.c b/enter/enter.c
-index 22de4b491..689b93a84 100644
+index 8d08dabef..a31ef30c7 100644
 --- a/enter/enter.c
 +++ b/enter/enter.c
 @@ -36,7 +36,11 @@
@@ -121,7 +121,7 @@ index 7d8388130..90cadbb6b 100644
   * struct EnterWindowData - Data to fill the Enter Window
   */
 diff --git a/gui/curs_lib.c b/gui/curs_lib.c
-index aa82e7bb3..1b2c6dfda 100644
+index 685b54d9a..ddfc22e53 100644
 --- a/gui/curs_lib.c
 +++ b/gui/curs_lib.c
 @@ -683,7 +683,11 @@ void mutt_simple_format(char *buf, size_t buflen, int min_width, int max_width,
@@ -173,7 +173,7 @@ index aa82e7bb3..1b2c6dfda 100644
    return w;
  }
 diff --git a/help.c b/help.c
-index c79a3ab85..eb0e9adeb 100644
+index ce8b93395..41e290e01 100644
 --- a/help.c
 +++ b/help.c
 @@ -101,7 +101,11 @@ static int print_macro(FILE *fp, int maxwidth, const char **macro)
@@ -674,10 +674,10 @@ index ae821d449..aa31d4f0d 100644
      return n;
    if (!(wc & ~0x7f))
 diff --git a/mutt_config.c b/mutt_config.c
-index ac282268e..dd5eb2a52 100644
+index 3de7d9218..1fbc4be93 100644
 --- a/mutt_config.c
 +++ b/mutt_config.c
-@@ -629,6 +629,16 @@ static struct ConfigDef MainVars[] = {
+@@ -596,6 +596,16 @@ static struct ConfigDef MainVars[] = {
    { "write_inc", DT_NUMBER|DT_NOT_NEGATIVE, 10, 0, NULL,
      "Update the progress bar after this many records written (0 to disable)"
    },
@@ -692,13 +692,13 @@ index ac282268e..dd5eb2a52 100644
 +#endif
 +#endif
  
-   { "escape",                    DT_DEPRECATED|DT_STRING,            IP "~", IP "2021-03-18" },
-   { "ignore_linear_white_space", DT_DEPRECATED|DT_BOOL,              false,  IP "2021-03-18" },
+   { "escape",                    DT_DEPRECATED|DT_STRING, 0, IP "2021-03-18" },
+   { "ignore_linear_white_space", DT_DEPRECATED|DT_BOOL,   0, IP "2021-03-18" },
 diff --git a/pager/display.c b/pager/display.c
-index 5023c49b2..fdd8ec1b4 100644
+index ea0998d7a..f720ed775 100644
 --- a/pager/display.c
 +++ b/pager/display.c
-@@ -905,7 +905,11 @@ static int format_line(struct MuttWindow *win, struct Line **lines, int line_num
+@@ -904,7 +904,11 @@ static int format_line(struct MuttWindow *win, struct Line **lines, int line_num
        {
          space = ch;
        }
