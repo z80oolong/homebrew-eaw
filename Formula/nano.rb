@@ -588,7 +588,7 @@ index ed93fa31..4ddd6da3 100644
  int controlleft, controlright, controlup, controldown;
  int controlhome, controlend;
 diff --git a/src/nano.c b/src/nano.c
-index c6db6dd3..55cb43a3 100644
+index 4d5e7ea6..3b299c3d 100644
 --- a/src/nano.c
 +++ b/src/nano.c
 @@ -654,6 +654,14 @@ void usage(void)
