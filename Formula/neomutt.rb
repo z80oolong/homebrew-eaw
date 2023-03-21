@@ -87,7 +87,6 @@ class Neomutt < Formula
 end
 
 __END__
-warning: refname 'upstream' is ambiguous.
 diff --git a/enter/enter.c b/enter/enter.c
 index 8d08dabef..a31ef30c7 100644
 --- a/enter/enter.c
@@ -123,10 +122,10 @@ index 7d8388130..90cadbb6b 100644
   * struct EnterWindowData - Data to fill the Enter Window
   */
 diff --git a/gui/curs_lib.c b/gui/curs_lib.c
-index 685b54d9a..ddfc22e53 100644
+index 8be3aa6a6..9a7a22a30 100644
 --- a/gui/curs_lib.c
 +++ b/gui/curs_lib.c
-@@ -683,7 +683,11 @@ void mutt_simple_format(char *buf, size_t buflen, int min_width, int max_width,
+@@ -682,7 +682,11 @@ void mutt_simple_format(char *buf, size_t buflen, int min_width, int max_width,
  #endif
            if (!IsWPrint(wc))
          wc = '?';
@@ -138,7 +137,7 @@ index 685b54d9a..ddfc22e53 100644
      }
      if (w >= 0)
      {
-@@ -831,7 +835,11 @@ void mutt_paddstr(struct MuttWindow *win, int n, const char *s)
+@@ -830,7 +834,11 @@ void mutt_paddstr(struct MuttWindow *win, int n, const char *s)
      }
      if (!IsWPrint(wc))
        wc = '?';
@@ -150,7 +149,7 @@ index 685b54d9a..ddfc22e53 100644
      if (w >= 0)
      {
        if (w > n)
-@@ -876,7 +884,11 @@ size_t mutt_wstr_trunc(const char *src, size_t maxlen, size_t maxwid, size_t *wi
+@@ -875,7 +883,11 @@ size_t mutt_wstr_trunc(const char *src, size_t maxlen, size_t maxwid, size_t *wi
        cl = (cl == (size_t) (-1)) ? 1 : n;
        wc = ReplacementChar;
      }
@@ -162,7 +161,7 @@ index 685b54d9a..ddfc22e53 100644
      /* hack because MUTT_TREE symbols aren't turned into characters
       * until rendered by print_enriched_string() */
      if ((cw < 0) && (src[0] == MUTT_SPECIAL_INDEX))
-@@ -945,7 +957,11 @@ size_t mutt_strnwidth(const char *s, size_t n)
+@@ -944,7 +956,11 @@ size_t mutt_strnwidth(const char *s, size_t n)
      }
      if (!IsWPrint(wc))
        wc = '?';
@@ -676,10 +675,10 @@ index ae821d449..aa31d4f0d 100644
      return n;
    if (!(wc & ~0x7f))
 diff --git a/mutt_config.c b/mutt_config.c
-index 3de7d9218..1fbc4be93 100644
+index 7ef8f57a0..41466efeb 100644
 --- a/mutt_config.c
 +++ b/mutt_config.c
-@@ -596,6 +596,16 @@ static struct ConfigDef MainVars[] = {
+@@ -579,6 +579,16 @@ static struct ConfigDef MainVars[] = {
    { "write_inc", DT_NUMBER|DT_NOT_NEGATIVE, 10, 0, NULL,
      "Update the progress bar after this many records written (0 to disable)"
    },

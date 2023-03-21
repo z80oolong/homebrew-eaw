@@ -554,7 +554,7 @@ index f08b0f1d..b686bba2 100644
  #if defined(__OpenBSD__)
  			*column += (width < 0 || wc >= 0xF0000) ? 1 : width;
 diff --git a/src/definitions.h b/src/definitions.h
-index 288f1ff9..c52d2494 100644
+index d6ca001d..340562d5 100644
 --- a/src/definitions.h
 +++ b/src/definitions.h
 @@ -365,6 +365,12 @@ enum {
@@ -588,7 +588,7 @@ index ed93fa31..4ddd6da3 100644
  int controlleft, controlright, controlup, controldown;
  int controlhome, controlend;
 diff --git a/src/nano.c b/src/nano.c
-index 4d5e7ea6..3b299c3d 100644
+index bd069cd3..477a9438 100644
 --- a/src/nano.c
 +++ b/src/nano.c
 @@ -654,6 +654,14 @@ void usage(void)
@@ -716,7 +716,7 @@ index d2b2e1a5..e0be587a 100644
  extern int controlleft, controlright;
  extern int controlup, controldown;
 diff --git a/src/rcfile.c b/src/rcfile.c
-index c225a565..6709ec48 100644
+index 9e09f5f4..6faee8f6 100644
 --- a/src/rcfile.c
 +++ b/src/rcfile.c
 @@ -134,6 +134,14 @@ static const rcoption rcopts[] = {
