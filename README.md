@@ -12,6 +12,7 @@
 - CLI に基づく多機能メールクライアントである [neomutt][MUTT] 
 - Unicode 対応の端末エミュレータである [rxvt-unicode][RXVT]
 - CLI に基づく多機能メールクライアントである [mutt][OMUT] 
+- GTK+3 VTE ベースの端末エミュレータである [sakura][SAKU]
 
 ## 使用法
 
@@ -60,6 +61,7 @@
 [NANO]:https://www.nano-editor.org/
 [MUTT]:https://neomutt.org/
 [RXVT]:https://github.com/exg/rxvt-unicode
+[SAKU]:https://github.com/dabisu/sakura
 [THER]:https://qiita.com/thermes
 [THBR]:https://qiita.com/thermes/items/926b478ff6e3758ecfea
 [WCWD]:http://www.cl.cam.ac.uk/~mgk25/ucs/wcwidth.c
