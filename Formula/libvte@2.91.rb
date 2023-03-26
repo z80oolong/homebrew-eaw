@@ -13,6 +13,7 @@ class LibvteAT291 < Formula
   end
 
   depends_on "gtk+3"
+  depends_on "gnutls"
   depends_on "systemd"
   depends_on "gobject-introspection"
   depends_on "meson" => :build
