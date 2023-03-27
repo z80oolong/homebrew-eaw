@@ -17,6 +17,7 @@ class Sakura < Formula
   depends_on "gtk+3"
   depends_on "z80oolong/eaw/libvte@2.91"
   depends_on "systemd"
+  depends_on "gettext" => :build
   depends_on "pod2man" => :build
   depends_on "cmake" => :build
 
