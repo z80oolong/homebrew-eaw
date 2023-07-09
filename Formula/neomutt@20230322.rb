@@ -1,21 +1,9 @@
-class Neomutt < Formula
+class NeomuttAT20230322 < Formula
   desc "E-mail reader with support for Notmuch, NNTP and much more"
   homepage "https://neomutt.org/"
   license "GPL-2.0-or-later"
-  revision 2
-
-  stable do
-    url "https://github.com/neomutt/neomutt/archive/20230517.tar.gz"
-    sha256 "4ac277b40e7ed5d67ba516338e2b26cc6810aa37564f6e9a2d45eb15b3a9213e"
-
-    patch :p1, Formula["z80oolong/eaw/neomutt@20230517"].diff_data
-  end
-
-  head do
-    url "https://github.com/neomutt/neomutt.git", :branch => "main"
-
-    patch :p1, :DATA
-  end
+  url "https://github.com/neomutt/neomutt/archive/20230322.tar.gz"
+  sha256 "47f024d4ae2d976f95b626c5fe6cad6ef22ed187426efbd7cf61435ba1790a48"
 
   depends_on "glibc"
   depends_on "gettext"
@@ -33,6 +21,10 @@ class Neomutt < Formula
     depends_on "patchelf" => :build
     depends_on "pkg-config" => :build
   end
+
+  patch :p1, :DATA
+
+  keg_only :versioned_formula
 
   def install
     ENV.append "CFLAGS",   "-I#{Formula["z80oolong/eaw/ncurses-eaw@6.2"].opt_include}"
@@ -88,9 +80,8 @@ class Neomutt < Formula
 end
 
 __END__
-warning: refname 'upstream' is ambiguous.
 diff --git a/enter/enter.c b/enter/enter.c
-index 3a0fd63e9..3bffe62ad 100644
+index 8d08dab..a31ef30 100644
 --- a/enter/enter.c
 +++ b/enter/enter.c
 @@ -36,7 +36,11 @@
@@ -105,29 +96,27 @@ index 3a0fd63e9..3bffe62ad 100644
  
  /**
   * editor_backspace - Delete the char in front of the cursor
-diff --git a/enter/wdata.h b/enter/wdata.h
-index 7d8388130..90cadbb6b 100644
---- a/enter/wdata.h
-+++ b/enter/wdata.h
-@@ -39,6 +39,13 @@ enum EnterRedrawFlags
-   ENTER_REDRAW_LINE,     ///< Redraw entire line
- };
- 
-+/* combining mark / non-spacing character */
-+#ifdef NO_USE_UTF8CJK
-+#define COMB_CHAR(wc) (IsWPrint(wc) && !wcwidth(wc))
-+#else
-+#define COMB_CHAR(wc) (IsWPrint(wc) && !mutt_mb_wcwidth(wc))
-+#endif
-+
- /**
-  * struct EnterWindowData - Data to fill the Enter Window
+diff --git a/enter/window.c b/enter/window.c
+index 1bbc865..2bb872f 100644
+--- a/enter/window.c
++++ b/enter/window.c
+@@ -72,7 +72,11 @@ static const struct Mapping EditorHelp[] = {
   */
+ static int my_addwch(struct MuttWindow *win, wchar_t wc)
+ {
++#ifdef NO_USE_UTF8CJK
+   int n = wcwidth(wc);
++#else
++  int n = mutt_mb_wcwidth(wc);
++#endif
+   if (IsWPrint(wc) && (n > 0))
+     return mutt_addwch(win, wc);
+   if (!(wc & ~0x7f))
 diff --git a/gui/curs_lib.c b/gui/curs_lib.c
-index bbe0ba3f7..b8e8f104c 100644
+index 8be3aa6..9a7a22a 100644
 --- a/gui/curs_lib.c
 +++ b/gui/curs_lib.c
-@@ -692,7 +692,11 @@ void mutt_simple_format(char *buf, size_t buflen, int min_width, int max_width,
+@@ -682,7 +682,11 @@ void mutt_simple_format(char *buf, size_t buflen, int min_width, int max_width,
  #endif
            if (!IsWPrint(wc))
          wc = '?';
@@ -139,7 +128,7 @@ index bbe0ba3f7..b8e8f104c 100644
      }
      if (w >= 0)
      {
-@@ -842,7 +846,11 @@ void mutt_paddstr(struct MuttWindow *win, int n, const char *s)
+@@ -830,7 +834,11 @@ void mutt_paddstr(struct MuttWindow *win, int n, const char *s)
      }
      if (!IsWPrint(wc))
        wc = '?';
@@ -151,8 +140,8 @@ index bbe0ba3f7..b8e8f104c 100644
      if (w >= 0)
      {
        if (w > n)
-@@ -887,7 +895,11 @@ size_t mutt_wstr_trunc(const char *src, size_t maxlen, size_t maxwid, size_t *wi
-       cl = (cl == ICONV_ILLEGAL_SEQ) ? 1 : n;
+@@ -875,7 +883,11 @@ size_t mutt_wstr_trunc(const char *src, size_t maxlen, size_t maxwid, size_t *wi
+       cl = (cl == (size_t) (-1)) ? 1 : n;
        wc = ReplacementChar;
      }
 +#ifdef NO_USE_UTF8CJK
@@ -163,7 +152,7 @@ index bbe0ba3f7..b8e8f104c 100644
      /* hack because MUTT_TREE symbols aren't turned into characters
       * until rendered by print_enriched_string() */
      if ((cw < 0) && (src[0] == MUTT_SPECIAL_INDEX))
-@@ -960,7 +972,11 @@ size_t mutt_strnwidth(const char *s, size_t n)
+@@ -944,7 +956,11 @@ size_t mutt_strnwidth(const char *s, size_t n)
      }
      if (!IsWPrint(wc))
        wc = '?';
@@ -176,10 +165,10 @@ index bbe0ba3f7..b8e8f104c 100644
    return w;
  }
 diff --git a/help.c b/help.c
-index db5f84b0e..c7f3c305b 100644
+index ce8b933..41e290e 100644
 --- a/help.c
 +++ b/help.c
-@@ -100,7 +100,11 @@ static int print_macro(FILE *fp, int maxwidth, const char **macro)
+@@ -101,7 +101,11 @@ static int print_macro(FILE *fp, int maxwidth, const char **macro)
        wc = ReplacementChar;
      }
      /* glibc-2.1.3's wcwidth() returns 1 for unprintable chars! */
@@ -191,7 +180,7 @@ index db5f84b0e..c7f3c305b 100644
      if (IsWPrint(wc) && (w >= 0))
      {
        if (w > n)
-@@ -174,7 +178,11 @@ static int get_wrapped_width(const char *t, size_t wid)
+@@ -175,7 +179,11 @@ static int get_wrapped_width(const char *t, size_t wid)
      }
      if (!IsWPrint(wc))
        wc = '?';
@@ -204,10 +193,10 @@ index db5f84b0e..c7f3c305b 100644
    if (n > wid)
      n = m;
 diff --git a/mutt/mbyte.c b/mutt/mbyte.c
-index 31f349399..2089f8835 100644
+index ae821d4..220d05f 100644
 --- a/mutt/mbyte.c
 +++ b/mutt/mbyte.c
-@@ -42,6 +42,430 @@
+@@ -42,6 +42,423 @@
  
  bool OptLocales; ///< (pseudo) set if user has valid locale definition
  
@@ -600,14 +589,6 @@ index 31f349399..2089f8835 100644
 +
 +static int mutt_wcwidth_cjk(wchar_t ucs)
 +{
-+  if (!(NeoMutt->sub)) {
-+#ifndef NO_USE_UTF8CJK_EMOJI
-+    return mk_wcwidth_cjk_emoji(ucs);
-+#else
-+    return mk_wcwidth_cjk(ucs);
-+#endif
-+  }
-+
 +  if (cs_subset_bool(NeoMutt->sub, "utf8_cjk"))
 +  {
 +#ifndef NO_USE_UTF8CJK_EMOJI
@@ -620,6 +601,7 @@ index 31f349399..2089f8835 100644
 +
 +  return mk_wcwidth(ucs);
 +}
++
 +
 +static int mutt_wcswidth_cjk(const wchar_t *pwcs, size_t n)
 +{
@@ -638,7 +620,7 @@ index 31f349399..2089f8835 100644
  /**
   * mutt_mb_charlen - Count the bytes in a (multibyte) character
   * @param[in]  s     String to be examined
-@@ -63,7 +487,11 @@ int mutt_mb_charlen(const char *s, int *width)
+@@ -63,7 +480,12 @@ int mutt_mb_charlen(const char *s, int *width)
    n = mutt_str_len(s);
    k = mbrtowc(&wc, s, n, &mbstate);
    if (width)
@@ -647,10 +629,11 @@ index 31f349399..2089f8835 100644
 +#else
 +    *width = mutt_wcwidth_cjk(wc);
 +#endif
-   return ((k == ICONV_ILLEGAL_SEQ) || (k == ICONV_BUF_TOO_SMALL)) ? -1 : k;
++
+   return ((k == (size_t) (-1)) || (k == (size_t) (-2))) ? -1 : k;
  }
  
-@@ -144,7 +572,12 @@ int mutt_mb_width(const char *str, int col, bool display)
+@@ -144,7 +566,12 @@ int mutt_mb_width(const char *str, int col, bool display)
    {
      if (mbtowc(&wc, p, MB_CUR_MAX) >= 0)
      {
@@ -663,7 +646,7 @@ index 31f349399..2089f8835 100644
        if (l < 0)
          l = 1;
        /* correctly calc tab stop, even for sending as the
-@@ -177,7 +610,11 @@ int mutt_mb_width(const char *str, int col, bool display)
+@@ -175,7 +602,11 @@ int mutt_mb_width(const char *str, int col, bool display)
   */
  int mutt_mb_wcwidth(wchar_t wc)
  {
@@ -676,10 +659,10 @@ index 31f349399..2089f8835 100644
      return n;
    if (!(wc & ~0x7f))
 diff --git a/mutt_config.c b/mutt_config.c
-index 13f11c82d..f80f62263 100644
+index 7ef8f57..41466ef 100644
 --- a/mutt_config.c
 +++ b/mutt_config.c
-@@ -578,6 +578,16 @@ static struct ConfigDef MainVars[] = {
+@@ -579,6 +579,16 @@ static struct ConfigDef MainVars[] = {
    { "write_inc", DT_NUMBER|DT_NOT_NEGATIVE, 10, 0, NULL,
      "Update the progress bar after this many records written (0 to disable)"
    },
@@ -697,10 +680,10 @@ index 13f11c82d..f80f62263 100644
    { "escape",                    DT_DEPRECATED|DT_STRING, 0, IP "2021-03-18" },
    { "ignore_linear_white_space", DT_DEPRECATED|DT_BOOL,   0, IP "2021-03-18" },
 diff --git a/pager/display.c b/pager/display.c
-index ad6281904..7be3035d6 100644
+index ea0998d..f720ed7 100644
 --- a/pager/display.c
 +++ b/pager/display.c
-@@ -928,7 +928,11 @@ static int format_line(struct MuttWindow *win, struct Line **lines, int line_num
+@@ -904,7 +904,11 @@ static int format_line(struct MuttWindow *win, struct Line **lines, int line_num
        {
          space = ch;
        }
