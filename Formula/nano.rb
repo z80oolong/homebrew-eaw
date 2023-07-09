@@ -554,7 +554,7 @@ index f08b0f1d..b686bba2 100644
  #if defined(__OpenBSD__)
  			*column += (width < 0 || wc >= 0xF0000) ? 1 : width;
 diff --git a/src/definitions.h b/src/definitions.h
-index d6ca001d..340562d5 100644
+index 7f0c4918..d2c60602 100644
 --- a/src/definitions.h
 +++ b/src/definitions.h
 @@ -365,6 +365,12 @@ enum {
@@ -571,7 +571,7 @@ index d6ca001d..340562d5 100644
  	INDICATOR,
  	BOOKSTYLE,
 diff --git a/src/global.c b/src/global.c
-index ed93fa31..4ddd6da3 100644
+index a73f2ef5..d497c3b2 100644
 --- a/src/global.c
 +++ b/src/global.c
 @@ -92,8 +92,12 @@ int didfind = 0;
@@ -588,7 +588,7 @@ index ed93fa31..4ddd6da3 100644
  int controlleft, controlright, controlup, controldown;
  int controlhome, controlend;
 diff --git a/src/nano.c b/src/nano.c
-index bd069cd3..477a9438 100644
+index 8578ee7d..228a32a9 100644
 --- a/src/nano.c
 +++ b/src/nano.c
 @@ -654,6 +654,14 @@ void usage(void)
@@ -735,7 +735,7 @@ index 9e09f5f4..6faee8f6 100644
  	{NULL, 0}
  };
 diff --git a/src/winio.c b/src/winio.c
-index fee2a84e..26de53e9 100644
+index e73419bb..00de5712 100644
 --- a/src/winio.c
 +++ b/src/winio.c
 @@ -29,6 +29,9 @@

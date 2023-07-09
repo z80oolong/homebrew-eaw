@@ -1,22 +1,11 @@
-class Mutt < Formula
+class MuttAT2210 < Formula
   desc "Mongrel of mail user agents (part elm, pine, mush, mh, etc.)"
   homepage "http://www.mutt.org/"
   license "GPL-2.0-or-later"
+  url "https://bitbucket.org/mutt/mutt/downloads/mutt-2.2.10.tar.gz"
+  sha256 "4d773f22422f79096f7b94b57bee45654ad9a25165dbb36463c58295b4cd3d88"
 
-  stable do
-    url "https://bitbucket.org/mutt/mutt/downloads/mutt-2.2.10.tar.gz"
-    sha256 "4d773f22422f79096f7b94b57bee45654ad9a25165dbb36463c58295b4cd3d88"
-    patch :p1, Formula["z80oolong/eaw/mutt@2.2.10"].diff_data
-  end
-
-  head do
-    url "https://gitlab.com/muttmua/mutt.git"
-    patch :p1, :DATA
-
-    resource "html" do
-      url "https://muttmua.gitlab.io/mutt/manual-dev.html"
-    end
-  end
+  keg_only :versioned_formula
 
   depends_on "autoconf" => :build
   depends_on "automake" => :build
@@ -116,12 +105,11 @@ class Mutt < Formula
 end
 
 __END__
-warning: refname 'upstream' is ambiguous.
 diff --git a/curs_lib.c b/curs_lib.c
-index 246cb6be..6f4c7fd9 100644
+index efa76ce..eea315d 100644
 --- a/curs_lib.c
 +++ b/curs_lib.c
-@@ -1387,7 +1387,11 @@ void mutt_format_string (char *dest, size_t destlen,
+@@ -1379,7 +1379,11 @@ void mutt_format_string (char *dest, size_t destlen,
  #endif
          if (!IsWPrint (wc))
            wc = '?';
@@ -133,7 +121,7 @@ index 246cb6be..6f4c7fd9 100644
      }
      if (w >= 0)
      {
-@@ -1516,7 +1520,11 @@ void mutt_paddstr (int n, const char *s)
+@@ -1508,7 +1512,11 @@ void mutt_paddstr (int n, const char *s)
      }
      if (!IsWPrint (wc))
        wc = '?';
@@ -145,7 +133,7 @@ index 246cb6be..6f4c7fd9 100644
      if (w >= 0)
      {
        if (w > n)
-@@ -1553,7 +1561,11 @@ size_t mutt_wstr_trunc (const char *src, size_t maxlen, size_t maxwid, size_t *w
+@@ -1545,7 +1553,11 @@ size_t mutt_wstr_trunc (const char *src, size_t maxlen, size_t maxwid, size_t *w
        cl = (cl == (size_t)(-1)) ? 1 : n;
        wc = replacement_char ();
      }
@@ -157,7 +145,7 @@ index 246cb6be..6f4c7fd9 100644
      /* hack because MUTT_TREE symbols aren't turned into characters
       * until rendered by print_enriched_string (#3364) */
      if (cw < 0 && cl == 1 && src[0] && src[0] < MUTT_TREE_MAX)
-@@ -1591,7 +1603,11 @@ int mutt_charlen (const char *s, int *width)
+@@ -1583,7 +1595,11 @@ int mutt_charlen (const char *s, int *width)
    memset (&mbstate, 0, sizeof (mbstate));
    k = mbrtowc (&wc, s, n, &mbstate);
    if (width)
@@ -169,7 +157,7 @@ index 246cb6be..6f4c7fd9 100644
    return (k == (size_t)(-1) || k == (size_t)(-2)) ? -1 : k;
  }
  
-@@ -1623,7 +1639,11 @@ int mutt_strwidth (const char *s)
+@@ -1615,7 +1631,11 @@ int mutt_strwidth (const char *s)
      }
      if (!IsWPrint (wc))
        wc = '?';
@@ -182,7 +170,7 @@ index 246cb6be..6f4c7fd9 100644
    return w;
  }
 diff --git a/enter.c b/enter.c
-index 693f3b1d..53a74e7e 100644
+index f09dd26..294ef43 100644
 --- a/enter.c
 +++ b/enter.c
 @@ -27,6 +27,9 @@
@@ -232,7 +220,7 @@ index 693f3b1d..53a74e7e 100644
      return mutt_addwch (wc);
    if (!(wc & ~0x7f))
 diff --git a/help.c b/help.c
-index 29dda797..0734d23a 100644
+index 29dda79..0734d23 100644
 --- a/help.c
 +++ b/help.c
 @@ -109,7 +109,11 @@ static int print_macro (FILE *f, int maxwidth, const char **macro)
@@ -260,10 +248,10 @@ index 29dda797..0734d23a 100644
    if (n > wid)
      n = m;
 diff --git a/init.h b/init.h
-index 9ca57281..97f6bdcb 100644
+index b0651c2..279e476 100644
 --- a/init.h
 +++ b/init.h
-@@ -4921,6 +4921,12 @@ struct option_t MuttVars[] = {
+@@ -4905,6 +4905,12 @@ struct option_t MuttVars[] = {
    {"xterm_set_titles",	DT_SYN,  R_NONE, {.p="ts_enabled"}, {.p=0} },
    /*
    */
@@ -277,7 +265,7 @@ index 9ca57281..97f6bdcb 100644
    { NULL, 0, 0, {.l=0}, {.l=0} }
  };
 diff --git a/mbyte.c b/mbyte.c
-index 16645feb..4442fc99 100644
+index 16645fe..4442fc9 100644
 --- a/mbyte.c
 +++ b/mbyte.c
 @@ -88,6 +88,22 @@ void mutt_set_charset (char *charset)
@@ -304,7 +292,7 @@ index 16645feb..4442fc99 100644
  
  /*
 diff --git a/mbyte.h b/mbyte.h
-index 9c58c9ec..b3dd79a8 100644
+index 9c58c9e..b3dd79a 100644
 --- a/mbyte.h
 +++ b/mbyte.h
 @@ -8,6 +8,9 @@
@@ -318,10 +306,10 @@ index 9c58c9ec..b3dd79a8 100644
  
  # ifndef HAVE_WC_FUNCS
 diff --git a/mutt.h b/mutt.h
-index ca30791d..0245aac4 100644
+index 2946c78..0fba904 100644
 --- a/mutt.h
 +++ b/mutt.h
-@@ -621,6 +621,12 @@ enum
+@@ -620,6 +620,12 @@ enum
    OPTPGPSHOWUNUSABLE,
    OPTPGPAUTOINLINE,
    OPTPGPREPLYINLINE,
@@ -335,7 +323,7 @@ index ca30791d..0245aac4 100644
    /* pseudo options */
  
 diff --git a/pager.c b/pager.c
-index 8df571ab..cea17c57 100644
+index 8df571a..cea17c5 100644
 --- a/pager.c
 +++ b/pager.c
 @@ -1402,7 +1402,11 @@ static int format_line (struct line_t **lineInfo, int n, unsigned char *buf,
@@ -351,7 +339,7 @@ index 8df571ab..cea17c57 100644
  	break;
        col += t;
 diff --git a/sendlib.c b/sendlib.c
-index c2283972..2d3010e9 100644
+index c228397..2d3010e 100644
 --- a/sendlib.c
 +++ b/sendlib.c
 @@ -1916,7 +1916,11 @@ static int my_width (const char *p, int col, int flags)
@@ -367,7 +355,7 @@ index c2283972..2d3010e9 100644
        l = 1;
      /* correctly calc tab stop, even for sending as the
 diff --git a/wcwidth.c b/wcwidth.c
-index 75e1b9a8..55dd98ae 100644
+index 75e1b9a..55dd98a 100644
 --- a/wcwidth.c
 +++ b/wcwidth.c
 @@ -184,3 +184,338 @@ int wcswidth(const wchar_t *pwcs, size_t n)
