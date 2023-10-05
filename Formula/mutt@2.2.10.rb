@@ -9,7 +9,6 @@ class MuttAT2210 < Formula
 
   depends_on "autoconf" => :build
   depends_on "automake" => :build
-  depends_on "glibc"
   depends_on "gpgme"
   depends_on "openssl@1.1"
   depends_on "tokyo-cabinet"

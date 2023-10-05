@@ -716,7 +716,7 @@ index d2b2e1a5..e0be587a 100644
  extern int controlleft, controlright;
  extern int controlup, controldown;
 diff --git a/src/rcfile.c b/src/rcfile.c
-index 9e09f5f4..6faee8f6 100644
+index f52bc45c..635437dd 100644
 --- a/src/rcfile.c
 +++ b/src/rcfile.c
 @@ -134,6 +134,14 @@ static const rcoption rcopts[] = {
@@ -735,7 +735,7 @@ index 9e09f5f4..6faee8f6 100644
  	{NULL, 0}
  };
 diff --git a/src/winio.c b/src/winio.c
-index e73419bb..00de5712 100644
+index 15da064e..60a0b7b5 100644
 --- a/src/winio.c
 +++ b/src/winio.c
 @@ -29,6 +29,9 @@
@@ -748,7 +748,7 @@ index e73419bb..00de5712 100644
  #endif
  
  #ifdef REVISION
-@@ -1893,7 +1896,11 @@ char *display_string(const char *text, size_t column, size_t span,
+@@ -1898,7 +1901,11 @@ char *display_string(const char *text, size_t column, size_t span,
  		}
  
  		/* Determine whether the character takes zero, one, or two columns. */

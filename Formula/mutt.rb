@@ -4,9 +4,9 @@ class Mutt < Formula
   license "GPL-2.0-or-later"
 
   stable do
-    url "https://bitbucket.org/mutt/mutt/downloads/mutt-2.2.10.tar.gz"
-    sha256 "4d773f22422f79096f7b94b57bee45654ad9a25165dbb36463c58295b4cd3d88"
-    patch :p1, Formula["z80oolong/eaw/mutt@2.2.10"].diff_data
+    url "https://bitbucket.org/mutt/mutt/downloads/mutt-2.2.12.tar.gz"
+    sha256 "043af312f64b8e56f7fd0bf77f84a205d4c498030bd9586457665c47bb18ce38"
+    patch :p1, Formula["z80oolong/eaw/mutt@2.2.12"].diff_data
   end
 
   head do
@@ -351,7 +351,7 @@ index 8df571ab..cea17c57 100644
  	break;
        col += t;
 diff --git a/sendlib.c b/sendlib.c
-index c2283972..2d3010e9 100644
+index 204b1308..0fce3be5 100644
 --- a/sendlib.c
 +++ b/sendlib.c
 @@ -1916,7 +1916,11 @@ static int my_width (const char *p, int col, int flags)
