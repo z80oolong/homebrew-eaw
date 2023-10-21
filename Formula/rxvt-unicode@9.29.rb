@@ -4,7 +4,7 @@ class RxvtUnicodeAT929 < Formula
   url "http://dist.schmorp.de/rxvt-unicode/Attic/rxvt-unicode-9.29.tar.bz2"
   sha256 "c18bc9de0c319db1f85748ecc2f255ff9eb2be0fbe9e15fe0eabefc063c4157c"
   license "GPL-3.0-only"
-  revision 2
+  revision 3
 
   keg_only :versioned_formula
 
@@ -22,6 +22,7 @@ class RxvtUnicodeAT929 < Formula
   depends_on "libxmu"
   depends_on "libxrender"
   depends_on "libxt"
+  depends_on "startup-notification"
   depends_on "z80oolong/eaw/libptytty@2.0"
   depends_on "z80oolong/eaw/ncurses-eaw@6.2"
 

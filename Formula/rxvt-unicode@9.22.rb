@@ -1,10 +1,10 @@
 class RxvtUnicodeAT922 < Formula
   desc "Rxvt fork with Unicode support"
   homepage "http://software.schmorp.de/pkg/rxvt-unicode.html"
-  license "GPL-3.0-only"
   url "http://dist.schmorp.de/rxvt-unicode/Attic/rxvt-unicode-9.22.tar.bz2"
   sha256 "e94628e9bcfa0adb1115d83649f898d6edb4baced44f5d5b769c2eeb8b95addd"
-  revision 2
+  license "GPL-3.0-only"
+  revision 3
 
   keg_only :versioned_formula
 
@@ -22,6 +22,7 @@ class RxvtUnicodeAT922 < Formula
   depends_on "libxmu"
   depends_on "libxrender"
   depends_on "libxt"
+  depends_on "startup-notification"
   depends_on "z80oolong/eaw/ncurses-eaw@6.2"
 
   uses_from_macos "perl"

@@ -2,13 +2,13 @@ class RxvtUnicode < Formula
   desc "Rxvt fork with Unicode support"
   homepage "http://software.schmorp.de/pkg/rxvt-unicode.html"
   license "GPL-3.0-only"
-  revision 2
+  revision 3
 
   stable do
-    url "http://dist.schmorp.de/rxvt-unicode/Attic/rxvt-unicode-9.30.tar.bz2"
-    sha256 "fe1c93d12f385876457a989fc3ae05c0915d2692efc59289d0f70fabe5b44d2d"
+    url "http://dist.schmorp.de/rxvt-unicode/Attic/rxvt-unicode-9.31.tar.bz2"
+    sha256 "aaa13fcbc149fe0f3f391f933279580f74a96fd312d6ed06b8ff03c2d46672e8"
 
-    patch :p1, Formula["z80oolong/eaw/rxvt-unicode@9.30"].diff_data
+    patch :p1, Formula["z80oolong/eaw/rxvt-unicode@9.31"].diff_data
   end
 
   head do
@@ -34,6 +34,7 @@ class RxvtUnicode < Formula
   depends_on "libxmu"
   depends_on "libxrender"
   depends_on "libxt"
+  depends_on "startup-notification"
   depends_on "z80oolong/eaw/libptytty@2.0"
   depends_on "z80oolong/eaw/ncurses-eaw@6.2"
 
@@ -91,10 +92,10 @@ index ee97cef5..6112e8b3 100644
  
  $(RECURSIVE_TARGETS):
 diff --git a/configure b/configure
-index b9872b3a..18325903 100755
+index 89eec398..c59f6ed5 100755
 --- a/configure
 +++ b/configure
-@@ -7838,8 +7838,8 @@ printf %s "checking for $PERL suitability... " >&6; }
+@@ -7860,8 +7860,8 @@ printf %s "checking for $PERL suitability... " >&6; }
  
       save_CXXFLAGS="$CXXFLAGS"
       save_LIBS="$LIBS"
@@ -105,7 +106,7 @@ index b9872b3a..18325903 100755
       cat confdefs.h - <<_ACEOF >conftest.$ac_ext
  /* end confdefs.h.  */
  
-@@ -7876,8 +7876,8 @@ printf "%s\n" "#define ENABLE_PERL 1" >>confdefs.h
+@@ -7898,8 +7898,8 @@ printf "%s\n" "#define ENABLE_PERL 1" >>confdefs.h
  
          IF_PERL=
          PERL_O=rxvtperl.o
@@ -147,10 +148,10 @@ index e478434f..bf80e1d4 100644
   def(console)
  #if XFT
 diff --git a/src/rsinc.h b/src/rsinc.h
-index a9abb0a0..08786239 100644
+index 366297f9..b0dc4068 100644
 --- a/src/rsinc.h
 +++ b/src/rsinc.h
-@@ -115,6 +115,12 @@
+@@ -116,6 +116,12 @@
    def (iso14755)
    def (iso14755_52)
  #endif
@@ -164,10 +165,10 @@ index a9abb0a0..08786239 100644
    def (iconfile)
  #endif
 diff --git a/src/rxvt.h b/src/rxvt.h
-index bad5eaef..7d846562 100644
+index 37aba23a..223f3bb2 100644
 --- a/src/rxvt.h
 +++ b/src/rxvt.h
-@@ -655,7 +655,18 @@ typedef struct _mwmhints
+@@ -661,7 +661,18 @@ typedef struct _mwmhints
  
  // for speed reasons, we assume that all codepoints 32 to 126 are
  // single-width.
@@ -186,6 +187,56 @@ index bad5eaef..7d846562 100644
  
  /* convert pixel dimensions to row/column values.  Everything as int32_t */
  #define Pixel2Col(x)            Pixel2Width((int32_t)(x))
+diff --git a/src/screen.C b/src/screen.C
+index 8fdfad9d..529bb484 100644
+--- a/src/screen.C
++++ b/src/screen.C
+@@ -389,9 +389,37 @@ rxvt_term::scr_reset ()
+               scr_blank_line (*qline, qline->l, ncol - qline->l, DEFAULT_RSTYLE);
+             }
+           while (p != pend && q > 0);
++
++#define DG_TO_930
++#ifdef DG_TO_930
++          term_start = total_rows - nrow;
++          top_row = q - term_start;
++
++          // make sure all terminal lines exist
++          while (top_row > 0)
++            scr_blank_screen_mem (ROW (--top_row), DEFAULT_RSTYLE);
++#endif
+         }
+       else
+ #endif
++#ifdef DG_TO_930
++        {
++          // if no scrollback exists (yet), wing, instead of wrap
++
++          for (int row = min (nrow, prev_nrow); row--; )
++            {
++              line_t &src = prev_row_buf [MOD (term_start + row, prev_total_rows)];
++              line_t &dst = row_buf [row];
++
++              copy_line (dst, src);
++            }
++
++          for (int row = prev_nrow; row < nrow; row++)
++            scr_blank_screen_mem (row_buf [row], DEFAULT_RSTYLE);
++
++          term_start = 0;
++        }
++#else
+         {
+           // wing, instead of wrap
+           screen.cur.row += nrow - prev_nrow;
+@@ -412,6 +440,7 @@ rxvt_term::scr_reset ()
+       // make sure all terminal lines exist
+       while (top_row > 0)
+         scr_blank_screen_mem (ROW (--top_row), DEFAULT_RSTYLE);
++#endif
+ 
+       clamp_it (screen.cur.row, 0, nrow - 1);
+       clamp_it (screen.cur.col, 0, ncol - 1);
 diff --git a/src/wcwidth.C b/src/wcwidth.C
 new file mode 100644
 index 00000000..db350079
@@ -690,10 +741,10 @@ index 00000000..db350079
 +}
 +#endif /* NO_USE_UTF8CJK */
 diff --git a/src/xdefaults.C b/src/xdefaults.C
-index 970b8ac2..9f634f13 100644
+index cede5c04..74a3b9fd 100644
 --- a/src/xdefaults.C
 +++ b/src/xdefaults.C
-@@ -271,6 +271,12 @@ optList[] = {
+@@ -272,6 +272,12 @@ optList[] = {
                BOOL (Rs_iso14755, "iso14755", NULL, Opt_iso14755, 0, NULL),
                BOOL (Rs_iso14755_52, "iso14755_52", NULL, Opt_iso14755_52, 0, NULL),
  #endif
@@ -706,7 +757,7 @@ index 970b8ac2..9f634f13 100644
  #ifndef NO_RESOURCES
                RINFO ("xrm", "string"),
  #endif
-@@ -317,6 +323,12 @@ static const char optionsstring[] = "options: "
+@@ -318,6 +324,12 @@ static const char optionsstring[] = "options: "
  #if ENCODING_JP_EXT
                                      "+jp-ext"
  #endif
