@@ -8,11 +8,10 @@
 
 なお、現時点では、以下のアプリケーションについて、 [East Asian Ambiguous Character][EAWA] に関する問題の修正に対応しています。
 
-- 軽量な CLI テキストエディタである [nano][NANO] 
-- CLI に基づく多機能メールクライアントである [neomutt][MUTT] 
+- 軽量な CLI テキストエディタである [nano][NANO]
+- CLI に基づく多機能メールクライアントである [neomutt][MUTT]
 - Unicode 対応の端末エミュレータである [rxvt-unicode][RXVT]
-- CLI に基づく多機能メールクライアントである [mutt][OMUT] 
-- GTK+3 VTE ベースの端末エミュレータである [sakura][SAKU]
+- CLI に基づく多機能メールクライアントである [mutt][OMUT]
 
 ## 使用法
 

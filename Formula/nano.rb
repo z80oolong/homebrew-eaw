@@ -554,10 +554,10 @@ index f08b0f1d..b686bba2 100644
  #if defined(__OpenBSD__)
  			*column += (width < 0 || wc >= 0xF0000) ? 1 : width;
 diff --git a/src/definitions.h b/src/definitions.h
-index 7f0c4918..d2c60602 100644
+index 6c94e750..35e9d16e 100644
 --- a/src/definitions.h
 +++ b/src/definitions.h
-@@ -365,6 +365,12 @@ enum {
+@@ -368,6 +368,12 @@ enum {
  	LET_THEM_ZAP,
  	BREAK_LONG_LINES,
  	JUMPY_SCROLLING,
@@ -571,7 +571,7 @@ index 7f0c4918..d2c60602 100644
  	INDICATOR,
  	BOOKSTYLE,
 diff --git a/src/global.c b/src/global.c
-index a73f2ef5..d497c3b2 100644
+index 02920050..4b3a3a5b 100644
 --- a/src/global.c
 +++ b/src/global.c
 @@ -92,8 +92,12 @@ int didfind = 0;
@@ -588,10 +588,10 @@ index a73f2ef5..d497c3b2 100644
  int controlleft, controlright, controlup, controldown;
  int controlhome, controlend;
 diff --git a/src/nano.c b/src/nano.c
-index 8578ee7d..228a32a9 100644
+index 724bc2c1..89ef1ddf 100644
 --- a/src/nano.c
 +++ b/src/nano.c
-@@ -654,6 +654,14 @@ void usage(void)
+@@ -655,6 +655,14 @@ void usage(void)
  #ifdef HAVE_LIBMAGIC
  	print_opt("-!", "--magic", N_("Also try magic to determine syntax"));
  #endif
@@ -606,7 +606,7 @@ index 8578ee7d..228a32a9 100644
  #ifndef NANO_TINY
  	print_opt("-%", "--stateflags", N_("Show some states on the title bar"));
  	print_opt("-_", "--minibar", N_("Show a feedback bar at the bottom"));
-@@ -1807,6 +1815,14 @@ int main(int argc, char **argv)
+@@ -1811,6 +1819,14 @@ int main(int argc, char **argv)
  #ifdef HAVE_LIBMAGIC
  		{"magic", 0, NULL, '!'},
  #endif
@@ -621,7 +621,7 @@ index 8578ee7d..228a32a9 100644
  		{NULL, 0, NULL, 0}
  	};
  
-@@ -1837,7 +1853,16 @@ int main(int argc, char **argv)
+@@ -1841,7 +1857,16 @@ int main(int argc, char **argv)
  #endif
  
  #ifdef ENABLE_NLS
@@ -638,7 +638,7 @@ index 8578ee7d..228a32a9 100644
  	textdomain(PACKAGE);
  #endif
  
-@@ -1848,8 +1873,18 @@ int main(int argc, char **argv)
+@@ -1852,8 +1877,18 @@ int main(int argc, char **argv)
  	if (*(tail(argv[0])) == 'r')
  		SET(RESTRICTED);
  
@@ -657,7 +657,7 @@ index 8578ee7d..228a32a9 100644
  		switch (optchr) {
  #ifndef NANO_TINY
  			case 'A':
-@@ -2087,6 +2122,19 @@ int main(int argc, char **argv)
+@@ -2091,6 +2126,19 @@ int main(int argc, char **argv)
  				SET(USE_MAGIC);
  				break;
  #endif
@@ -677,7 +677,7 @@ index 8578ee7d..228a32a9 100644
  #ifndef NANO_TINY
  			case '%':
  				SET(STATEFLAGS);
-@@ -2108,6 +2156,21 @@ int main(int argc, char **argv)
+@@ -2112,6 +2160,21 @@ int main(int argc, char **argv)
  	if (getenv("TERM") == NULL)
  		putenv("TERM=vt220");
  
@@ -700,7 +700,7 @@ index 8578ee7d..228a32a9 100644
  	if (initscr() == NULL)
  		exit(1);
 diff --git a/src/prototypes.h b/src/prototypes.h
-index d2b2e1a5..e0be587a 100644
+index 5462a5ae..6e770694 100644
 --- a/src/prototypes.h
 +++ b/src/prototypes.h
 @@ -61,7 +61,11 @@ extern int didfind;
@@ -716,7 +716,7 @@ index d2b2e1a5..e0be587a 100644
  extern int controlleft, controlright;
  extern int controlup, controldown;
 diff --git a/src/rcfile.c b/src/rcfile.c
-index f52bc45c..635437dd 100644
+index 062fba55..5cb3b3df 100644
 --- a/src/rcfile.c
 +++ b/src/rcfile.c
 @@ -134,6 +134,14 @@ static const rcoption rcopts[] = {
@@ -735,7 +735,7 @@ index f52bc45c..635437dd 100644
  	{NULL, 0}
  };
 diff --git a/src/winio.c b/src/winio.c
-index 15da064e..60a0b7b5 100644
+index bfd13de6..92e77f20 100644
 --- a/src/winio.c
 +++ b/src/winio.c
 @@ -29,6 +29,9 @@
@@ -748,7 +748,7 @@ index 15da064e..60a0b7b5 100644
  #endif
  
  #ifdef REVISION
-@@ -1898,7 +1901,11 @@ char *display_string(const char *text, size_t column, size_t span,
+@@ -1913,7 +1916,11 @@ char *display_string(const char *text, size_t column, size_t span,
  		}
  
  		/* Determine whether the character takes zero, one, or two columns. */

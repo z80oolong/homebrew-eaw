@@ -116,7 +116,6 @@ class Mutt < Formula
 end
 
 __END__
-warning: refname 'upstream' is ambiguous.
 diff --git a/curs_lib.c b/curs_lib.c
 index 246cb6be..6f4c7fd9 100644
 --- a/curs_lib.c
