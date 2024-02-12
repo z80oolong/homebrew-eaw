@@ -1,16 +1,18 @@
 class GlibcJa < Formula
   desc "Meta Formula for glibc locale setting for Japanese."
-  homepage "https://www.gnu.org/software/libc/libc.html"
-  url "https://www.gnu.org/software/libc/libc.html"
+  homepage "https://www.gnu.org/software/libc/"
   version "2.35"
-  sha256 "94e0d086ce21d2c34cab7b72e96bf35a7303707f0dc7dffa0e0d309f1f6e008f"
+  url "https://ftp.gnu.org/gnu/glibc/glibc-2.35.tar.gz"
+  mirror "https://ftpmirror.gnu.org/gnu/glibc/glibc-2.35.tar.gz"
+  sha256 "3e8e0c6195da8dfbd31d77c56fb8d99576fb855fafd47a9e0a895e51fd5942d4"
   license all_of: ["GPL-2.0-or-later", "LGPL-2.1-or-later"]
 
   depends_on "glibc"
   depends_on "glibc@2.13"
 
   def install
-    prefix.install buildpath/"libc.html" => "glibc.html"
+    prefix.install buildpath/"README" => "README"
+    prefix.install buildpath/"INSTALL" => "INSTALL"
   end
 
   def post_install

@@ -2,7 +2,7 @@
 
 ## 概要
 
-本文書では、 [Linuxbrew][BREW] 向け Tap リポジトリ z80oolong/eaw に含まれる Formula 一覧を示します。各 Formula の詳細等については ```brew info <formula>``` コマンドも参照して下さい。
+本文書では、 [Homebrew for Linux][BREW] 向け Tap リポジトリ z80oolong/eaw に含まれる Formula 一覧を示します。各 Formula の詳細等については ```brew info <formula>``` コマンドも参照して下さい。
 
 ## Formula 一覧
 
