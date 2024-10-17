@@ -1,126 +1,115 @@
-class Mutt < Formula
-desc "Mongrel of mail user agents (part elm, pine, mush, mh, etc.)"
-homepage "http://www.mutt.org/"
-license "GPL-2.0-or-later"
-
-stable do
+class MuttAT2213 < Formula
+  desc "Mongrel of mail user agents (part elm, pine, mush, mh, etc.)"
+  homepage "http://www.mutt.org/"
+  license "GPL-2.0-or-later"
   url "https://bitbucket.org/mutt/mutt/downloads/mutt-2.2.13.tar.gz"
   sha256 "eb23faddc1cc97d867693f3a4a9f30949ad93765ad5b6fdae2797a4001c58efb"
-  patch :p1, Formula["z80oolong/eaw/mutt@2.2.13"].diff_data
-end
 
-head do
-  url "https://gitlab.com/muttmua/mutt.git"
-  patch :p1, :DATA
+  keg_only :versioned_formula
 
-  resource "html" do
-    url "https://muttmua.gitlab.io/mutt/manual-dev.html"
+  depends_on "autoconf" => :build
+  depends_on "automake" => :build
+  depends_on "glibc"
+  depends_on "gpgme"
+  depends_on "openssl@1.1"
+  depends_on "tokyo-cabinet"
+  depends_on "z80oolong/eaw/ncurses-eaw@6.2"
+
+  uses_from_macos "bzip2"
+  uses_from_macos "krb5"
+  uses_from_macos "zlib"
+
+  conflicts_with "tin",
+    because: "both install mmdf.5 and mbox.5 man pages"
+
+  def install
+    ENV.append "CFLAGS",   "-I#{Formula["z80oolong/eaw/ncurses-eaw@6.2"].opt_include}"
+    ENV.append "CPPFLAGS", "-I#{Formula["z80oolong/eaw/ncurses-eaw@6.2"].opt_include}"
+    ENV.append "LDFLAGS",  "-L#{Formula["z80oolong/eaw/ncurses-eaw@6.2"].opt_lib}"
+
+    user_in_mail_group = Etc.getgrnam("mail").mem.include?(ENV["USER"])
+    effective_group = Etc.getgrgid(Process.egid).name
+
+    args = %W[
+      --disable-dependency-tracking
+      --disable-warnings
+      --prefix=#{prefix}
+      --enable-debug
+      --enable-hcache
+      --enable-imap
+      --enable-pop
+      --enable-sidebar
+      --enable-smtp
+      --with-gss
+      #{OS.mac? ? "--with-sasl" : "--with-sasl2"}
+      --with-ssl=#{Formula["openssl@1.1"].opt_prefix}
+      --with-tokyocabinet
+      --enable-gpgme
+    ]
+
+    system "./prepare", *args
+    system "make"
+
+    # This permits the `mutt_dotlock` file to be installed under a group
+    # that isn't `mail`.
+    # https://github.com/Homebrew/homebrew/issues/45400
+    inreplace "Makefile", /^DOTLOCK_GROUP =.*$/, "DOTLOCK_GROUP = #{effective_group}" unless user_in_mail_group
+
+    system "make", "install"
+    doc.install resource("html") if build.head?
+
+    fix_rpath "#{bin}/mutt", ["z80oolong/eaw/ncurses-eaw@6.2"], ["ncurses"]
   end
-end
 
-depends_on "autoconf" => :build
-depends_on "automake" => :build
-depends_on "glibc"
-depends_on "gpgme"
-depends_on "openssl@1.1"
-depends_on "tokyo-cabinet"
-depends_on "z80oolong/eaw/ncurses-eaw@6.2"
+  def fix_rpath(binname, append_list, delete_list)
+    return unless OS.linux?
 
-uses_from_macos "bzip2"
-uses_from_macos "krb5"
-uses_from_macos "zlib"
+    delete_list_hash = {}
+    rpath = %x{#{Formula["patchelf"].opt_bin}/patchelf --print-rpath #{binname}}.chomp.split(":")
 
-conflicts_with "tin",
-  because: "both install mmdf.5 and mbox.5 man pages"
+    (append_list + delete_list).each {|name| delete_list_hash["#{Formula[name].opt_lib}"] = true}
+    rpath.delete_if {|path| delete_list_hash[path]}
+    append_list.each {|name| rpath.unshift("#{Formula[name].opt_lib}")}
 
-def install
-  ENV.append "CFLAGS",   "-I#{Formula["z80oolong/eaw/ncurses-eaw@6.2"].opt_include}"
-  ENV.append "CPPFLAGS", "-I#{Formula["z80oolong/eaw/ncurses-eaw@6.2"].opt_include}"
-  ENV.append "LDFLAGS",  "-L#{Formula["z80oolong/eaw/ncurses-eaw@6.2"].opt_lib}"
-
-  user_in_mail_group = Etc.getgrnam("mail").mem.include?(ENV["USER"])
-  effective_group = Etc.getgrgid(Process.egid).name
-
-  args = %W[
-    --disable-dependency-tracking
-    --disable-warnings
-    --prefix=#{prefix}
-    --enable-debug
-    --enable-hcache
-    --enable-imap
-    --enable-pop
-    --enable-sidebar
-    --enable-smtp
-    --with-gss
-    #{OS.mac? ? "--with-sasl" : "--with-sasl2"}
-    --with-ssl=#{Formula["openssl@1.1"].opt_prefix}
-    --with-tokyocabinet
-    --enable-gpgme
-  ]
-
-  system "./prepare", *args
-  system "make"
-
-  # This permits the `mutt_dotlock` file to be installed under a group
-  # that isn't `mail`.
-  # https://github.com/Homebrew/homebrew/issues/45400
-  inreplace "Makefile", /^DOTLOCK_GROUP =.*$/, "DOTLOCK_GROUP = #{effective_group}" unless user_in_mail_group
-
-  system "make", "install"
-  doc.install resource("html") if build.head?
-
-  fix_rpath "#{bin}/mutt", ["z80oolong/eaw/ncurses-eaw@6.2"], ["ncurses"]
-end
-
-def fix_rpath(binname, append_list, delete_list)
-  return unless OS.linux?
-
-  delete_list_hash = {}
-  rpath = %x{#{Formula["patchelf"].opt_bin}/patchelf --print-rpath #{binname}}.chomp.split(":")
-
-  (append_list + delete_list).each {|name| delete_list_hash["#{Formula[name].opt_lib}"] = true}
-  rpath.delete_if {|path| delete_list_hash[path]}
-  append_list.each {|name| rpath.unshift("#{Formula[name].opt_lib}")}
-
-  system "#{Formula["patchelf"].opt_bin}/patchelf", "--set-rpath", "#{rpath.join(":")}", "#{binname}"
-end
-
-def caveats
-  <<~EOS
-    mutt_dotlock(1) has been installed, but does not have the permissions to lock
-    spool files in /var/mail. To grant the necessary permissions, run
-
-      sudo chgrp mail #{bin}/mutt_dotlock
-      sudo chmod g+s #{bin}/mutt_dotlock
-
-    Alternatively, you may configure `spoolfile` in your .muttrc to a file inside
-    your home directory.
-  EOS
-end
-
-def diff_data
-  lines = self.path.each_line.inject([]) do |result, line|
-    result.push(line) if ((/^__END__/ === line) || result.first)
-    result
+    system "#{Formula["patchelf"].opt_bin}/patchelf", "--set-rpath", "#{rpath.join(":")}", "#{binname}"
   end
-  lines.shift
-  return lines.join("")
-end
 
-test do
-  system bin/"mutt", "-D"
-  touch "foo"
-  system bin/"mutt_dotlock", "foo"
-  system bin/"mutt_dotlock", "-u", "foo"
-end
+  def caveats
+    <<~EOS
+      mutt_dotlock(1) has been installed, but does not have the permissions to lock
+      spool files in /var/mail. To grant the necessary permissions, run
+
+        sudo chgrp mail #{bin}/mutt_dotlock
+        sudo chmod g+s #{bin}/mutt_dotlock
+
+      Alternatively, you may configure `spoolfile` in your .muttrc to a file inside
+      your home directory.
+    EOS
+  end
+
+  def diff_data
+    lines = self.path.each_line.inject([]) do |result, line|
+      result.push(line) if ((/^__END__/ === line) || result.first)
+      result
+    end
+    lines.shift
+    return lines.join("")
+  end
+
+  test do
+    system bin/"mutt", "-D"
+    touch "foo"
+    system bin/"mutt_dotlock", "foo"
+    system bin/"mutt_dotlock", "-u", "foo"
+  end
 end
 
 __END__
 diff --git a/curs_lib.c b/curs_lib.c
-index 246cb6be..6f4c7fd9 100644
+index efa76ce..eea315d 100644
 --- a/curs_lib.c
 +++ b/curs_lib.c
-@@ -1387,7 +1387,11 @@ void mutt_format_string (char *dest, size_t destlen,
+@@ -1379,7 +1379,11 @@ void mutt_format_string (char *dest, size_t destlen,
  #endif
          if (!IsWPrint (wc))
            wc = '?';
@@ -132,7 +121,7 @@ index 246cb6be..6f4c7fd9 100644
      }
      if (w >= 0)
      {
-@@ -1516,7 +1520,11 @@ void mutt_paddstr (int n, const char *s)
+@@ -1508,7 +1512,11 @@ void mutt_paddstr (int n, const char *s)
      }
      if (!IsWPrint (wc))
        wc = '?';
@@ -144,7 +133,7 @@ index 246cb6be..6f4c7fd9 100644
      if (w >= 0)
      {
        if (w > n)
-@@ -1553,7 +1561,11 @@ size_t mutt_wstr_trunc (const char *src, size_t maxlen, size_t maxwid, size_t *w
+@@ -1545,7 +1553,11 @@ size_t mutt_wstr_trunc (const char *src, size_t maxlen, size_t maxwid, size_t *w
        cl = (cl == (size_t)(-1)) ? 1 : n;
        wc = replacement_char ();
      }
@@ -156,7 +145,7 @@ index 246cb6be..6f4c7fd9 100644
      /* hack because MUTT_TREE symbols aren't turned into characters
       * until rendered by print_enriched_string (#3364) */
      if (cw < 0 && cl == 1 && src[0] && src[0] < MUTT_TREE_MAX)
-@@ -1591,7 +1603,11 @@ int mutt_charlen (const char *s, int *width)
+@@ -1583,7 +1595,11 @@ int mutt_charlen (const char *s, int *width)
    memset (&mbstate, 0, sizeof (mbstate));
    k = mbrtowc (&wc, s, n, &mbstate);
    if (width)
@@ -168,7 +157,7 @@ index 246cb6be..6f4c7fd9 100644
    return (k == (size_t)(-1) || k == (size_t)(-2)) ? -1 : k;
  }
  
-@@ -1623,7 +1639,11 @@ int mutt_strwidth (const char *s)
+@@ -1615,7 +1631,11 @@ int mutt_strwidth (const char *s)
      }
      if (!IsWPrint (wc))
        wc = '?';
@@ -181,7 +170,7 @@ index 246cb6be..6f4c7fd9 100644
    return w;
  }
 diff --git a/enter.c b/enter.c
-index 693f3b1d..53a74e7e 100644
+index f09dd26..294ef43 100644
 --- a/enter.c
 +++ b/enter.c
 @@ -27,6 +27,9 @@
@@ -231,7 +220,7 @@ index 693f3b1d..53a74e7e 100644
      return mutt_addwch (wc);
    if (!(wc & ~0x7f))
 diff --git a/help.c b/help.c
-index 29dda797..0734d23a 100644
+index 29dda79..0734d23 100644
 --- a/help.c
 +++ b/help.c
 @@ -109,7 +109,11 @@ static int print_macro (FILE *f, int maxwidth, const char **macro)
@@ -259,24 +248,24 @@ index 29dda797..0734d23a 100644
    if (n > wid)
      n = m;
 diff --git a/init.h b/init.h
-index e3243d46..d070b430 100644
+index b0651c2..279e476 100644
 --- a/init.h
 +++ b/init.h
-@@ -4938,6 +4938,12 @@ struct option_t MuttVars[] = {
+@@ -4905,6 +4905,12 @@ struct option_t MuttVars[] = {
    {"xterm_set_titles",	DT_SYN,  R_NONE, {.p="ts_enabled"}, {.p=0} },
    /*
    */
 +#ifndef NO_USE_MKWCWIDTH
-+  {"utf8_cjk",          DT_BOOL, R_NONE, {.l=OPTUTF8CJK}, {.l=0} },
++  {"utf8_cjk",          DT_BOOL, R_NONE, {.p=OPTUTF8CJK}, {.p=0} },
 +#ifndef NO_USE_UTF8CJK_EMOJI
-+  {"utf8_emoji",        DT_BOOL, R_NONE, {.l=OPTUTF8CJKEMOJI}, {.l=0} },
++  {"utf8_emoji",        DT_BOOL, R_NONE, {.p=OPTUTF8CJKEMOJI}, {.p=0} },
 +#endif
 +#endif
    /*--*/
    { NULL, 0, 0, {.l=0}, {.l=0} }
  };
 diff --git a/mbyte.c b/mbyte.c
-index 16645feb..4442fc99 100644
+index 16645fe..4442fc9 100644
 --- a/mbyte.c
 +++ b/mbyte.c
 @@ -88,6 +88,22 @@ void mutt_set_charset (char *charset)
@@ -303,7 +292,7 @@ index 16645feb..4442fc99 100644
  
  /*
 diff --git a/mbyte.h b/mbyte.h
-index 9c58c9ec..b3dd79a8 100644
+index 9c58c9e..b3dd79a 100644
 --- a/mbyte.h
 +++ b/mbyte.h
 @@ -8,6 +8,9 @@
@@ -317,10 +306,10 @@ index 9c58c9ec..b3dd79a8 100644
  
  # ifndef HAVE_WC_FUNCS
 diff --git a/mutt.h b/mutt.h
-index ca30791d..0245aac4 100644
+index 2946c78..0fba904 100644
 --- a/mutt.h
 +++ b/mutt.h
-@@ -621,6 +621,12 @@ enum
+@@ -620,6 +620,12 @@ enum
    OPTPGPSHOWUNUSABLE,
    OPTPGPAUTOINLINE,
    OPTPGPREPLYINLINE,
@@ -334,7 +323,7 @@ index ca30791d..0245aac4 100644
    /* pseudo options */
  
 diff --git a/pager.c b/pager.c
-index 8df571ab..cea17c57 100644
+index 8df571a..cea17c5 100644
 --- a/pager.c
 +++ b/pager.c
 @@ -1402,7 +1402,11 @@ static int format_line (struct line_t **lineInfo, int n, unsigned char *buf,
@@ -350,7 +339,7 @@ index 8df571ab..cea17c57 100644
  	break;
        col += t;
 diff --git a/sendlib.c b/sendlib.c
-index 204b1308..0fce3be5 100644
+index 204b130..0fce3be 100644
 --- a/sendlib.c
 +++ b/sendlib.c
 @@ -1916,7 +1916,11 @@ static int my_width (const char *p, int col, int flags)
@@ -366,7 +355,7 @@ index 204b1308..0fce3be5 100644
        l = 1;
      /* correctly calc tab stop, even for sending as the
 diff --git a/wcwidth.c b/wcwidth.c
-index 75e1b9a8..55dd98ae 100644
+index 75e1b9a..55dd98a 100644
 --- a/wcwidth.c
 +++ b/wcwidth.c
 @@ -184,3 +184,338 @@ int wcswidth(const wchar_t *pwcs, size_t n)

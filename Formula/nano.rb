@@ -4,10 +4,10 @@ class Nano < Formula
   license "GPL-3.0-or-later"
 
   stable do
-    url "https://www.nano-editor.org/dist/v7/nano-7.2.tar.xz"
-    sha256 "86f3442768bd2873cec693f83cdf80b4b444ad3cc14760b74361474fc87a4526"
+    url "https://www.nano-editor.org/dist/v8/nano-8.2.tar.xz"
+    sha256 "d5ad07dd862facae03051c54c6535e54c7ed7407318783fcad1ad2d7076fffeb"
 
-    patch :p1, Formula["z80oolong/eaw/nano@7.2"].diff_data
+    patch :p1, Formula["z80oolong/eaw/nano@8.2"].diff_data
   end
 
   head do
@@ -81,7 +81,7 @@ end
 
 __END__
 diff --git a/configure.ac b/configure.ac
-index b08dade5..2be8e733 100644
+index b0356be5..8f85bdb8 100644
 --- a/configure.ac
 +++ b/configure.ac
 @@ -72,11 +72,19 @@ AM_CONDITIONAL(BUILDING_FROM_GIT, test x$from_git = xyes)
@@ -105,7 +105,7 @@ index b08dade5..2be8e733 100644
  	if test "$ac_cv_path_MSGFMT" = ":"; then
  		AC_MSG_ERROR([
 diff --git a/src/chars.c b/src/chars.c
-index f08b0f1d..b686bba2 100644
+index f211bcee..a8f7e020 100644
 --- a/src/chars.c
 +++ b/src/chars.c
 @@ -28,6 +28,408 @@
@@ -554,10 +554,10 @@ index f08b0f1d..b686bba2 100644
  #if defined(__OpenBSD__)
  			*column += (width < 0 || wc >= 0xF0000) ? 1 : width;
 diff --git a/src/definitions.h b/src/definitions.h
-index 6c94e750..35e9d16e 100644
+index 08170769..58727998 100644
 --- a/src/definitions.h
 +++ b/src/definitions.h
-@@ -368,6 +368,12 @@ enum {
+@@ -372,6 +372,12 @@ enum {
  	LET_THEM_ZAP,
  	BREAK_LONG_LINES,
  	JUMPY_SCROLLING,
@@ -571,10 +571,10 @@ index 6c94e750..35e9d16e 100644
  	INDICATOR,
  	BOOKSTYLE,
 diff --git a/src/global.c b/src/global.c
-index 02920050..4b3a3a5b 100644
+index 1a827477..776ebf0b 100644
 --- a/src/global.c
 +++ b/src/global.c
-@@ -92,8 +92,12 @@ int didfind = 0;
+@@ -93,8 +93,12 @@ int didfind = 0;
  char *present_path = NULL;
  		/* The current browser directory when trying to do tab completion. */
  
@@ -588,10 +588,10 @@ index 02920050..4b3a3a5b 100644
  int controlleft, controlright, controlup, controldown;
  int controlhome, controlend;
 diff --git a/src/nano.c b/src/nano.c
-index 724bc2c1..89ef1ddf 100644
+index f4dbfdd1..1a9dcb81 100644
 --- a/src/nano.c
 +++ b/src/nano.c
-@@ -655,6 +655,14 @@ void usage(void)
+@@ -647,6 +647,14 @@ void usage(void)
  #ifdef HAVE_LIBMAGIC
  	print_opt("-!", "--magic", N_("Also try magic to determine syntax"));
  #endif
@@ -604,9 +604,9 @@ index 724bc2c1..89ef1ddf 100644
 +#endif /* NO_USE_UTF8CJK */ 
 +#endif /* ENABLE_UTF8 */
  #ifndef NANO_TINY
+ 	print_opt("-@", "--colonparsing", N_("Accept 'filename:linenumber' notation"));
  	print_opt("-%", "--stateflags", N_("Show some states on the title bar"));
- 	print_opt("-_", "--minibar", N_("Show a feedback bar at the bottom"));
-@@ -1811,6 +1819,14 @@ int main(int argc, char **argv)
+@@ -1840,6 +1848,14 @@ int main(int argc, char **argv)
  #ifdef HAVE_LIBMAGIC
  		{"magic", 0, NULL, '!'},
  #endif
@@ -621,7 +621,7 @@ index 724bc2c1..89ef1ddf 100644
  		{NULL, 0, NULL, 0}
  	};
  
-@@ -1841,7 +1857,16 @@ int main(int argc, char **argv)
+@@ -1870,7 +1886,16 @@ int main(int argc, char **argv)
  #endif
  
  #ifdef ENABLE_NLS
@@ -638,26 +638,26 @@ index 724bc2c1..89ef1ddf 100644
  	textdomain(PACKAGE);
  #endif
  
-@@ -1852,8 +1877,18 @@ int main(int argc, char **argv)
+@@ -1881,8 +1906,18 @@ int main(int argc, char **argv)
  	if (*(tail(argv[0])) == 'r')
  		SET(RESTRICTED);
  
 +#ifndef NO_USE_UTF8CJK
 +#ifndef NO_USE_UTF8CJK_EMOJI
-+	while ((optchr = getopt_long(argc, argv, "ABC:DEFGHIJ:KLMNOPQ:RS$T:UVWX:Y:Z"
-+				"abcdef:ghijklmno:pqr:s:tuvwxy84!%_0", long_options, NULL)) != -1) {
++	while ((optchr = getopt_long(argc, argv, "ABC:DEFGHIJ:KLMNOPQ:RST:UVWX:Y:Z"
++				"abcdef:ghijklmno:pqr:s:tuvwxyz84!@%_0/", long_options, NULL)) > 0) {
 +#else
-+	while ((optchr = getopt_long(argc, argv, "ABC:DEFGHIJ:KLMNOPQ:RS$T:UVWX:Y:Z"
-+				"abcdef:ghijklmno:pqr:s:tuvwxy8!%_0", long_options, NULL)) != -1) {
++	while ((optchr = getopt_long(argc, argv, "ABC:DEFGHIJ:KLMNOPQ:RST:UVWX:Y:Z"
++				"abcdef:ghijklmno:pqr:s:tuvwxyz8!@%_0/", long_options, NULL)) > 0) {
 +#endif /* NO_USE_UTF8CJK_EMOJI */
 +#else
- 	while ((optchr = getopt_long(argc, argv, "ABC:DEFGHIJ:KLMNOPQ:RS$T:UVWX:Y:Z"
- 				"abcdef:ghijklmno:pqr:s:tuvwxy!%_0", long_options, NULL)) != -1) {
+ 	while ((optchr = getopt_long(argc, argv, "ABC:DEFGHIJ:KLMNOPQ:RST:UVWX:Y:Z"
+ 				"abcdef:ghijklmno:pqr:s:tuvwxyz!@%_0/", long_options, NULL)) > 0) {
 +#endif /* NO_USE_UTF8CJK */
  		switch (optchr) {
  #ifndef NANO_TINY
  			case 'A':
-@@ -2091,6 +2126,19 @@ int main(int argc, char **argv)
+@@ -2127,6 +2162,19 @@ int main(int argc, char **argv)
  				SET(USE_MAGIC);
  				break;
  #endif
@@ -675,9 +675,9 @@ index 724bc2c1..89ef1ddf 100644
 +#endif
 +#endif
  #ifndef NANO_TINY
- 			case '%':
- 				SET(STATEFLAGS);
-@@ -2112,6 +2160,21 @@ int main(int argc, char **argv)
+ 			case '@':
+ 				SET(COLON_PARSING);
+@@ -2154,6 +2202,21 @@ int main(int argc, char **argv)
  	if (getenv("TERM") == NULL)
  		putenv("TERM=vt220");
  
@@ -700,7 +700,7 @@ index 724bc2c1..89ef1ddf 100644
  	if (initscr() == NULL)
  		exit(1);
 diff --git a/src/prototypes.h b/src/prototypes.h
-index 5462a5ae..6e770694 100644
+index 4a1eac51..6ea78a1f 100644
 --- a/src/prototypes.h
 +++ b/src/prototypes.h
 @@ -61,7 +61,11 @@ extern int didfind;
@@ -716,10 +716,10 @@ index 5462a5ae..6e770694 100644
  extern int controlleft, controlright;
  extern int controlup, controldown;
 diff --git a/src/rcfile.c b/src/rcfile.c
-index 062fba55..5cb3b3df 100644
+index 660546d3..5852aab9 100644
 --- a/src/rcfile.c
 +++ b/src/rcfile.c
-@@ -134,6 +134,14 @@ static const rcoption rcopts[] = {
+@@ -135,6 +135,14 @@ static const rcoption rcopts[] = {
  	{"errorcolor", 0},
  	{"keycolor", 0},
  	{"functioncolor", 0},
@@ -735,7 +735,7 @@ index 062fba55..5cb3b3df 100644
  	{NULL, 0}
  };
 diff --git a/src/winio.c b/src/winio.c
-index bfd13de6..92e77f20 100644
+index d4625994..3ca95b12 100644
 --- a/src/winio.c
 +++ b/src/winio.c
 @@ -29,6 +29,9 @@
@@ -748,7 +748,7 @@ index bfd13de6..92e77f20 100644
  #endif
  
  #ifdef REVISION
-@@ -1913,7 +1916,11 @@ char *display_string(const char *text, size_t column, size_t span,
+@@ -1910,7 +1913,11 @@ char *display_string(const char *text, size_t column, size_t span,
  		}
  
  		/* Determine whether the character takes zero, one, or two columns. */

@@ -8,7 +8,6 @@ class GlibcJa < Formula
   license all_of: ["GPL-2.0-or-later", "LGPL-2.1-or-later"]
 
   depends_on "glibc"
-  depends_on "glibc@2.13"
 
   def install
     prefix.install buildpath/"README" => "README"
@@ -20,7 +19,5 @@ class GlibcJa < Formula
     
     system Formula["glibc"].opt_bin/"localedef", "-i", "ja_JP", "-f", "UTF-8", "ja_JP.UTF-8"
     system Formula["glibc"].opt_bin/"localedef", "-i", "en_US", "-f", "UTF-8", "en_US.UTF-8"
-    system Formula["glibc@2.13"].opt_bin/"localedef", "-i", "ja_JP", "-f", "UTF-8", "ja_JP.UTF-8"
-    system Formula["glibc@2.13"].opt_bin/"localedef", "-i", "en_US", "-f", "UTF-8", "en_US.UTF-8"
   end
 end
