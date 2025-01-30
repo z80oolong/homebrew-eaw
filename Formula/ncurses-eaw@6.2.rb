@@ -1,56 +1,63 @@
 class NcursesEawAT62 < Formula
   desc "Text-based UI library"
   homepage "https://www.gnu.org/software/ncurses/"
-  license "MIT"
   url "https://ftp.gnu.org/gnu/ncurses/ncurses-6.2.tar.gz"
   mirror "https://ftpmirror.gnu.org/ncurses/ncurses-6.2.tar.gz"
   sha256 "30306e0c76e0f9f1f0de987cf1c82a5c21e1ce6568b9227f7da5b71cbea86c9d"
-  version "6.2"
+  license "MIT"
 
   keg_only :versioned_formula
 
+  depends_on "glibc" => :build
   depends_on "pkg-config" => :build
-  depends_on "gpatch" => :build unless OS.mac?
+  on_linux do
+    depends_on "gpatch" => :build
+  end
 
   patch :p1, :DATA
 
   def install
-    system "./configure", "--prefix=#{prefix}",
-                          "--enable-pc-files",
-                          "--with-terminfo-dirs=#{opt_share}/terminfo:#{share}/terminfo",
-                          "--with-default-terminfo-dir=#{share}/terminfo",
-                          "--with-pkg-config-libdir=#{lib}/pkgconfig",
-                          "--enable-sigwinch",
-                          "--enable-symlinks",
-                          "--enable-widec",
-                          "--with-shared",
-                          "--with-gpm=no",
-                          *("--without-ada" unless OS.mac?)
+    args = std_configure_args
+    args << "--enable-pc-files"
+    args << "--with-terminfo-dirs=#{opt_share}/terminfo:#{share}/terminfo"
+    args << "--with-default-terminfo-dir=#{share}/terminfo"
+    args << "--with-pkg-config-libdir=#{lib}/pkgconfig"
+    args << "--enable-sigwinch"
+    args << "--enable-symlinks"
+    args << "--enable-widec"
+    args << "--with-shared"
+    args << "--with-gpm=no"
+    !OS.mac? && (args << "--without-ada")
+
+    system "./configure", *args
+    system "make"
     system "make", "install"
-    make_libncurses_symlinks
 
     prefix.install "test"
     (prefix/"test").install "install-sh", "config.sub", "config.guess"
+    make_libncurses_symlinks
+  end
+
+  def post_install
+    ohai "Installing locale data for {ja_JP, zh_*, ko_*, ...}.UTF-8"
+
+    localedef = OS.linux? ? (Formula["glibc"].opt_bin/"localedef") : "localedef"
+    %w[ja_JP zh_CN zh_HK zh_SG zh_TW ko_KR en_US].each do |lang|
+      system localedef, "-i", lang, "-f", "UTF-8", "#{lang}.UTF-8"
+    end
   end
 
   def make_libncurses_symlinks
     major = version.to_s.split(".")[0]
     minor = version.to_s.split(".")[1]
-    patch = "0.1"
 
     %w[form menu ncurses panel].each do |name|
       if OS.mac?
-        (lib/"lib#{name}w.#{major}.dylib").rename(lib/"lib#{name}w-eaw.#{major}.dylib")
-        lib.install_symlink "lib#{name}w-eaw.#{major}.dylib" => "lib#{name}.dylib"
-        lib.install_symlink "lib#{name}w-eaw.#{major}.dylib" => "lib#{name}w.dylib"
-        lib.install_symlink "lib#{name}w-eaw.#{major}.dylib" => "lib#{name}.#{major}.dylib"
-        lib.install_symlink "lib#{name}w-eaw.#{major}.dylib" => "lib#{name}w.#{major}.dylib"
+        lib.install_symlink "lib#{name}w.#{major}.dylib" => "lib#{name}.dylib"
+        lib.install_symlink "lib#{name}w.#{major}.dylib" => "lib#{name}.#{major}.dylib"
       else
-        (lib/"lib#{name}w.so.#{major}.#{minor}").rename(lib/"lib#{name}w-eaw.so.#{major}.#{minor}")
-        lib.install_symlink "lib#{name}w-eaw.so.#{major}.#{minor}" => "lib#{name}.so"
-        lib.install_symlink "lib#{name}w-eaw.so.#{major}.#{minor}" => "lib#{name}w.so"
-        lib.install_symlink "lib#{name}w-eaw.so.#{major}.#{minor}" => "lib#{name}.so.#{major}"
-        lib.install_symlink "lib#{name}w-eaw.so.#{major}.#{minor}" => "lib#{name}w.so.#{major}"
+        lib.install_symlink "lib#{name}w.so.#{major}.#{minor}" => "lib#{name}.so"
+        lib.install_symlink "lib#{name}w.so.#{major}.#{minor}" => "lib#{name}.so.#{major}"
       end
       lib.install_symlink "lib#{name}w.a" => "lib#{name}.a"
       lib.install_symlink "lib#{name}w_g.a" => "lib#{name}_g.a"
@@ -91,6 +98,7 @@ class NcursesEawAT62 < Formula
     system testpath/"test/bin/test_vidputs"
   end
 end
+
 __END__
 diff --git a/ncurses/curses.priv.h b/ncurses/curses.priv.h
 index 9ca0263a..d4704ee2 100644

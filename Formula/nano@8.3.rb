@@ -1,199 +1,73 @@
-class NeomuttAT20220429 < Formula
-  desc "E-mail reader with support for Notmuch, NNTP and much more"
-  homepage "https://neomutt.org/"
-  license "GPL-2.0-or-later"
-  url "https://github.com/neomutt/neomutt/archive/20220429.tar.gz"
-  sha256 "45496542897ba8de6bc7cce3f5951d9033ed1c49e5d6f1353adaeefe795d9043"
+class NanoAT83 < Formula
+  desc "Free (GNU) replacement for the Pico text editor"
+  homepage "https://www.nano-editor.org/"
+  url "https://www.nano-editor.org/dist/v8/nano-8.3.tar.xz"
+  sha256 "551b717b2e28f7e90f749323686a1b5bbbd84cfa1390604d854a3ca3778f111e"
+  license "GPL-3.0-or-later"
 
+  keg_only :versioned_formula
+
+  depends_on "pkg-config" => :build
   depends_on "gettext"
-  depends_on "gpgme"
-  depends_on "libidn"
-  depends_on "lmdb"
-  depends_on "lua"
-  depends_on "notmuch"
-  depends_on "openssl@1.1"
-  depends_on "tokyo-cabinet"
   depends_on "z80oolong/eaw/ncurses-eaw@6.2"
-  unless OS.mac?
-    depends_on "krb5"
-    depends_on "cyrus-sasl"
+
+  on_linux do
     depends_on "patchelf" => :build
-    depends_on "pkg-config" => :build
+    depends_on "libmagic"
   end
 
   patch :p1, :DATA
-
-  keg_only :versioned_formula
 
   def install
     ENV.append "CFLAGS",   "-I#{Formula["z80oolong/eaw/ncurses-eaw@6.2"].opt_include}"
     ENV.append "CPPFLAGS", "-I#{Formula["z80oolong/eaw/ncurses-eaw@6.2"].opt_include}"
     ENV.append "LDFLAGS",  "-L#{Formula["z80oolong/eaw/ncurses-eaw@6.2"].opt_lib}"
-    ENV["XML_CATALOG_FILES"] = "#{etc}/xml/catalog"
 
-    system "./configure", "--prefix=#{prefix}",
-                          "--enable-gpgme",
-                          "--with-gpgme=#{Formula["gpgme"].opt_prefix}",
-                          "--disable-doc",
-                          "--gss",
-                          "--lmdb",
-                          "--notmuch",
-                          "--sasl",
-                          "--tokyocabinet",
-                          "--with-ssl=#{Formula["openssl@1.1"].opt_prefix}",
-                          "--with-ui=ncurses",
-                          "--with-ncurses=#{Formula["z80oolong/eaw/ncurses-eaw@6.2"].opt_prefix}",
-                          "--lua",
-                          "--with-lua=#{Formula["lua"].prefix}"
+    args =  std_configure_args
+    args << "--disable-dependency-tracking"
+    args << "--sysconfdir=#{etc}"
+    args << "--enable-color"
+    args << "--enable-extra"
+    args << "--enable-multibuffer"
+    args << "--enable-nanorc"
+    args << "--enable-utf8"
+
+    system "./configure", *args
+    system "make"
     system "make", "install"
 
-    fix_rpath "#{bin}/neomutt", ["z80oolong/eaw/ncurses-eaw@6.2"], ["ncurses"]
+    replace_rpath "#{bin}/nano", "ncurses" => "z80oolong/eaw/ncurses-eaw@6.2"
+    doc.install "doc/sample.nanorc"
   end
 
-  def fix_rpath(binname, append_list, delete_list)
-    return unless OS.linux?
+  def replace_rpath(binname, **replace_list)
+    return if OS.mac?
 
-    delete_list_hash = {}
-    rpath = %x{#{Formula["patchelf"].opt_bin}/patchelf --print-rpath #{binname}}.chomp.split(":")
-
-    (append_list + delete_list).each {|name| delete_list_hash["#{Formula[name].opt_lib}"] = true}
-    rpath.delete_if {|path| delete_list_hash[path]}
-    append_list.each {|name| rpath.unshift("#{Formula[name].opt_lib}")}
-
-    system "#{Formula["patchelf"].opt_bin}/patchelf", "--set-rpath", "#{rpath.join(":")}", "#{binname}"
-  end
-
-  def diff_data
-    lines = self.path.each_line.inject([]) do |result, line|
-      result.push(line) if ((/^__END__/ === line) || result.first)
-      result
+    replace_list = replace_list.each_with_object({}) do |(old, new), result|
+      result[Formula[old].opt_lib.to_s] = Formula[new].opt_lib.to_s
+      result[Formula[old].lib.to_s] = Formula[new].lib.to_s
     end
-    lines.shift
-    return lines.join("")
+
+    rpath = `#{Formula["patchelf"].opt_bin}/patchelf --print-rpath #{binname}`.chomp.split(":")
+    rpath.each_with_index { |i, path| rpath[i] = replace_list[path] if replace_list[path] }
+
+    system Formula["patchelf"].opt_bin/"patchelf", "--set-rpath", rpath.join(":"), binname
   end
+  private :replace_rpath
 
   test do
-    output = shell_output("#{bin}/neomutt -F /dev/null -Q debug_level")
-    assert_equal "set debug_level = 0", output.chomp
+    system "#{bin}/nano", "--version"
   end
 end
 
 __END__
-diff --git a/enter/enter.c b/enter/enter.c
-index d323941..59fbe2d 100644
---- a/enter/enter.c
-+++ b/enter/enter.c
-@@ -64,7 +64,11 @@ enum EnterRedrawFlags
- };
- 
- /* combining mark / non-spacing character */
-+#ifdef NO_USE_UTF8CJK
- #define COMB_CHAR(wc) (IsWPrint(wc) && !wcwidth(wc))
-+#else
-+#define COMB_CHAR(wc) (IsWPrint(wc) && !mutt_mb_wcwidth(wc))
-+#endif
- 
- /**
-  * my_addwch - Display one wide character on screen
-@@ -75,7 +79,11 @@ enum EnterRedrawFlags
-  */
- static int my_addwch(struct MuttWindow *win, wchar_t wc)
- {
-+#ifdef NO_USE_UTF8CJK
-   int n = wcwidth(wc);
-+#else
-+  int n = mutt_mb_wcwidth(wc);
-+#endif
-   if (IsWPrint(wc) && (n > 0))
-     return mutt_addwch(win, wc);
-   if (!(wc & ~0x7f))
-diff --git a/gui/curs_lib.c b/gui/curs_lib.c
-index 004d1b6..f2e3f98 100644
---- a/gui/curs_lib.c
-+++ b/gui/curs_lib.c
-@@ -747,7 +747,11 @@ void mutt_simple_format(char *buf, size_t buflen, int min_width, int max_width,
- #endif
-           if (!IsWPrint(wc))
-         wc = '?';
-+#ifdef NO_USE_UTF8CJK
-       w = wcwidth(wc);
-+#else
-+      w = mutt_mb_wcwidth(wc);
-+#endif
-     }
-     if (w >= 0)
-     {
-@@ -891,7 +895,11 @@ void mutt_paddstr(struct MuttWindow *win, int n, const char *s)
-     }
-     if (!IsWPrint(wc))
-       wc = '?';
-+#ifdef NO_USE_UTF8CJK
-     const int w = wcwidth(wc);
-+#else
-+    const int w = mutt_mb_wcwidth(wc);
-+#endif
-     if (w >= 0)
-     {
-       if (w > n)
-@@ -936,7 +944,11 @@ size_t mutt_wstr_trunc(const char *src, size_t maxlen, size_t maxwid, size_t *wi
-       cl = (cl == (size_t) (-1)) ? 1 : n;
-       wc = ReplacementChar;
-     }
-+#ifdef NO_USE_UTF8CJK
-     cw = wcwidth(wc);
-+#else
-+    cw = mutt_mb_wcwidth(wc);
-+#endif
-     /* hack because MUTT_TREE symbols aren't turned into characters
-      * until rendered by print_enriched_string() */
-     if ((cw < 0) && (src[0] == MUTT_SPECIAL_INDEX))
-@@ -1005,7 +1017,11 @@ size_t mutt_strnwidth(const char *s, size_t n)
-     }
-     if (!IsWPrint(wc))
-       wc = '?';
-+#ifdef NO_USE_UTF8CJK
-     w += wcwidth(wc);
-+#else
-+    w += mutt_mb_wcwidth(wc);
-+#endif
-   }
-   return w;
- }
-diff --git a/help.c b/help.c
-index c071e7b..1a34df8 100644
---- a/help.c
-+++ b/help.c
-@@ -101,7 +101,11 @@ static int print_macro(FILE *fp, int maxwidth, const char **macro)
-       wc = ReplacementChar;
-     }
-     /* glibc-2.1.3's wcwidth() returns 1 for unprintable chars! */
-+#ifdef NO_USE_UTF8CJK
-     const int w = wcwidth(wc);
-+#else
-+    const int w = mutt_mb_wcwidth(wc);
-+#endif
-     if (IsWPrint(wc) && (w >= 0))
-     {
-       if (w > n)
-@@ -175,7 +179,11 @@ static int get_wrapped_width(const char *t, size_t wid)
-     }
-     if (!IsWPrint(wc))
-       wc = '?';
-+#ifdef NO_USE_UTF8CJK
-     n += wcwidth(wc);
-+#else
-+    n += mutt_mb_wcwidth(wc);
-+#endif
-   }
-   if (n > wid)
-     n = m;
-diff --git a/mutt/mbyte.c b/mutt/mbyte.c
-index fae7e72..8b5d529 100644
---- a/mutt/mbyte.c
-+++ b/mutt/mbyte.c
-@@ -42,6 +42,423 @@
- 
- bool OptLocales; ///< (pseudo) set if user has valid locale definition
+diff --git a/src/chars.c b/src/chars.c
+index af73bc3..8ad9321 100644
+--- a/src/chars.c
++++ b/src/chars.c
+@@ -28,6 +28,405 @@
+ #include <wchar.h>
+ #include <wctype.h>
  
 +#ifndef NO_USE_UTF8CJK
 +/*
@@ -285,7 +159,6 @@ index fae7e72..8b5d529 100644
 +  return 0;
 +}
 +
-+
 +/* The following two functions define the column width of an ISO 10646
 + * character as follows:
 + *
@@ -318,7 +191,7 @@ index fae7e72..8b5d529 100644
 + * in ISO 10646.
 + */
 +
-+static int mk_wcwidth(wchar_t ucs)
++int mk_wcwidth(wchar_t ucs)
 +{
 +  /* sorted list of non-overlapping intervals of non-spacing characters */
 +  /* generated by "uniset +cat=Me +cat=Mn +cat=Cf -00AD +1160-11FF +200B c" */
@@ -402,8 +275,7 @@ index fae7e72..8b5d529 100644
 +      (ucs >= 0x30000 && ucs <= 0x3fffd)));
 +}
 +
-+
-+static int mk_wcswidth(const wchar_t *pwcs, size_t n)
++int mk_wcswidth(const wchar_t *pwcs, size_t n)
 +{
 +  int w, width = 0;
 +
@@ -416,7 +288,6 @@ index fae7e72..8b5d529 100644
 +  return width;
 +}
 +
-+
 +/*
 + * The following functions are the same as mk_wcwidth() and
 + * mk_wcswidth(), except that spacing characters in the East Asian
@@ -426,7 +297,7 @@ index fae7e72..8b5d529 100644
 + * the traditional terminal character-width behaviour. It is not
 + * otherwise recommended for general use.
 + */
-+static int mk_wcwidth_cjk(wchar_t ucs)
++int mk_wcwidth_cjk(wchar_t ucs)
 +{
 +  /* sorted list of non-overlapping intervals of East Asian Ambiguous
 +   * characters, generated by "uniset +WIDTH-A -cat=Me -cat=Mn -cat=Cf c" */
@@ -493,7 +364,7 @@ index fae7e72..8b5d529 100644
 +  return mk_wcwidth(ucs);
 +}
 +
-+static int mk_wcswidth_cjk(const wchar_t *pwcs, size_t n)
++int mk_wcswidth_cjk(const wchar_t *pwcs, size_t n)
 +{
 +  int w, width = 0;
 +
@@ -515,7 +386,7 @@ index fae7e72..8b5d529 100644
 + *
 + * https://github.com/vim-jp/issues/issues/1086
 + */
-+static int mk_wcwidth_cjk_emoji(wchar_t ucs)
++int mk_wcwidth_cjk_emoji(wchar_t ucs)
 +{
 +  /* Sorted list of non-overlapping intervals of all Emoji characters,
 +   * based on http://unicode.org/emoji/charts/emoji-list.html */
@@ -577,116 +448,270 @@ index fae7e72..8b5d529 100644
 +
 +  return mk_wcwidth_cjk(ucs);
 +}
-+#endif
++#endif /* NO_USE_UTF8CJK_EMOJI */
 +
-+#include "core/lib.h"
-+#include "config/lib.h"
-+
-+static int mutt_wcwidth_cjk(wchar_t ucs)
++int nano_wcwidth(wchar_t wc)
 +{
-+  if (cs_subset_bool(NeoMutt->sub, "utf8_cjk"))
-+  {
 +#ifndef NO_USE_UTF8CJK_EMOJI
-+    if(cs_subset_bool(NeoMutt->sub, "utf8_emoji"))
-+      return mk_wcwidth_cjk_emoji(ucs);
-+    else
-+#endif
-+      return mk_wcwidth_cjk(ucs);
-+  }
-+
-+  return mk_wcwidth(ucs);
-+}
-+
-+
-+static int mutt_wcswidth_cjk(const wchar_t *pwcs, size_t n)
-+{
-+  int w, width = 0;
-+
-+  for (;*pwcs && n-- > 0; pwcs++)
-+    if ((w = mutt_wcwidth_cjk(*pwcs)) < 0)
-+      return -1;
-+    else
-+      width += w;
-+
-+  return width;
-+}
-+#endif
-+
- /**
-  * mutt_mb_charlen - Count the bytes in a (multibyte) character
-  * @param[in]  s     String to be examined
-@@ -63,7 +480,12 @@ int mutt_mb_charlen(const char *s, int *width)
-   n = mutt_str_len(s);
-   k = mbrtowc(&wc, s, n, &mbstate);
-   if (width)
-+#ifdef NO_USE_UTF8CJK
-     *width = wcwidth(wc);
++	if (ISSET(UTF8EMOJI))
++		return mk_wcwidth_cjk_emoji(wc);
++	else if (ISSET(UTF8CJK))
++		return mk_wcwidth_cjk(wc);
++	else
++		return mk_wcwidth(wc);
 +#else
-+    *width = mutt_wcwidth_cjk(wc);
-+#endif
++	if (ISSET(UTF8CJK))
++		return mk_wcwidth_cjk(wc);
++	else
++		return mk_wcwidth(wc);
++#endif /* NO_USE_UTF8CJK_EMOJI */
++}
++#endif /* NO_USE_UTF8CJK */
 +
-   return ((k == (size_t) (-1)) || (k == (size_t) (-2))) ? -1 : k;
+ static bool use_utf8 = FALSE;
+ 		/* Whether we've enabled UTF-8 support. */
+ 
+@@ -234,8 +633,11 @@ bool is_doublewidth(const char *ch)
+ 
+ 	if (mbtowide(&wc, ch) < 0)
+ 		return FALSE;
+-
++#ifndef NO_USE_UTF8CJK
++	return (nano_wcwidth(wc) == 2);
++#else
+ 	return (wcwidth(wc) == 2);
++#endif
  }
  
-@@ -144,7 +566,12 @@ int mutt_mb_width(const char *str, int col, bool display)
-   {
-     if (mbtowc(&wc, p, MB_CUR_MAX) >= 0)
-     {
-+#ifdef NO_USE_UTF8CJK
-       l = wcwidth(wc);
-+#else
-+      l = mutt_wcwidth_cjk(wc);
-+#endif
-+
-       if (l < 0)
-         l = 1;
-       /* correctly calc tab stop, even for sending as the
-@@ -175,7 +602,11 @@ int mutt_mb_width(const char *str, int col, bool display)
-  */
- int mutt_mb_wcwidth(wchar_t wc)
- {
-+#ifdef NO_USE_UTF8CJK
-   int n = wcwidth(wc);
-+#else
-+  int n = mutt_wcwidth_cjk(wc);
-+#endif
-   if (IsWPrint(wc) && (n > 0))
-     return n;
-   if (!(wc & ~0x7f))
-diff --git a/mutt_config.c b/mutt_config.c
-index 49c4749..14dd0b2 100644
---- a/mutt_config.c
-+++ b/mutt_config.c
-@@ -641,6 +641,16 @@ static struct ConfigDef MainVars[] = {
-   { "write_inc", DT_NUMBER|DT_NOT_NEGATIVE, 10, 0, NULL,
-     "Update the progress bar after this many records written (0 to disable)"
-   },
+ /* Return TRUE when the given character occupies zero cells. */
+@@ -256,7 +658,11 @@ bool is_zerowidth(const char *ch)
+ 		return FALSE;
+ #endif
+ 
 +#ifndef NO_USE_UTF8CJK
-+  { "utf8_cjk", DT_BOOL, false, 0, NULL,
-+    "Width of East Asian Ambiguous Character is 2."
-+  },
-+#ifndef NO_USE_UTF8CJK_EMOJI
-+  { "utf8_emoji", DT_BOOL, false, 0, NULL,
-+    "Width of Emoji of UTF-8 Character is 2."
-+  },
++	return (nano_wcwidth(wc) == 0);
++#else
+ 	return (wcwidth(wc) == 0);
 +#endif
+ }
+ #endif /* ENABLE_UTF8 */
+ 
+@@ -341,7 +747,11 @@ int advance_over(const char *string, size_t *column)
+ 				return 1;
+ 			}
+ 
++#ifndef NO_USE_UTF8CJK
++			int width = nano_wcwidth(wc);
++#else
+ 			int width = wcwidth(wc);
 +#endif
  
-   { "escape",                    DT_DEPRECATED|DT_STRING,            IP "~", IP "2021-03-18" },
-   { "ignore_linear_white_space", DT_DEPRECATED|DT_BOOL,              false,  IP "2021-03-18" },
-diff --git a/pager/display.c b/pager/display.c
-index b78aa7e..fd29be8 100644
---- a/pager/display.c
-+++ b/pager/display.c
-@@ -899,7 +899,11 @@ static int format_line(struct MuttWindow *win, struct Line **lines, int line_num
-       {
-         space = ch;
-       }
-+#ifdef NO_USE_UTF8CJK
-       t = wcwidth(wc);
+ #if defined(__OpenBSD__)
+ 			*column += (width < 0 || wc >= 0xF0000) ? 1 : width;
+diff --git a/src/definitions.h b/src/definitions.h
+index 0817076..5872799 100644
+--- a/src/definitions.h
++++ b/src/definitions.h
+@@ -372,6 +372,12 @@ enum {
+ 	LET_THEM_ZAP,
+ 	BREAK_LONG_LINES,
+ 	JUMPY_SCROLLING,
++#ifndef NO_USE_UTF8CJK
++	UTF8CJK,
++#ifndef NO_USE_UTF8CJK_EMOJI
++	UTF8EMOJI,
++#endif /* NO_USE_UTF8CJK_EMOJI */
++#endif /* NO_USE_UTF8CJK */
+ 	EMPTY_LINE,
+ 	INDICATOR,
+ 	BOOKSTYLE,
+diff --git a/src/global.c b/src/global.c
+index f070779..8d7a410 100644
+--- a/src/global.c
++++ b/src/global.c
+@@ -93,8 +93,12 @@ int didfind = 0;
+ char *present_path = NULL;
+ 		/* The current browser directory when trying to do tab completion. */
+ 
++#if 0
+ unsigned flags[4] = {0, 0, 0, 0};
 +#else
-+      t = mutt_mb_wcwidth(wc);
++unsigned flags[8] = {0, 0, 0, 0, 0, 0, 0, 0};
+ 		/* Our flags array, containing the states of all global options. */
 +#endif
-       if (col + t > wrap_cols)
-         break;
-       col += t;
+ 
+ int controlleft, controlright, controlup, controldown;
+ int controlhome, controlend;
+diff --git a/src/nano.c b/src/nano.c
+index f4dbfdd..a102f16 100644
+--- a/src/nano.c
++++ b/src/nano.c
+@@ -647,6 +647,14 @@ void usage(void)
+ #ifdef HAVE_LIBMAGIC
+ 	print_opt("-!", "--magic", N_("Also try magic to determine syntax"));
+ #endif
++#ifdef ENABLE_UTF8
++#ifndef NO_USE_UTF8CJK
++	print_opt("-8", "--utf8cjk", N_("Set width of UTF-8 East Asia Ambiguous Width Character to 2."));
++#ifndef NO_USE_UTF8CJK_EMOJI
++	print_opt("-4", "--utf8emoji", N_("Set width of UTF-8 Emoji Character to 2."));
++#endif /* NO_USE_UTF8CJK_EMOJI */
++#endif /* NO_USE_UTF8CJK */ 
++#endif /* ENABLE_UTF8 */
+ #ifndef NANO_TINY
+ 	print_opt("-@", "--colonparsing", N_("Accept 'filename:linenumber' notation"));
+ 	print_opt("-%", "--stateflags", N_("Show some states on the title bar"));
+@@ -1840,6 +1848,14 @@ int main(int argc, char **argv)
+ #ifdef HAVE_LIBMAGIC
+ 		{"magic", 0, NULL, '!'},
+ #endif
++#ifdef ENABLE_UTF8
++#ifndef NO_USE_UTF8CJK
++		{"utf8cjk", 0, NULL, '8'},
++#ifndef NO_USE_UTF8CJK_EMOJI
++		{"utf8emoji", 0, NULL, '4'},
++#endif /* NO_USE_UTF8CJK_EMOJI */
++#endif /* NO_USE_UTF8CJK */
++#endif /* ENABLE_UTF8 */
+ 		{NULL, 0, NULL, 0}
+ 	};
+ 
+@@ -1870,7 +1886,16 @@ int main(int argc, char **argv)
+ #endif
+ 
+ #ifdef ENABLE_NLS
++#if 1
++	const char *locale_dir;
++
++	if ((locale_dir = getenv("LOCALEDIR")) == NULL)
++		locale_dir = LOCALEDIR;
++
++	bindtextdomain(PACKAGE, locale_dir);
++#else
+ 	bindtextdomain(PACKAGE, LOCALEDIR);
++#endif
+ 	textdomain(PACKAGE);
+ #endif
+ 
+@@ -1881,8 +1906,18 @@ int main(int argc, char **argv)
+ 	if (*(tail(argv[0])) == 'r')
+ 		SET(RESTRICTED);
+ 
++#ifndef NO_USE_UTF8CJK
++#ifndef NO_USE_UTF8CJK_EMOJI
++	while ((optchr = getopt_long(argc, argv, "ABC:DEFGHIJ:KLMNOPQ:RST:UVWX:Y:Z"
++				"abcdef:ghijklmno:pqr:s:tuvwxyz84!@%_0/", long_options, NULL)) > 0) {
++#else
++	while ((optchr = getopt_long(argc, argv, "ABC:DEFGHIJ:KLMNOPQ:RST:UVWX:Y:Z"
++				"abcdef:ghijklmno:pqr:s:tuvwxyz8$!@%_0/", long_options, NULL)) > 0) {
++#endif /* NO_USE_UTF8CJK_EMOJI */
++#else
+ 	while ((optchr = getopt_long(argc, argv, "ABC:DEFGHIJ:KLMNOPQ:RST:UVWX:Y:Z"
+ 				"abcdef:ghijklmno:pqr:s:tuvwxyz!@%_0/", long_options, NULL)) > 0) {
++#endif /* NO_USE_UTF8CJK */
+ 		switch (optchr) {
+ #ifndef NANO_TINY
+ 			case 'A':
+@@ -2127,6 +2162,19 @@ int main(int argc, char **argv)
+ 				SET(USE_MAGIC);
+ 				break;
+ #endif
++#ifdef ENABLE_UTF8
++#ifndef NO_USE_UTF8CJK
++			case '8':
++				SET(UTF8CJK);
++				break;
++#ifndef NO_USE_UTF8CJK_EMOJI
++			case '4':
++				SET(UTF8CJK);
++				SET(UTF8EMOJI);
++				break;
++#endif
++#endif
++#endif
+ #ifndef NANO_TINY
+ 			case '@':
+ 				SET(COLON_PARSING);
+@@ -2154,6 +2202,21 @@ int main(int argc, char **argv)
+ 	if (getenv("TERM") == NULL)
+ 		putenv("TERM=vt220");
+ 
++#ifdef ENABLE_UTF8
++#ifndef NO_USE_UTF8CJK
++	const char *lc_ctype;
++
++	if ((lc_ctype = setlocale(LC_CTYPE, "")) != NULL) {
++		if (!strncmp(lc_ctype, "ja", 2) || !strncmp(lc_ctype, "ko", 2) || !strncmp(lc_ctype, "zh", 2)) {
++			SET(UTF8CJK);
++#ifndef NO_USE_UTF8CJK_EMOJI
++			SET(UTF8EMOJI);
++#endif
++		}
++	}
++#endif
++#endif
++
+ 	/* Enter into curses mode.  Abort if this fails. */
+ 	if (initscr() == NULL)
+ 		exit(1);
+diff --git a/src/prototypes.h b/src/prototypes.h
+index 4a1eac5..6ea78a1 100644
+--- a/src/prototypes.h
++++ b/src/prototypes.h
+@@ -61,7 +61,11 @@ extern int didfind;
+ 
+ extern char *present_path;
+ 
++#if 0
+ extern unsigned flags[4];
++#else
++extern unsigned flags[8];
++#endif
+ 
+ extern int controlleft, controlright;
+ extern int controlup, controldown;
+diff --git a/src/rcfile.c b/src/rcfile.c
+index 660546d..5852aab 100644
+--- a/src/rcfile.c
++++ b/src/rcfile.c
+@@ -135,6 +135,14 @@ static const rcoption rcopts[] = {
+ 	{"errorcolor", 0},
+ 	{"keycolor", 0},
+ 	{"functioncolor", 0},
++#endif
++#ifdef ENABLE_UTF8
++#ifndef NO_USE_UTF8CJK
++	{"utf8cjk", UTF8CJK},
++#ifndef NO_USE_UTF8CJK_EMOJI
++	{"utf8emoji", UTF8EMOJI},
++#endif /* NO_USE_UTF8CJK_EMOJI */
++#endif /* NO_USE_UTF8CJK */
+ #endif
+ 	{NULL, 0}
+ };
+diff --git a/src/winio.c b/src/winio.c
+index d462599..3ca95b1 100644
+--- a/src/winio.c
++++ b/src/winio.c
+@@ -29,6 +29,9 @@
+ #include <string.h>
+ #ifdef ENABLE_UTF8
+ #include <wchar.h>
++#ifndef NO_USE_UTF8CJK
++extern int nano_wcwidth(wchar_t ucs);
++#endif /* NO_USE_UTF8CJK */
+ #endif
+ 
+ #ifdef REVISION
+@@ -1910,7 +1913,11 @@ char *display_string(const char *text, size_t column, size_t span,
+ 		}
+ 
+ 		/* Determine whether the character takes zero, one, or two columns. */
++#ifndef NO_USE_UTF8CJK
++		charwidth = nano_wcwidth(wc);
++#else
+ 		charwidth = wcwidth(wc);
++#endif /* NO_USE_UTF8CJK */
+ 
+ 		/* Watch the number of zero-widths, to keep ample memory reserved. */
+ 		if (charwidth == 0 && --stowaways == 0) {

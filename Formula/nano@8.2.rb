@@ -1,9 +1,11 @@
 class NanoAT82 < Formula
   desc "Free (GNU) replacement for the Pico text editor"
   homepage "https://www.nano-editor.org/"
-  license "GPL-3.0-or-later"
   url "https://www.nano-editor.org/dist/v8/nano-8.2.tar.xz"
   sha256 "d5ad07dd862facae03051c54c6535e54c7ed7407318783fcad1ad2d7076fffeb"
+  license "GPL-3.0-or-later"
+
+  keg_only :versioned_formula
 
   depends_on "pkg-config" => :build
   depends_on "gettext"
@@ -11,11 +13,8 @@ class NanoAT82 < Formula
 
   on_linux do
     depends_on "patchelf" => :build
+    depends_on "libmagic"
   end
-
-  depends_on "libmagic" unless OS.mac?
-
-  keg_only :versioned_formula
 
   patch :p1, :DATA
 
@@ -24,42 +23,37 @@ class NanoAT82 < Formula
     ENV.append "CPPFLAGS", "-I#{Formula["z80oolong/eaw/ncurses-eaw@6.2"].opt_include}"
     ENV.append "LDFLAGS",  "-L#{Formula["z80oolong/eaw/ncurses-eaw@6.2"].opt_lib}"
 
-    system "./configure", "--disable-debug",
-                          "--disable-dependency-tracking",
-                          "--prefix=#{prefix}",
-                          "--sysconfdir=#{etc}",
-                          "--enable-color",
-                          "--enable-extra",
-                          "--enable-multibuffer",
-                          "--enable-nanorc",
-                          "--enable-utf8"
+    args =  std_configure_args
+    args << "--disable-dependency-tracking"
+    args << "--sysconfdir=#{etc}"
+    args << "--enable-color"
+    args << "--enable-extra"
+    args << "--enable-multibuffer"
+    args << "--enable-nanorc"
+    args << "--enable-utf8"
+
+    system "./configure", *args
+    system "make"
     system "make", "install"
 
-    fix_rpath "#{bin}/nano", ["z80oolong/eaw/ncurses-eaw@6.2"], ["ncurses"]
+    replace_rpath "#{bin}/nano", "ncurses" => "z80oolong/eaw/ncurses-eaw@6.2"
     doc.install "doc/sample.nanorc"
   end
 
-  def fix_rpath(binname, append_list, delete_list)
-    return unless OS.linux?
+  def replace_rpath(binname, **replace_list)
+    return if OS.mac?
 
-    delete_list_hash = {}
-    rpath = %x{#{Formula["patchelf"].opt_bin}/patchelf --print-rpath #{binname}}.chomp.split(":")
-
-    (append_list + delete_list).each {|name| delete_list_hash["#{Formula[name].opt_lib}"] = true}
-    rpath.delete_if {|path| delete_list_hash[path]}
-    append_list.each {|name| rpath.unshift("#{Formula[name].opt_lib}")}
-
-    system "#{Formula["patchelf"].opt_bin}/patchelf", "--set-rpath", "#{rpath.join(":")}", "#{binname}"
-  end
-
-  def diff_data
-    lines = self.path.each_line.inject([]) do |result, line|
-      result.push(line) if ((/^__END__/ === line) || result.first)
-      result
+    replace_list = replace_list.each_with_object({}) do |(old, new), result|
+      result[Formula[old].opt_lib.to_s] = Formula[new].opt_lib.to_s
+      result[Formula[old].lib.to_s] = Formula[new].lib.to_s
     end
-    lines.shift
-    return lines.join("")
+
+    rpath = `#{Formula["patchelf"].opt_bin}/patchelf --print-rpath #{binname}`.chomp.split(":")
+    rpath.each_with_index { |i, path| rpath[i] = replace_list[path] if replace_list[path] }
+
+    system Formula["patchelf"].opt_bin/"patchelf", "--set-rpath", rpath.join(":"), binname
   end
+  private :replace_rpath
 
   test do
     system "#{bin}/nano", "--version"

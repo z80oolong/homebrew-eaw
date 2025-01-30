@@ -4,54 +4,60 @@ class RxvtUnicodeAT931 < Formula
   url "http://dist.schmorp.de/rxvt-unicode/Attic/rxvt-unicode-9.31.tar.bz2"
   sha256 "aaa13fcbc149fe0f3f391f933279580f74a96fd312d6ed06b8ff03c2d46672e8"
   license "GPL-3.0-only"
-  revision 3
-
-  keg_only :versioned_formula
+  revision 4
 
   livecheck do
     url "http://dist.schmorp.de/rxvt-unicode/"
     regex(/href=.*?rxvt-unicode[._-]v?(\d+(?:\.\d+)+)\.t/i)
   end
 
+  keg_only :versioned_formula
+
+  depends_on "cmake" => :build
   depends_on "pkg-config" => :build
-  depends_on "gdk-pixbuf"
   depends_on "fontconfig"
   depends_on "freetype"
+  depends_on "gdk-pixbuf"
   depends_on "libx11"
   depends_on "libxft"
   depends_on "libxmu"
   depends_on "libxrender"
   depends_on "libxt"
+  depends_on "perl"
   depends_on "startup-notification"
-  depends_on "z80oolong/eaw/libptytty@2.0"
   depends_on "z80oolong/eaw/ncurses-eaw@6.2"
 
-  uses_from_macos "perl"
-
-  patch :p1, :DATA 
-
-  def install
-    args = %W[
-      --prefix=#{prefix}
-      --enable-256-color
-      --with-term=xterm-256color
-      --with-terminfo=#{Formula["z80oolong/eaw/ncurses-eaw@6.2"].opt_share}/terminfo
-      --enable-smart-resize
-      --enable-xft
-      --enable-unicode3
-    ]
-
-    system "./configure", *args
-    system "make", "install"
+  resource("libptytty") do
+    url "http://dist.schmorp.de/libptytty/libptytty-2.0.tar.gz"
+    sha256 "8033ed3aadf28759660d4f11f2d7b030acf2a6890cb0f7926fb0cfa6739d31f7"
   end
 
-  def diff_data
-    lines = self.path.each_line.inject([]) do |result, line|
-      result.push(line) if ((/^__END__/ === line) || result.first)
-      result
+  patch :p1, :DATA
+
+  def install
+    resource("libptytty").stage do
+      args  = std_cmake_args
+      args << "-DBUILD_SHARED_LIBS=ON"
+
+      system "cmake", "-S", ".", "-B", "build", *args
+      system "cmake", "--build", "build"
+      system "cmake", "--install", "build"
     end
-    lines.shift
-    return lines.join("")
+
+    args = std_configure_args
+    args << "--datarootdir=#{share}"
+    args << "--enable-256-color"
+    args << "--with-term=xterm-256color"
+    args << "--with-terminfo=#{Formula["z80oolong/eaw/ncurses-eaw@6.2"].opt_share}/terminfo"
+    args << "--enable-smart-resize"
+    args << "--enable-unicode3"
+
+    ENV.prepend_path "PKG_CONFIG_PATH", lib/"pkgconfig"
+    ENV["LC_ALL"] = "C"
+
+    system "./configure", *args
+    system "make"
+    system "make", "install"
   end
 
   test do

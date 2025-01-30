@@ -1,16 +1,19 @@
 class MuttAT2212 < Formula
   desc "Mongrel of mail user agents (part elm, pine, mush, mh, etc.)"
   homepage "http://www.mutt.org/"
-  license "GPL-2.0-or-later"
   url "https://bitbucket.org/mutt/mutt/downloads/mutt-2.2.12.tar.gz"
   sha256 "043af312f64b8e56f7fd0bf77f84a205d4c498030bd9586457665c47bb18ce38"
+  license "GPL-2.0-or-later"
 
   keg_only :versioned_formula
 
   depends_on "autoconf" => :build
   depends_on "automake" => :build
+  depends_on "libxslt" => :build
+  depends_on "perl" => :build
+  depends_on "glibc"
   depends_on "gpgme"
-  depends_on "openssl@1.1"
+  depends_on "openssl@3"
   depends_on "tokyo-cabinet"
   depends_on "z80oolong/eaw/ncurses-eaw@6.2"
 
@@ -18,60 +21,56 @@ class MuttAT2212 < Formula
   uses_from_macos "krb5"
   uses_from_macos "zlib"
 
-  conflicts_with "tin",
-    because: "both install mmdf.5 and mbox.5 man pages"
+  patch :p1, :DATA
 
   def install
     ENV.append "CFLAGS",   "-I#{Formula["z80oolong/eaw/ncurses-eaw@6.2"].opt_include}"
     ENV.append "CPPFLAGS", "-I#{Formula["z80oolong/eaw/ncurses-eaw@6.2"].opt_include}"
     ENV.append "LDFLAGS",  "-L#{Formula["z80oolong/eaw/ncurses-eaw@6.2"].opt_lib}"
+    ENV["LC_ALL"] = "C"
 
     user_in_mail_group = Etc.getgrnam("mail").mem.include?(ENV["USER"])
     effective_group = Etc.getgrgid(Process.egid).name
 
-    args = %W[
-      --disable-dependency-tracking
-      --disable-warnings
-      --prefix=#{prefix}
-      --enable-debug
-      --enable-hcache
-      --enable-imap
-      --enable-pop
-      --enable-sidebar
-      --enable-smtp
-      --with-gss
-      #{OS.mac? ? "--with-sasl" : "--with-sasl2"}
-      --with-ssl=#{Formula["openssl@1.1"].opt_prefix}
-      --with-tokyocabinet
-      --enable-gpgme
-    ]
+    args = std_configure_args
+    args << "--disable-warnings"
+    args << "--enable-debug"
+    args << "--enable-hcache"
+    args << "--enable-imap"
+    args << "--enable-pop"
+    args << "--enable-sidebar"
+    args << "--enable-smtp"
+    args << "--with-gss"
+    args << "--with-ssl=#{Formula["openssl@3"].opt_prefix}"
+    args << "--with-tokyocabinet"
+    args << "--enable-gpgme"
+    args << (OS.mac? ? "--with-sasl" : "--with-sasl2")
 
     system "./prepare", *args
     system "make"
-
     # This permits the `mutt_dotlock` file to be installed under a group
     # that isn't `mail`.
     # https://github.com/Homebrew/homebrew/issues/45400
     inreplace "Makefile", /^DOTLOCK_GROUP =.*$/, "DOTLOCK_GROUP = #{effective_group}" unless user_in_mail_group
-
     system "make", "install"
-    doc.install resource("html") if build.head?
 
-    fix_rpath "#{bin}/mutt", ["z80oolong/eaw/ncurses-eaw@6.2"], ["ncurses"]
+    replace_rpath "#{bin}/mutt", "ncurses" => "z80oolong/eaw/ncurses-eaw@6.2"
   end
 
-  def fix_rpath(binname, append_list, delete_list)
-    return unless OS.linux?
+  def replace_rpath(binname, **replace_list)
+    return if OS.mac?
 
-    delete_list_hash = {}
-    rpath = %x{#{Formula["patchelf"].opt_bin}/patchelf --print-rpath #{binname}}.chomp.split(":")
+    replace_list = replace_list.each_with_object({}) do |(old, new), result|
+      result[Formula[old].opt_lib.to_s] = Formula[new].opt_lib.to_s
+      result[Formula[old].lib.to_s] = Formula[new].lib.to_s
+    end
 
-    (append_list + delete_list).each {|name| delete_list_hash["#{Formula[name].opt_lib}"] = true}
-    rpath.delete_if {|path| delete_list_hash[path]}
-    append_list.each {|name| rpath.unshift("#{Formula[name].opt_lib}")}
+    rpath = `#{Formula["patchelf"].opt_bin}/patchelf --print-rpath #{binname}`.chomp.split(":")
+    rpath.each_with_index { |i, path| rpath[i] = replace_list[path] if replace_list[path] }
 
-    system "#{Formula["patchelf"].opt_bin}/patchelf", "--set-rpath", "#{rpath.join(":")}", "#{binname}"
+    system Formula["patchelf"].opt_bin/"patchelf", "--set-rpath", rpath.join(":"), binname
   end
+  private :replace_rpath
 
   def caveats
     <<~EOS
@@ -84,15 +83,6 @@ class MuttAT2212 < Formula
       Alternatively, you may configure `spoolfile` in your .muttrc to a file inside
       your home directory.
     EOS
-  end
-
-  def diff_data
-    lines = self.path.each_line.inject([]) do |result, line|
-      result.push(line) if ((/^__END__/ === line) || result.first)
-      result
-    end
-    lines.shift
-    return lines.join("")
   end
 
   test do
@@ -247,7 +237,7 @@ index 29dda79..0734d23 100644
    if (n > wid)
      n = m;
 diff --git a/init.h b/init.h
-index b0651c2..279e476 100644
+index b0651c2..1304d62 100644
 --- a/init.h
 +++ b/init.h
 @@ -4905,6 +4905,12 @@ struct option_t MuttVars[] = {
@@ -255,9 +245,9 @@ index b0651c2..279e476 100644
    /*
    */
 +#ifndef NO_USE_MKWCWIDTH
-+  {"utf8_cjk",          DT_BOOL, R_NONE, {.p=OPTUTF8CJK}, {.p=0} },
++  {"utf8_cjk",          DT_BOOL, R_NONE, {.l=OPTUTF8CJK}, {.l=0} },
 +#ifndef NO_USE_UTF8CJK_EMOJI
-+  {"utf8_emoji",        DT_BOOL, R_NONE, {.p=OPTUTF8CJKEMOJI}, {.p=0} },
++  {"utf8_emoji",        DT_BOOL, R_NONE, {.l=OPTUTF8CJKEMOJI}, {.l=0} },
 +#endif
 +#endif
    /*--*/
