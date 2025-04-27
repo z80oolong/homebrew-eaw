@@ -8,7 +8,11 @@
 
 ### z80oolong/eaw/nano
 
-Unicode の規格における東アジア圏の各種文字のうち、いわゆる "◎" や "★" 等の記号文字及び罫線文字等、 [East_Asian_Width 特性の値が A (Ambiguous) となる文字][EAWA] (以下、 [East Asian Ambiguous Character][EAWA]) が、日本語環境で文字幅を適切に扱うことが出来ずに表示が乱れる問題 （以下、 [East Asian Ambiguous Character][EAWA] 問題）を修正した軽量の CUI テキストエディタ [nano][NANO] のうち、最新の安定版及び HEAD 版を導入するための Formula です。
+Unicode の規格における東アジア圏の各種文字のうち、いわゆる "◎" や "★" 等の記号文字及び罫線文字等、 [East_Asian_Width 特性の値が A (Ambiguous) となる文字][EAWA] (以下、 [East Asian Ambiguous Character][EAWA]) が、日本語環境で文字幅を適切に扱うことが出来ずに表示が乱れる問題 （以下、 [East Asian Ambiguous Character][EAWA] 問題）を修正した軽量の CUI テキストエディタ [nano][NANO] のうち、github 上の HEAD 版を導入するための Formula である ```z80oolong/eaw/nano-head``` への alias です。
+
+### z80oolong/eaw/nano-head
+
+Unicode の規格における東アジア圏の各種文字のうち、いわゆる "◎" や "★" 等の記号文字及び罫線文字等、 [East_Asian_Width 特性の値が A (Ambiguous) となる文字][EAWA] (以下、 [East Asian Ambiguous Character][EAWA]) が、日本語環境で文字幅を適切に扱うことが出来ずに表示が乱れる問題 （以下、 [East Asian Ambiguous Character][EAWA] 問題）を修正した軽量の CUI テキストエディタ [nano][NANO] のうち、github 上の HEAD 版を導入するための Formula です。
 
 この Formula によって導入された [nano][NANO] では、以下の２つのオプションが新たに拡張されます。
 
@@ -29,9 +33,19 @@ Unicode の規格における東アジア圏の各種文字のうち、いわゆ
 
 以上のオプションの初期値は、 locale に関する環境変数 ```LC_CTYPE``` の値が ```"ja*", "ko*", "zh*"``` の場合はオプションの設定が有効であり、それ以外の場合は無効となります。
 
+なお、この Formula において、通常は [East Asian Ambiguous Character][EAWA] の全角文字幅表示に対応した [nano][NANO] において、 East Asian Ambiguous Character の全角文字幅表示に対応した直近の HEAD 版の commit の [nano][nano] が導入されます。
+
+github 上の HEAD 版の最新の commit の [nano][NANO] を導入する場合は、オプション ```--HEAD``` を指定して下さい。
+
+**この Formula は、 ```homebrew/core/nano``` と競合するため、この Formula によって導入される [nano][NANO] は、 keg only で導入されることに留意して下さい。**
+
 ### z80oolong/eaw/neomutt
 
-Unicode の規格における東アジア圏の各種文字のうち、いわゆる "◎" や "★" 等の記号文字及び罫線文字等、 [East_Asian_Width 特性の値が A (Ambiguous) となる文字][EAWA] (以下、 [East Asian Ambiguous Character][EAWA]) が、日本語環境で文字幅を適切に扱うことが出来ずに表示が乱れる問題 （以下、 [East Asian Ambiguous Character][EAWA] 問題）を修正した CLI に基づく多機能メールクライアントである [neomutt][MUTT] のうち、最新の安定版及び HEAD 版を導入するための Formula です。
+Unicode の規格における東アジア圏の各種文字のうち、いわゆる "◎" や "★" 等の記号文字及び罫線文字等、 [East_Asian_Width 特性の値が A (Ambiguous) となる文字][EAWA] (以下、 [East Asian Ambiguous Character][EAWA]) が、日本語環境で文字幅を適切に扱うことが出来ずに表示が乱れる問題 （以下、 [East Asian Ambiguous Character][EAWA] 問題）を修正した CLI に基づく多機能メールクライアントである [neomutt][MUTT] のうち、github 上の HEAD 版を導入するための Formula である ```z80oolong/eaw/neomutt-head``` への alias です。
+
+### z80oolong/eaw/neomutt-head
+
+Unicode の規格における東アジア圏の各種文字のうち、いわゆる "◎" や "★" 等の記号文字及び罫線文字等、 [East_Asian_Width 特性の値が A (Ambiguous) となる文字][EAWA] (以下、 [East Asian Ambiguous Character][EAWA]) が、日本語環境で文字幅を適切に扱うことが出来ずに表示が乱れる問題 （以下、 [East Asian Ambiguous Character][EAWA] 問題）を修正した CLI に基づく多機能メールクライアントである [neomutt][MUTT] のうち、github 上の HEAD 版を導入するための Formula です。
 
 この Formula によって導入された [neomutt][MUTT] では、以下の２つの変数が新たに拡張されます。
 
@@ -48,9 +62,19 @@ Unicode の規格における東アジア圏の各種文字のうち、いわゆ
   ...
   ```
 
+なお、この Formula において、通常は [East Asian Ambiguous Character][EAWA] の全角文字幅表示に対応した [neomutt][MUTT] において、 East Asian Ambiguous Character の全角文字幅表示に対応した直近の HEAD 版の commit の [neomutt][MUTT] が導入されます。
+
+github 上の HEAD 版の最新の commit の [neomutt][MUTT] を導入する場合は、オプション ```--HEAD``` を指定して下さい。
+
+**この Formula は、 ```homebrew/core/neomutt``` と競合するため、この Formula によって導入される [neomutt][MUTT] は、 keg only で導入されることに留意して下さい。**
+
 ### z80oolong/eaw/rxvt-unicode
 
-Unicode の規格における東アジア圏の各種文字のうち、いわゆる "◎" や "★" 等の記号文字及び罫線文字等、 [East_Asian_Width 特性の値が A (Ambiguous) となる文字][EAWA] (以下、 [East Asian Ambiguous Character][EAWA]) が、日本語環境で文字幅を適切に扱うことが出来ずに表示が乱れる問題 （以下、 [East Asian Ambiguous Character][EAWA] 問題）を修正した Unicode 対応端末エミュレータである [rxvt-unicode][RXVT] のうち、最新の安定版及び HEAD 版を導入するための Formula です。
+Unicode の規格における東アジア圏の各種文字のうち、いわゆる "◎" や "★" 等の記号文字及び罫線文字等、 [East_Asian_Width 特性の値が A (Ambiguous) となる文字][EAWA] (以下、 [East Asian Ambiguous Character][EAWA]) が、日本語環境で文字幅を適切に扱うことが出来ずに表示が乱れる問題 （以下、 [East Asian Ambiguous Character][EAWA] 問題）を修正した Unicode 対応端末エミュレータである [rxvt-unicode][RXVT] のうち、のうち、github 上の HEAD 版を導入するための Formula である ```z80oolong/eaw/rxvt-unicode-head``` への alias です。
+
+### z80oolong/eaw/rxvt-unicode-head
+
+Unicode の規格における東アジア圏の各種文字のうち、いわゆる "◎" や "★" 等の記号文字及び罫線文字等、 [East_Asian_Width 特性の値が A (Ambiguous) となる文字][EAWA] (以下、 [East Asian Ambiguous Character][EAWA]) が、日本語環境で文字幅を適切に扱うことが出来ずに表示が乱れる問題 （以下、 [East Asian Ambiguous Character][EAWA] 問題）を修正した Unicode 対応端末エミュレータである [rxvt-unicode][RXVT] のうち、のうち、github 上の HEAD 版を導入するための Formula です。
 
 この Formula によって導入された ```urxvt``` では、以下の環境変数にて設定を行います。
 
@@ -73,10 +97,19 @@ Unicode の規格における東アジア圏の各種文字のうち、いわゆ
   $ env URXVT_USE_UTF8_CJK_EMOJI=1 urxvt           # env を用いて urxvt を起動する。
   ...
   ```
+なお、この Formula において、通常は [East Asian Ambiguous Character][EAWA] の全角文字幅表示に対応した [rxvt-unicode][RXVT] において、 East Asian Ambiguous Character の全角文字幅表示に対応した直近の HEAD 版の commit の [rxvt-unicode][RXVT] が導入されます。
+
+github 上の HEAD 版の最新の commit の [rxvt-unicode][RXVT] を導入する場合は、オプション ```--HEAD``` を指定して下さい。
+
+**この Formula は、 ```homebrew/core/rxvt-unicode``` と競合するため、この Formula によって導入される [rxvt-unicode][RXVT] は、 keg only で導入されることに留意して下さい。**
 
 ### z80oolong/eaw/mutt
 
-Unicode の規格における東アジア圏の各種文字のうち、いわゆる "◎" や "★" 等の記号文字及び罫線文字等、 [East_Asian_Width 特性の値が A (Ambiguous) となる文字][EAWA] (以下、 [East Asian Ambiguous Character][EAWA]) が、日本語環境で文字幅を適切に扱うことが出来ずに表示が乱れる問題 （以下、 [East Asian Ambiguous Character][EAWA] 問題）を修正した CLI に基づく多機能メールクライアントである [mutt][OMUT] のうち、最新の安定版及び HEAD 版を導入するための Formula です。
+Unicode の規格における東アジア圏の各種文字のうち、いわゆる "◎" や "★" 等の記号文字及び罫線文字等、 [East_Asian_Width 特性の値が A (Ambiguous) となる文字][EAWA] (以下、 [East Asian Ambiguous Character][EAWA]) が、日本語環境で文字幅を適切に扱うことが出来ずに表示が乱れる問題 （以下、 [East Asian Ambiguous Character][EAWA] 問題）を修正した CLI に基づく多機能メールクライアントである [mutt][OMUT] のうち、 github 上の HEAD 版を導入するための Formula である ```z80oolong/eaw/mutt-head``` への alias です。
+
+### z80oolong/eaw/mutt-head
+
+Unicode の規格における東アジア圏の各種文字のうち、いわゆる "◎" や "★" 等の記号文字及び罫線文字等、 [East_Asian_Width 特性の値が A (Ambiguous) となる文字][EAWA] (以下、 [East Asian Ambiguous Character][EAWA]) が、日本語環境で文字幅を適切に扱うことが出来ずに表示が乱れる問題 （以下、 [East Asian Ambiguous Character][EAWA] 問題）を修正した CLI に基づく多機能メールクライアントである [mutt][OMUT] のうち、 github 上の HEAD 版を導入するための Formula です。
 
 この Formula によって導入された [mutt][OMUT] では、以下の２つの変数が新たに拡張されます。
 
@@ -92,6 +125,12 @@ Unicode の規格における東アジア圏の各種文字のうち、いわゆ
   set utf8_emoji = yes                   # 絵文字の幅を２にする。
   ...
   ```
+
+なお、この Formula において、通常は [East Asian Ambiguous Character][EAWA] の全角文字幅表示に対応した [mutt][OMUT] において、 East Asian Ambiguous Character の全角文字幅表示に対応した直近の HEAD 版の commit の [mutt][OMUT] が導入されます。
+
+github 上の HEAD 版の最新の commit の [mutt][OMUT] を導入する場合は、オプション ```--HEAD``` を指定して下さい。
+
+**この Formula は、 ```homebrew/core/mutt``` と競合するため、この Formula によって導入される [mutt][OMUT] は、 keg only で導入されることに留意して下さい。**
 
 ### z80oolong/eaw/ncurses-eaw@6.2
 

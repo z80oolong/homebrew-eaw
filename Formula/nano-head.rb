@@ -5,7 +5,7 @@ class NanoHead < Formula
   head "https://git.savannah.gnu.org/git/nano.git", branch: "master"
 
   stable do
-    current_commit = "b9c65193afa88c592a87f171e93559990fac3c95"
+    current_commit = "95731b800d9abf7312c0b176713b6544da8caad7"
     url "https://git.savannah.gnu.org/git/nano.git",
       branch:   "master",
       revision: current_commit
@@ -75,7 +75,7 @@ end
 
 __END__
 diff --git a/configure.ac b/configure.ac
-index 5869fd9b..bddbf2f5 100644
+index a08b7937..fc23ed4b 100644
 --- a/configure.ac
 +++ b/configure.ac
 @@ -72,11 +72,19 @@ AM_CONDITIONAL(BUILDING_FROM_GIT, test x$from_git = xyes)
@@ -548,10 +548,10 @@ index 5271deef..f2b1161b 100644
  #if defined(__OpenBSD__)
  			*column += (width < 0 || wc >= 0xF0000) ? 1 : width;
 diff --git a/src/definitions.h b/src/definitions.h
-index fc1187a2..21d7e7f5 100644
+index c27a8a2c..1188a726 100644
 --- a/src/definitions.h
 +++ b/src/definitions.h
-@@ -372,6 +372,12 @@ enum {
+@@ -371,6 +371,12 @@ enum {
  	LET_THEM_ZAP,
  	BREAK_LONG_LINES,
  	JUMPY_SCROLLING,
@@ -565,10 +565,10 @@ index fc1187a2..21d7e7f5 100644
  	INDICATOR,
  	BOOKSTYLE,
 diff --git a/src/global.c b/src/global.c
-index fb1c6db3..add51eab 100644
+index 5f2a9c9f..c265529c 100644
 --- a/src/global.c
 +++ b/src/global.c
-@@ -93,8 +93,12 @@ int didfind = 0;
+@@ -96,8 +96,12 @@ int didfind = 0;
  char *present_path = NULL;
  		/* The current browser directory when trying to do tab completion. */
  
@@ -582,7 +582,7 @@ index fb1c6db3..add51eab 100644
  int controlleft, controlright, controlup, controldown;
  int controlhome, controlend;
 diff --git a/src/nano.c b/src/nano.c
-index b3f51e06..0cd523eb 100644
+index f61db14e..7c295253 100644
 --- a/src/nano.c
 +++ b/src/nano.c
 @@ -647,6 +647,14 @@ void usage(void)
@@ -600,7 +600,7 @@ index b3f51e06..0cd523eb 100644
  #ifndef NANO_TINY
  	print_opt("-@", "--colonparsing", N_("Accept 'filename:linenumber' notation"));
  	print_opt("-%", "--stateflags", N_("Show some states on the title bar"));
-@@ -1840,6 +1848,14 @@ int main(int argc, char **argv)
+@@ -1841,6 +1849,14 @@ int main(int argc, char **argv)
  #ifdef HAVE_LIBMAGIC
  		{"magic", 0, NULL, '!'},
  #endif
@@ -615,7 +615,7 @@ index b3f51e06..0cd523eb 100644
  		{NULL, 0, NULL, 0}
  	};
  
-@@ -1870,7 +1886,16 @@ int main(int argc, char **argv)
+@@ -1871,7 +1887,16 @@ int main(int argc, char **argv)
  #endif
  
  #ifdef ENABLE_NLS
@@ -632,7 +632,7 @@ index b3f51e06..0cd523eb 100644
  	textdomain(PACKAGE);
  #endif
  
-@@ -1881,8 +1906,18 @@ int main(int argc, char **argv)
+@@ -1882,8 +1907,18 @@ int main(int argc, char **argv)
  	if (*(tail(argv[0])) == 'r')
  		SET(RESTRICTED);
  
@@ -651,7 +651,7 @@ index b3f51e06..0cd523eb 100644
  		switch (optchr) {
  #ifndef NANO_TINY
  			case 'A':
-@@ -2127,6 +2162,19 @@ int main(int argc, char **argv)
+@@ -2128,6 +2163,19 @@ int main(int argc, char **argv)
  				SET(USE_MAGIC);
  				break;
  #endif
@@ -669,9 +669,9 @@ index b3f51e06..0cd523eb 100644
 +#endif
 +#endif
  #ifndef NANO_TINY
- 			case '@':
- 				SET(COLON_PARSING);
-@@ -2154,6 +2202,21 @@ int main(int argc, char **argv)
+ 			case 0xCC:
+ 				SET(WHITESPACE_DISPLAY);
+@@ -2158,6 +2206,21 @@ int main(int argc, char **argv)
  	if (getenv("TERM") == NULL)
  		putenv("TERM=vt220");
  
@@ -694,10 +694,10 @@ index b3f51e06..0cd523eb 100644
  	if (initscr() == NULL)
  		exit(1);
 diff --git a/src/prototypes.h b/src/prototypes.h
-index 9bbca254..d3f4b9f5 100644
+index ceca2c23..d9cb94b3 100644
 --- a/src/prototypes.h
 +++ b/src/prototypes.h
-@@ -61,7 +61,11 @@ extern int didfind;
+@@ -62,7 +62,11 @@ extern int didfind;
  
  extern char *present_path;
  
@@ -710,10 +710,10 @@ index 9bbca254..d3f4b9f5 100644
  extern int controlleft, controlright;
  extern int controlup, controldown;
 diff --git a/src/rcfile.c b/src/rcfile.c
-index 2c55bc4f..239105ec 100644
+index 0f324ea0..292e48ab 100644
 --- a/src/rcfile.c
 +++ b/src/rcfile.c
-@@ -135,6 +135,14 @@ static const rcoption rcopts[] = {
+@@ -136,6 +136,14 @@ static const rcoption rcopts[] = {
  	{"errorcolor", 0},
  	{"keycolor", 0},
  	{"functioncolor", 0},
@@ -729,7 +729,7 @@ index 2c55bc4f..239105ec 100644
  	{NULL, 0}
  };
 diff --git a/src/winio.c b/src/winio.c
-index 2fff0d9e..5e0c84c8 100644
+index bb56e771..18755d13 100644
 --- a/src/winio.c
 +++ b/src/winio.c
 @@ -29,6 +29,9 @@
@@ -742,7 +742,7 @@ index 2fff0d9e..5e0c84c8 100644
  #endif
  
  #ifdef REVISION
-@@ -1910,7 +1913,11 @@ char *display_string(const char *text, size_t column, size_t span,
+@@ -1901,7 +1904,11 @@ char *display_string(const char *text, size_t column, size_t span,
  		}
  
  		/* Determine whether the character takes zero, one, or two columns. */

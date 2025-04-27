@@ -5,7 +5,7 @@ class NeomuttHead < Formula
   head "https://github.com/neomutt/neomutt.git", branch: "main"
 
   stable do
-    current_commit = "753ae004ed15f8fdc8288bde71f310b2a6426fa0"
+    current_commit = "0bfef9844f8b8b77b7fbdda8acf0d54cc0da4a32"
     url "https://github.com/neomutt/neomutt.git",
       branch:   "main",
       revision: current_commit
@@ -85,7 +85,6 @@ class NeomuttHead < Formula
 end
 
 __END__
-warning: refname 'upstream' is ambiguous.
 diff --git a/editor/enter.c b/editor/enter.c
 index f2f981809..461d28a54 100644
 --- a/editor/enter.c
@@ -147,7 +146,7 @@ index 45d23f1b5..02e46ec66 100644
  
      // It'll require _some_ space
 diff --git a/gui/curs_lib.c b/gui/curs_lib.c
-index 298a47d28..2856ae030 100644
+index 466bd3dd3..caa42c1d8 100644
 --- a/gui/curs_lib.c
 +++ b/gui/curs_lib.c
 @@ -358,7 +358,11 @@ void mutt_paddstr(struct MuttWindow *win, int n, const char *s)
@@ -187,7 +186,7 @@ index 298a47d28..2856ae030 100644
    return w;
  }
 diff --git a/gui/msgwin.c b/gui/msgwin.c
-index ec987b715..75cac7a8a 100644
+index c36b0c5c3..fad898ce4 100644
 --- a/gui/msgwin.c
 +++ b/gui/msgwin.c
 @@ -132,7 +132,11 @@ void measure(struct MwCharArray *chars, const char *str, const struct AttrColor
@@ -202,19 +201,17 @@ index ec987b715..75cac7a8a 100644
      if (wchar_width < 0)
        wchar_width = 1;
  
-diff --git a/help.c b/help.c
-index d594582ba..aac26fff0 100644
---- a/help.c
-+++ b/help.c
-@@ -122,8 +122,12 @@ static void escape_macro(const char *macro, struct Buffer *buf)
-       k = (k == ICONV_ILLEGAL_SEQ) ? 1 : len;
+diff --git a/key/lib.c b/key/lib.c
+index 56a273a64..334667bf4 100644
+--- a/key/lib.c
++++ b/key/lib.c
+@@ -356,7 +356,11 @@ void escape_macro(const char *macro, struct Buffer *buf)
        wc = ReplacementChar;
      }
--
+ 
 +#ifdef NO_USE_UTF8CJK
      const int w = wcwidth(wc);
 +#else
-+    /* glibc-2.1.3's wcwidth() returns 1 for unprintable chars! */
 +    const int w = mutt_mb_wcwidth(wc);
 +#endif
      if (IsWPrint(wc) && (w >= 0))
@@ -713,7 +710,7 @@ index e20ef3ef6..b4c5d1b03 100644
    { "cursor_overlay",            D_INTERNAL_DEPRECATED|DT_BOOL,   0, IP "2020-07-20" },
    { "escape",                    D_INTERNAL_DEPRECATED|DT_STRING, 0, IP "2021-03-18" },
 diff --git a/pager/display.c b/pager/display.c
-index 34f5aaef7..2f934310a 100644
+index 96a56acaa..e9564dfc6 100644
 --- a/pager/display.c
 +++ b/pager/display.c
 @@ -975,7 +975,11 @@ static int format_line(struct MuttWindow *win, struct Line **lines, int line_num
