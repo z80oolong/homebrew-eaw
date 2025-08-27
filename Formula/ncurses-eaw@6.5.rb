@@ -1,15 +1,19 @@
-class NcursesEawAT62 < Formula
+class NcursesEawAT65 < Formula
   desc "Text-based UI library"
-  homepage "https://www.gnu.org/software/ncurses/"
-  url "https://ftp.gnu.org/gnu/ncurses/ncurses-6.2.tar.gz"
-  mirror "https://ftpmirror.gnu.org/ncurses/ncurses-6.2.tar.gz"
-  sha256 "30306e0c76e0f9f1f0de987cf1c82a5c21e1ce6568b9227f7da5b71cbea86c9d"
+  homepage "https://invisible-island.net/ncurses/announce.html"
+  url "https://ftp.gnu.org/gnu/ncurses/ncurses-6.5.tar.gz"
+  mirror "https://invisible-mirror.net/archives/ncurses/ncurses-6.5.tar.gz"
+  mirror "ftp://ftp.invisible-island.net/ncurses/ncurses-6.5.tar.gz"
+  mirror "https://ftpmirror.gnu.org/ncurses/ncurses-6.5.tar.gz"
+  sha256 "136d91bc269a9a5785e5f9e980bc76ab57428f604ce3e5a5a90cebc767971cc6"
   license "MIT"
+
+  no_autobump! because: :requires_manual_review
 
   keg_only :versioned_formula
 
   depends_on "glibc" => :build
-  depends_on "pkg-config" => :build
+  depends_on "pkgconf" => :build
   on_linux do
     depends_on "gpatch" => :build
   end
@@ -17,58 +21,57 @@ class NcursesEawAT62 < Formula
   patch :p1, :DATA
 
   def install
-    args = std_configure_args
+    ENV.append "CFLAGS", "-std=gnu17"
+    ENV["LC_ALL"] = "C"
+
+    # Workaround for
+    # macOS: mkdir: /usr/lib/pkgconfig:/opt/homebrew/Library/Homebrew/os/mac/pkgconfig/12: Operation not permitted
+    # Linux: configure: error: expected a pathname, not ""
+    (lib/"pkgconfig").mkpath
+
+    args = []
+    args << "--prefix=#{prefix}"
     args << "--enable-pc-files"
-    args << "--with-terminfo-dirs=#{opt_share}/terminfo:#{share}/terminfo"
     args << "--with-default-terminfo-dir=#{share}/terminfo"
     args << "--with-pkg-config-libdir=#{lib}/pkgconfig"
     args << "--enable-sigwinch"
     args << "--enable-symlinks"
     args << "--enable-widec"
     args << "--with-shared"
+    args << "--with-cxx-shared"
     args << "--with-gpm=no"
-    !OS.mac? && (args << "--without-ada")
+    if OS.linux?
+      args << "--with-terminfo-dirs=#{opt_share}/terminfo:#{share}/terminfo:/etc/terminfo:/lib/terminfo:/usr/share/terminfo"
+      args << "--without-ada"
+    end
 
     system "./configure", *args
-    system "make"
     system "make", "install"
-
-    prefix.install "test"
-    (prefix/"test").install "install-sh", "config.sub", "config.guess"
     make_libncurses_symlinks
-  end
 
-  def post_install
-    ohai "Installing locale data for {ja_JP, zh_*, ko_*, ...}.UTF-8"
-
-    localedef = OS.linux? ? (Formula["glibc"].opt_bin/"localedef") : "localedef"
-    %w[ja_JP zh_CN zh_HK zh_SG zh_TW ko_KR en_US].each do |lang|
-      system localedef, "-i", lang, "-f", "UTF-8", "#{lang}.UTF-8"
-    end
+    # Avoid hardcoding Cellar paths in client software.
+    inreplace bin/"ncursesw6-config", prefix, opt_prefix
+    pkgshare.install "test"
+    (pkgshare/"test").install "install-sh", "config.sub", "config.guess"
   end
 
   def make_libncurses_symlinks
-    major = version.to_s.split(".")[0]
-    minor = version.to_s.split(".")[1]
+    major = version.major.to_s
 
-    %w[form menu ncurses panel].each do |name|
-      if OS.mac?
-        lib.install_symlink "lib#{name}w.#{major}.dylib" => "lib#{name}.dylib"
-        lib.install_symlink "lib#{name}w.#{major}.dylib" => "lib#{name}.#{major}.dylib"
-      else
-        lib.install_symlink "lib#{name}w.so.#{major}.#{minor}" => "lib#{name}.so"
-        lib.install_symlink "lib#{name}w.so.#{major}.#{minor}" => "lib#{name}.so.#{major}"
-      end
+    %w[form menu ncurses panel ncurses++].each do |name|
+      lib.install_symlink shared_library("lib#{name}w", major) => shared_library("lib#{name}")
+      lib.install_symlink shared_library("lib#{name}w", major) => shared_library("lib#{name}", major)
       lib.install_symlink "lib#{name}w.a" => "lib#{name}.a"
       lib.install_symlink "lib#{name}w_g.a" => "lib#{name}_g.a"
     end
 
-    lib.install_symlink "libncurses++w.a" => "libncurses++.a"
     lib.install_symlink "libncurses.a" => "libcurses.a"
-    if OS.mac?
-      lib.install_symlink "libncurses.dylib" => "libcurses.dylib"
-    else
-      lib.install_symlink "libncurses.so" => "libcurses.so"
+    lib.install_symlink shared_library("libncurses") => shared_library("libcurses")
+    on_linux do
+      # libtermcap and libtinfo are provided by ncurses and have the
+      # same api. Help some older packages to find these dependencies.
+      # https://bugs.centos.org/view.php?id=11423
+      # https://bugs.launchpad.net/ubuntu/+source/ncurses/+bug/259139
       lib.install_symlink "libncurses.so" => "libtermcap.so"
       lib.install_symlink "libncurses.so" => "libtinfo.so"
     end
@@ -80,6 +83,7 @@ class NcursesEawAT62 < Formula
 
     bin.install_symlink "ncursesw#{major}-config" => "ncurses#{major}-config"
 
+    include.install_symlink "ncursesw" => "ncurses"
     include.install_symlink [
       "ncursesw/curses.h", "ncursesw/form.h", "ncursesw/ncurses.h",
       "ncursesw/panel.h", "ncursesw/term.h", "ncursesw/termcap.h"
@@ -87,25 +91,25 @@ class NcursesEawAT62 < Formula
   end
 
   test do
+    refute_match prefix.to_s, shell_output("#{bin}/ncursesw6-config --prefix")
+    refute_match share.to_s, shell_output("#{bin}/ncursesw6-config --terminfo-dirs")
+
     ENV["TERM"] = "xterm"
 
-    system prefix/"test/configure", "--prefix=#{testpath}/test",
-                                    "--with-curses-dir=#{prefix}"
+    system pkgshare/"test/configure", "--prefix=#{testpath}",
+                                      "--with-curses-dir=#{prefix}"
     system "make", "install"
-
-    system testpath/"test/bin/keynames"
-    system testpath/"test/bin/test_arrays"
-    system testpath/"test/bin/test_vidputs"
+    system testpath/"bin/ncurses-examples"
   end
 end
 
 __END__
 diff --git a/ncurses/curses.priv.h b/ncurses/curses.priv.h
-index 9ca0263a..d4704ee2 100644
+index 68cda17..8405cec 100644
 --- a/ncurses/curses.priv.h
 +++ b/ncurses/curses.priv.h
-@@ -2736,6 +2736,17 @@ NCURSES_EXPORT(int) _nc_conv_to_utf8(unsigned char *, unsigned, unsigned);
- NCURSES_EXPORT(int) _nc_conv_to_utf32(unsigned *, const char *, unsigned);
+@@ -2654,6 +2654,17 @@ extern NCURSES_EXPORT(int) _nc_conv_to_utf8(unsigned char *, unsigned, unsigned)
+ extern NCURSES_EXPORT(int) _nc_conv_to_utf32(unsigned *, const char *, unsigned);
  #endif
  
 +#ifndef NO_USE_UTF8CJK
@@ -123,13 +127,13 @@ index 9ca0263a..d4704ee2 100644
  }
  #endif
 diff --git a/ncurses/wcwidth.h b/ncurses/wcwidth.h
-index e2611701..93c89494 100644
+index 76673da..5b034e0 100644
 --- a/ncurses/wcwidth.h
 +++ b/ncurses/wcwidth.h
-@@ -310,3 +310,92 @@ int mk_wcswidth_cjk(const wchar_t *pwcs, size_t n)
+@@ -326,3 +326,92 @@ NCURSES_EXPORT(int) mk_wcswidth_cjk(const wchar_t *pwcs, size_t n)
+ #endif
  
-   return width;
- }
+ #endif /* _WCWIDTH_H_incl 1 */
 +
 +#ifndef NO_USE_UTF8CJK
 +#ifndef NO_USE_UTF8CJK_EMOJI
@@ -220,32 +224,22 @@ index e2611701..93c89494 100644
 +#endif
 +#endif
 diff --git a/ncurses/widechar/lib_wacs.c b/ncurses/widechar/lib_wacs.c
-index 5b6f6da2..daf95d5e 100644
+index 5b6f6da..63a5a33 100644
 --- a/ncurses/widechar/lib_wacs.c
 +++ b/ncurses/widechar/lib_wacs.c
-@@ -35,6 +35,45 @@
+@@ -35,6 +35,35 @@
  
  MODULE_ID("$Id: lib_wacs.c,v 1.20 2020/02/02 23:34:34 tom Exp $")
  
 +#ifndef NO_USE_UTF8CJK
 +#include <wcwidth.h>
 +
-+static bool _nc_environ_nonzero(const char *name)
-+{
-+    char *environ = getenv(name);
-+
-+    if (environ == NULL)
-+        return false;
-+
-+    return (strcmp(environ, "0") != 0);
-+}
-+
 +int _nc_wcwidth_cjk(wchar_t ucs)
 +{
-+    if (_nc_environ_nonzero("NCURSES_NO_UTF8CJK"))
++    if (getenv("NCURSES_NO_UTF8CJK") != 0)
 +        return mk_wcwidth(ucs);
 +#ifndef NO_USE_UTF8CJK_EMOJI
-+    else if (_nc_environ_nonzero("NCURSES_NO_UTF8CJK_EMOJI"))
++    else if (getenv("NCURSES_NO_UTF8CJK_EMOJI") != 0)
 +        return mk_wcwidth_cjk(ucs);
 +#endif
 +
@@ -269,12 +263,12 @@ index 5b6f6da2..daf95d5e 100644
  NCURSES_EXPORT_VAR(cchar_t) * _nc_wacs = 0;
  
  NCURSES_EXPORT(void)
-@@ -131,7 +170,14 @@ _nc_init_wacs(void)
+@@ -131,7 +160,14 @@ _nc_init_wacs(void)
  #endif
  
  	    m = table[n].map;
 +#ifndef NO_USE_UTF8CJK
-+	    if (_nc_environ_nonzero("NCURSES_USE_ASCII_ACS")) {
++	    if (getenv("NCURSES_USE_ASCII_ACS") != 0) {
 +		setenv("NCURSES_NO_UTF8_ACS", "1", 1);
 +		SetChar(_nc_wacs[m], table[n].value[0], A_NORMAL);
 +	    } else if (active && (wide == 1)) {

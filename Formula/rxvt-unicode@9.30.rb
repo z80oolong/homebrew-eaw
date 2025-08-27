@@ -1,10 +1,22 @@
+class << ENV
+  def replace_rpath(**replace_list)
+    replace_list = replace_list.each_with_object({}) do |(old, new), result|
+      result[Formula[old].opt_lib.to_s] = Formula[new].opt_lib.to_s
+      result[Formula[old].lib.to_s] = Formula[new].lib.to_s
+    end
+    rpaths = self["HOMEBREW_RPATH_PATHS"].split(":")
+    rpaths = rpaths.each_with_object([]) {|rpath, result| result << (replace_list.key?(rpath) ? replace_list[rpath] : rpath) }
+    self["HOMEBREW_RPATH_PATHS"] = rpaths.join(":")
+  end
+end
+
 class RxvtUnicodeAT930 < Formula
   desc "Rxvt fork with Unicode support"
   homepage "http://software.schmorp.de/pkg/rxvt-unicode.html"
   url "http://dist.schmorp.de/rxvt-unicode/Attic/rxvt-unicode-9.30.tar.bz2"
   sha256 "fe1c93d12f385876457a989fc3ae05c0915d2692efc59289d0f70fabe5b44d2d"
   license "GPL-3.0-only"
-  revision 4
+  revision 5
 
   livecheck do
     url "http://dist.schmorp.de/rxvt-unicode/"
@@ -14,7 +26,7 @@ class RxvtUnicodeAT930 < Formula
   keg_only :versioned_formula
 
   depends_on "cmake" => :build
-  depends_on "pkg-config" => :build
+  depends_on "pkgconf" => :build
   depends_on "fontconfig"
   depends_on "freetype"
   depends_on "gdk-pixbuf"
@@ -25,7 +37,7 @@ class RxvtUnicodeAT930 < Formula
   depends_on "libxt"
   depends_on "perl"
   depends_on "startup-notification"
-  depends_on "z80oolong/eaw/ncurses-eaw@6.2"
+  depends_on "z80oolong/eaw/ncurses-eaw@6.5"
 
   resource("libptytty") do
     url "http://dist.schmorp.de/libptytty/libptytty-2.0.tar.gz"
@@ -35,6 +47,8 @@ class RxvtUnicodeAT930 < Formula
   patch :p1, :DATA
 
   def install
+    ENV.replace_rpath "ncurses" => "z80oolong/eaw/ncurses-eaw@6.5"
+
     resource("libptytty").stage do
       args  = std_cmake_args
       args << "-DBUILD_SHARED_LIBS=ON"
@@ -48,7 +62,7 @@ class RxvtUnicodeAT930 < Formula
     args << "--datarootdir=#{share}"
     args << "--enable-256-color"
     args << "--with-term=xterm-256color"
-    args << "--with-terminfo=#{Formula["z80oolong/eaw/ncurses-eaw@6.2"].opt_share}/terminfo"
+    args << "--with-terminfo=#{Formula["z80oolong/eaw/ncurses-eaw@6.5"].opt_share}/terminfo"
     args << "--enable-smart-resize"
     args << "--enable-unicode3"
 

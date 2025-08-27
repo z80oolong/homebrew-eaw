@@ -1,9 +1,22 @@
+class << ENV
+  def replace_rpath(**replace_list)
+    replace_list = replace_list.each_with_object({}) do |(old, new), result|
+      result[Formula[old].opt_lib.to_s] = Formula[new].opt_lib.to_s
+      result[Formula[old].lib.to_s] = Formula[new].lib.to_s
+    end
+    rpaths = self["HOMEBREW_RPATH_PATHS"].split(":")
+    rpaths = rpaths.each_with_object([]) {|rpath, result| result << (replace_list.key?(rpath) ? replace_list[rpath] : rpath) }
+    self["HOMEBREW_RPATH_PATHS"] = rpaths.join(":")
+  end
+end
+
 class NeomuttAT20250404 < Formula
   desc "E-mail reader with support for Notmuch, NNTP and much more"
   homepage "https://neomutt.org/"
   url "https://github.com/neomutt/neomutt/archive/refs/tags/20250404.tar.gz"
   sha256 "732d4fd006856030971c99ef0e569846d0358feababea115a353f90ab02d3142"
   license "GPL-2.0-or-later"
+  revision 1
 
   keg_only :versioned_formula
 
@@ -15,7 +28,7 @@ class NeomuttAT20250404 < Formula
   depends_on "notmuch"
   depends_on "openssl@1.1"
   depends_on "tokyo-cabinet"
-  depends_on "z80oolong/eaw/ncurses-eaw@6.2"
+  depends_on "z80oolong/eaw/ncurses-eaw@6.5"
   depends_on "lua" => :recommended
 
   on_linux do
@@ -28,9 +41,11 @@ class NeomuttAT20250404 < Formula
   patch :p1, :DATA
 
   def install
-    ENV.append "CFLAGS",   "-I#{Formula["z80oolong/eaw/ncurses-eaw@6.2"].opt_include}"
-    ENV.append "CPPFLAGS", "-I#{Formula["z80oolong/eaw/ncurses-eaw@6.2"].opt_include}"
-    ENV.append "LDFLAGS",  "-L#{Formula["z80oolong/eaw/ncurses-eaw@6.2"].opt_lib}"
+    ENV.replace_rpath "ncurses" => "z80oolong/eaw/ncurses-eaw@6.5"
+
+    ENV.append "CFLAGS",   "-I#{Formula["z80oolong/eaw/ncurses-eaw@6.5"].opt_include}"
+    ENV.append "CPPFLAGS", "-I#{Formula["z80oolong/eaw/ncurses-eaw@6.5"].opt_include}"
+    ENV.append "LDFLAGS",  "-L#{Formula["z80oolong/eaw/ncurses-eaw@6.5"].opt_lib}"
     ENV["XML_CATALOG_FILES"] = "#{etc}/xml/catalog"
 
     args = std_configure_args
@@ -44,7 +59,7 @@ class NeomuttAT20250404 < Formula
     args << "--tokyocabinet"
     args << "--with-ssl=#{Formula["openssl@1.1"].opt_prefix}"
     args << "--with-ui=ncurses"
-    args << "--with-ncurses=#{Formula["z80oolong/eaw/ncurses-eaw@6.2"].opt_prefix}"
+    args << "--with-ncurses=#{Formula["z80oolong/eaw/ncurses-eaw@6.5"].opt_prefix}"
     unless build.without?("lua")
       args << "--lua"
       args << "--with-lua=#{Formula["lua"].prefix}"
@@ -53,24 +68,7 @@ class NeomuttAT20250404 < Formula
     system "./configure", *args
     system "make"
     system "make", "install"
-
-    replace_rpath "#{bin}/neomutt", "ncurses" => "z80oolong/eaw/ncurses-eaw@6.2"
   end
-
-  def replace_rpath(binname, **replace_list)
-    return if OS.mac?
-
-    replace_list = replace_list.each_with_object({}) do |(old, new), result|
-      result[Formula[old].opt_lib.to_s] = Formula[new].opt_lib.to_s
-      result[Formula[old].lib.to_s] = Formula[new].lib.to_s
-    end
-
-    rpath = `#{Formula["patchelf"].opt_bin}/patchelf --print-rpath #{binname}`.chomp.split(":")
-    rpath.each_with_index { |i, path| rpath[i] = replace_list[path] if replace_list[path] }
-
-    system Formula["patchelf"].opt_bin/"patchelf", "--set-rpath", rpath.join(":"), binname
-  end
-  private :replace_rpath
 
   test do
     output = shell_output("#{bin}/neomutt -F /dev/null -Q debug_level")

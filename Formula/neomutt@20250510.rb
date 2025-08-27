@@ -1,9 +1,22 @@
-class NeomuttAT20250113 < Formula
+class << ENV
+  def replace_rpath(**replace_list)
+    replace_list = replace_list.each_with_object({}) do |(old, new), result|
+      result[Formula[old].opt_lib.to_s] = Formula[new].opt_lib.to_s
+      result[Formula[old].lib.to_s] = Formula[new].lib.to_s
+    end
+    rpaths = self["HOMEBREW_RPATH_PATHS"].split(":")
+    rpaths = rpaths.each_with_object([]) {|rpath, result| result << (replace_list.key?(rpath) ? replace_list[rpath] : rpath) }
+    self["HOMEBREW_RPATH_PATHS"] = rpaths.join(":")
+  end
+end
+
+class NeomuttAT20250510 < Formula
   desc "E-mail reader with support for Notmuch, NNTP and much more"
   homepage "https://neomutt.org/"
-  url "https://github.com/neomutt/neomutt/archive/refs/tags/20250113.tar.gz"
-  sha256 "cc7835e80fd72af104a8e146e009e93e687cefbc6c11725ee2ed11d7377486ff"
+  url "https://github.com/neomutt/neomutt/archive/refs/tags/20250510.tar.gz"
+  sha256 "12d225e270d8e16cda41d855880b9d938750a4f1d647f55c6353337d32ffd653"
   license "GPL-2.0-or-later"
+  revision 1
 
   keg_only :versioned_formula
 
@@ -15,12 +28,11 @@ class NeomuttAT20250113 < Formula
   depends_on "notmuch"
   depends_on "openssl@1.1"
   depends_on "tokyo-cabinet"
-  depends_on "z80oolong/eaw/ncurses-eaw@6.2"
+  depends_on "z80oolong/eaw/ncurses-eaw@6.5"
   depends_on "lua" => :recommended
 
   on_linux do
-    depends_on "patchelf" => :build
-    depends_on "pkg-config" => :build
+    depends_on "pkgconf" => :build
     depends_on "cyrus-sasl"
     depends_on "krb5"
   end
@@ -28,9 +40,11 @@ class NeomuttAT20250113 < Formula
   patch :p1, :DATA
 
   def install
-    ENV.append "CFLAGS",   "-I#{Formula["z80oolong/eaw/ncurses-eaw@6.2"].opt_include}"
-    ENV.append "CPPFLAGS", "-I#{Formula["z80oolong/eaw/ncurses-eaw@6.2"].opt_include}"
-    ENV.append "LDFLAGS",  "-L#{Formula["z80oolong/eaw/ncurses-eaw@6.2"].opt_lib}"
+    ENV.replace_rpath "ncurses" => "z80oolong/eaw/ncurses-eaw@6.5"
+
+    ENV.append "CFLAGS",   "-I#{Formula["z80oolong/eaw/ncurses-eaw@6.5"].opt_include}"
+    ENV.append "CPPFLAGS", "-I#{Formula["z80oolong/eaw/ncurses-eaw@6.5"].opt_include}"
+    ENV.append "LDFLAGS",  "-L#{Formula["z80oolong/eaw/ncurses-eaw@6.5"].opt_lib}"
     ENV["XML_CATALOG_FILES"] = "#{etc}/xml/catalog"
 
     args = std_configure_args
@@ -44,7 +58,7 @@ class NeomuttAT20250113 < Formula
     args << "--tokyocabinet"
     args << "--with-ssl=#{Formula["openssl@1.1"].opt_prefix}"
     args << "--with-ui=ncurses"
-    args << "--with-ncurses=#{Formula["z80oolong/eaw/ncurses-eaw@6.2"].opt_prefix}"
+    args << "--with-ncurses=#{Formula["z80oolong/eaw/ncurses-eaw@6.5"].opt_prefix}"
     unless build.without?("lua")
       args << "--lua"
       args << "--with-lua=#{Formula["lua"].prefix}"
@@ -53,24 +67,7 @@ class NeomuttAT20250113 < Formula
     system "./configure", *args
     system "make"
     system "make", "install"
-
-    replace_rpath "#{bin}/neomutt", "ncurses" => "z80oolong/eaw/ncurses-eaw@6.2"
   end
-
-  def replace_rpath(binname, **replace_list)
-    return if OS.mac?
-
-    replace_list = replace_list.each_with_object({}) do |(old, new), result|
-      result[Formula[old].opt_lib.to_s] = Formula[new].opt_lib.to_s
-      result[Formula[old].lib.to_s] = Formula[new].lib.to_s
-    end
-
-    rpath = `#{Formula["patchelf"].opt_bin}/patchelf --print-rpath #{binname}`.chomp.split(":")
-    rpath.each_with_index { |i, path| rpath[i] = replace_list[path] if replace_list[path] }
-
-    system Formula["patchelf"].opt_bin/"patchelf", "--set-rpath", rpath.join(":"), binname
-  end
-  private :replace_rpath
 
   test do
     output = shell_output("#{bin}/neomutt -F /dev/null -Q debug_level")
@@ -96,7 +93,7 @@ index f2f9818..461d28a 100644
  /**
   * editor_backspace - Delete the char in front of the cursor
 diff --git a/editor/window.c b/editor/window.c
-index e28a393..e9709b6 100644
+index 34fa5ac..179a6d8 100644
 --- a/editor/window.c
 +++ b/editor/window.c
 @@ -70,7 +70,11 @@ static const struct Mapping EditorHelp[] = {
@@ -111,11 +108,39 @@ index e28a393..e9709b6 100644
    if (IsWPrint(wc) && (n > 0))
      return mutt_addwch(win, wc);
    if (!(wc & ~0x7f))
+diff --git a/expando/format.c b/expando/format.c
+index 45d23f1..02e46ec 100644
+--- a/expando/format.c
++++ b/expando/format.c
+@@ -145,7 +145,11 @@ int format_string(struct Buffer *buf, int min_cols, int max_cols, enum FormatJus
+     }
+     else if (iswspace(wc))
+     {
++#ifdef NO_USE_UTF8CJK
+       w = MAX(1, wcwidth(wc));
++#else
++      w = MAX(1, mutt_mb_wcwidth(wc));
++#endif
+     }
+     else
+     {
+@@ -156,7 +160,11 @@ int format_string(struct Buffer *buf, int min_cols, int max_cols, enum FormatJus
+ #endif
+           if (!IsWPrint(wc))
+         wc = '?';
++#ifdef NO_USE_UTF8CJK
+       w = wcwidth(wc);
++#else
++      w = mutt_mb_wcwidth(wc);
++#endif
+     }
+ 
+     // It'll require _some_ space
 diff --git a/gui/curs_lib.c b/gui/curs_lib.c
-index 29bdf66..8f13aca 100644
+index 466bd3d..caa42c1 100644
 --- a/gui/curs_lib.c
 +++ b/gui/curs_lib.c
-@@ -357,7 +357,11 @@ void mutt_paddstr(struct MuttWindow *win, int n, const char *s)
+@@ -358,7 +358,11 @@ void mutt_paddstr(struct MuttWindow *win, int n, const char *s)
      }
      if (!IsWPrint(wc))
        wc = '?';
@@ -127,7 +152,7 @@ index 29bdf66..8f13aca 100644
      if (w >= 0)
      {
        if (w > n)
-@@ -407,7 +411,11 @@ size_t mutt_wstr_trunc(const char *src, size_t maxlen, size_t maxwid, size_t *wi
+@@ -408,7 +412,11 @@ size_t mutt_wstr_trunc(const char *src, size_t maxlen, size_t maxwid, size_t *wi
        wc = ReplacementChar;
      }
  
@@ -139,7 +164,7 @@ index 29bdf66..8f13aca 100644
      /* hack because MUTT_TREE symbols aren't turned into characters
       * until rendered by print_enriched_string() */
      if ((cw < 0) && (src[0] == MUTT_SPECIAL_INDEX))
-@@ -482,7 +490,11 @@ size_t mutt_strnwidth(const char *s, size_t n)
+@@ -483,7 +491,11 @@ size_t mutt_strnwidth(const char *s, size_t n)
      }
      if (!IsWPrint(wc))
        wc = '?';
@@ -152,7 +177,7 @@ index 29bdf66..8f13aca 100644
    return w;
  }
 diff --git a/gui/msgwin.c b/gui/msgwin.c
-index 0ced406..16e750e 100644
+index c36b0c5..fad898c 100644
 --- a/gui/msgwin.c
 +++ b/gui/msgwin.c
 @@ -132,7 +132,11 @@ void measure(struct MwCharArray *chars, const char *str, const struct AttrColor
@@ -167,14 +192,14 @@ index 0ced406..16e750e 100644
      if (wchar_width < 0)
        wchar_width = 1;
  
-diff --git a/help.c b/help.c
-index 42b7443..fae7b1f 100644
---- a/help.c
-+++ b/help.c
-@@ -104,7 +104,11 @@ static int print_macro(FILE *fp, int maxwidth, const char **macro)
+diff --git a/key/lib.c b/key/lib.c
+index 56a273a..334667b 100644
+--- a/key/lib.c
++++ b/key/lib.c
+@@ -356,7 +356,11 @@ void escape_macro(const char *macro, struct Buffer *buf)
        wc = ReplacementChar;
      }
-     /* glibc-2.1.3's wcwidth() returns 1 for unprintable chars! */
+ 
 +#ifdef NO_USE_UTF8CJK
      const int w = wcwidth(wc);
 +#else
@@ -182,19 +207,7 @@ index 42b7443..fae7b1f 100644
 +#endif
      if (IsWPrint(wc) && (w >= 0))
      {
-       if (w > n)
-@@ -178,7 +182,11 @@ static int get_wrapped_width(const char *t, size_t wid)
-     }
-     if (!IsWPrint(wc))
-       wc = '?';
-+#ifdef NO_USE_UTF8CJK
-     n += wcwidth(wc);
-+#else
-+    n += mutt_mb_wcwidth(wc);
-+#endif
-   }
-   if (n > wid)
-     n = m;
+       char tmp[MB_LEN_MAX * 2] = { 0 };
 diff --git a/mutt/mbyte.c b/mutt/mbyte.c
 index 37faf94..b89bcf1 100644
 --- a/mutt/mbyte.c
@@ -660,10 +673,10 @@ index 37faf94..b89bcf1 100644
      return n;
    if (!(wc & ~0x7f))
 diff --git a/mutt_config.c b/mutt_config.c
-index e7c024c..17f9ca1 100644
+index e20ef3e..b4c5d1b 100644
 --- a/mutt_config.c
 +++ b/mutt_config.c
-@@ -792,6 +792,16 @@ static struct ConfigDef MainVars[] = {
+@@ -790,6 +790,16 @@ static struct ConfigDef MainVars[] = {
    { "wrap_search", DT_BOOL, true, 0, NULL,
      "Wrap around when the search hits the end"
    },
@@ -681,7 +694,7 @@ index e7c024c..17f9ca1 100644
    { "cursor_overlay",            D_INTERNAL_DEPRECATED|DT_BOOL,   0, IP "2020-07-20" },
    { "escape",                    D_INTERNAL_DEPRECATED|DT_STRING, 0, IP "2021-03-18" },
 diff --git a/pager/display.c b/pager/display.c
-index 9de335b..71a39d2 100644
+index 96a56ac..e9564df 100644
 --- a/pager/display.c
 +++ b/pager/display.c
 @@ -975,7 +975,11 @@ static int format_line(struct MuttWindow *win, struct Line **lines, int line_num

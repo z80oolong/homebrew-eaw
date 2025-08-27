@@ -1,11 +1,24 @@
+class << ENV
+  def replace_rpath(**replace_list)
+    replace_list = replace_list.each_with_object({}) do |(old, new), result|
+      result[Formula[old].opt_lib.to_s] = Formula[new].opt_lib.to_s
+      result[Formula[old].lib.to_s] = Formula[new].lib.to_s
+    end
+    rpaths = self["HOMEBREW_RPATH_PATHS"].split(":")
+    rpaths = rpaths.each_with_object([]) {|rpath, result| result << (replace_list.key?(rpath) ? replace_list[rpath] : rpath) }
+    self["HOMEBREW_RPATH_PATHS"] = rpaths.join(":")
+  end
+end
+
 class NanoHead < Formula
   desc "Free (GNU) replacement for the Pico text editor"
   homepage "https://www.nano-editor.org/"
   license "GPL-3.0-or-later"
+  revision 1
   head "https://git.savannah.gnu.org/git/nano.git", branch: "master"
 
   stable do
-    current_commit = "95731b800d9abf7312c0b176713b6544da8caad7"
+    current_commit = "326e4146b2267d8683a8eb3333aa49c9023d0dbf"
     url "https://git.savannah.gnu.org/git/nano.git",
       branch:   "master",
       revision: current_commit
@@ -17,22 +30,23 @@ class NanoHead < Formula
   depends_on "autoconf" => :build
   depends_on "automake" => :build
   depends_on "perl" => :build
-  depends_on "pkg-config" => :build
+  depends_on "pkgconf" => :build
   depends_on "texinfo" => :build
   depends_on "gettext"
-  depends_on "z80oolong/eaw/ncurses-eaw@6.2"
+  depends_on "z80oolong/eaw/ncurses-eaw@6.5"
 
   on_linux do
-    depends_on "patchelf" => :build
     depends_on "libmagic"
   end
 
   patch :p1, :DATA
 
   def install
-    ENV.append "CFLAGS",     "-I#{Formula["z80oolong/eaw/ncurses-eaw@6.2"].opt_include}"
-    ENV.append "CPPFLAGS",   "-I#{Formula["z80oolong/eaw/ncurses-eaw@6.2"].opt_include}"
-    ENV.append "LDFLAGS",    "-L#{Formula["z80oolong/eaw/ncurses-eaw@6.2"].opt_lib}"
+    ENV.replace_rpath "ncurses" => "z80oolong/eaw/ncurses-eaw@6.5"
+
+    ENV.append "CFLAGS",     "-I#{Formula["z80oolong/eaw/ncurses-eaw@6.5"].opt_include}"
+    ENV.append "CPPFLAGS",   "-I#{Formula["z80oolong/eaw/ncurses-eaw@6.5"].opt_include}"
+    ENV.append "LDFLAGS",    "-L#{Formula["z80oolong/eaw/ncurses-eaw@6.5"].opt_lib}"
     ENV["LC_ALL"] = "C"
 
     args =  std_configure_args
@@ -49,24 +63,8 @@ class NanoHead < Formula
     system "make"
     system "make", "install"
 
-    replace_rpath "#{bin}/nano", "ncurses" => "z80oolong/eaw/ncurses-eaw@6.2"
     doc.install "doc/sample.nanorc"
   end
-
-  def replace_rpath(binname, **replace_list)
-    return if OS.mac?
-
-    replace_list = replace_list.each_with_object({}) do |(old, new), result|
-      result[Formula[old].opt_lib.to_s] = Formula[new].opt_lib.to_s
-      result[Formula[old].lib.to_s] = Formula[new].lib.to_s
-    end
-
-    rpath = `#{Formula["patchelf"].opt_bin}/patchelf --print-rpath #{binname}`.chomp.split(":")
-    rpath.each_with_index { |i, path| rpath[i] = replace_list[path] if replace_list[path] }
-
-    system Formula["patchelf"].opt_bin/"patchelf", "--set-rpath", rpath.join(":"), binname
-  end
-  private :replace_rpath
 
   test do
     system "#{bin}/nano", "--version"
@@ -74,8 +72,23 @@ class NanoHead < Formula
 end
 
 __END__
+warning: refname 'upstream' is ambiguous.
+diff --git a/autogen.sh b/autogen.sh
+index b48bd882..107fa2da 100755
+--- a/autogen.sh
++++ b/autogen.sh
+@@ -1,7 +1,8 @@
+ #!/bin/sh
+ # Generate configure & friends for GIT users.
+ 
+-gnulib_url="git://git.sv.gnu.org/gnulib.git"
++#gnulib_url="git://git.sv.gnu.org/gnulib.git"
++gnulib_url="https://github.com/coreutils/gnulib.git"
+ gnulib_hash="f05b5a23f6cef8833402a298d1576a0118912ac8"
+ 
+ modules="
 diff --git a/configure.ac b/configure.ac
-index a08b7937..fc23ed4b 100644
+index 175504fd..38fb4189 100644
 --- a/configure.ac
 +++ b/configure.ac
 @@ -72,11 +72,19 @@ AM_CONDITIONAL(BUILDING_FROM_GIT, test x$from_git = xyes)
@@ -99,13 +112,14 @@ index a08b7937..fc23ed4b 100644
  	if test "$ac_cv_path_MSGFMT" = ":"; then
  		AC_MSG_ERROR([
 diff --git a/src/chars.c b/src/chars.c
-index 5271deef..f2b1161b 100644
+index a0ebaec5..998e9672 100644
 --- a/src/chars.c
 +++ b/src/chars.c
-@@ -28,6 +28,408 @@
- #include <wchar.h>
+@@ -28,6 +28,410 @@
  #include <wctype.h>
+ #endif
  
++#ifdef ENABLE_UTF8
 +#ifndef NO_USE_UTF8CJK
 +/*
 + * This is an implementation of wcwidth() and wcswidth() (defined in
@@ -507,11 +521,12 @@ index 5271deef..f2b1161b 100644
 +#endif /* NO_USE_UTF8CJK_EMOJI */
 +}
 +#endif /* NO_USE_UTF8CJK */
++#endif /* ENABLE_UTF8 */
 +
- static bool use_utf8 = FALSE;
- 		/* Whether we've enabled UTF-8 support. */
- 
-@@ -235,7 +637,11 @@ bool is_doublewidth(const char *ch)
+ #ifdef ENABLE_SPELLER
+ /* Return TRUE when the given character is some kind of letter. */
+ bool is_alpha_char(const char *c)
+@@ -219,7 +623,11 @@ bool is_doublewidth(const char *ch)
  	if (mbtowide(&wc, ch) < 0)
  		return FALSE;
  
@@ -523,7 +538,7 @@ index 5271deef..f2b1161b 100644
  }
  
  /* Return TRUE when the given character occupies zero cells. */
-@@ -256,7 +662,11 @@ bool is_zerowidth(const char *ch)
+@@ -240,7 +648,11 @@ bool is_zerowidth(const char *ch)
  		return FALSE;
  #endif
  
@@ -535,7 +550,7 @@ index 5271deef..f2b1161b 100644
  }
  #endif /* ENABLE_UTF8 */
  
-@@ -341,7 +751,11 @@ int advance_over(const char *string, size_t *column)
+@@ -325,7 +737,11 @@ int advance_over(const char *string, size_t *column)
  				return 1;
  			}
  
@@ -548,10 +563,10 @@ index 5271deef..f2b1161b 100644
  #if defined(__OpenBSD__)
  			*column += (width < 0 || wc >= 0xF0000) ? 1 : width;
 diff --git a/src/definitions.h b/src/definitions.h
-index c27a8a2c..1188a726 100644
+index c73b4a82..bc152f95 100644
 --- a/src/definitions.h
 +++ b/src/definitions.h
-@@ -371,6 +371,12 @@ enum {
+@@ -368,6 +368,12 @@ enum {
  	LET_THEM_ZAP,
  	BREAK_LONG_LINES,
  	JUMPY_SCROLLING,
@@ -565,10 +580,10 @@ index c27a8a2c..1188a726 100644
  	INDICATOR,
  	BOOKSTYLE,
 diff --git a/src/global.c b/src/global.c
-index 5f2a9c9f..c265529c 100644
+index 2ff88d5b..aaf41199 100644
 --- a/src/global.c
 +++ b/src/global.c
-@@ -96,8 +96,12 @@ int didfind = 0;
+@@ -103,8 +103,12 @@ int didfind = 0;
  char *present_path = NULL;
  		/* The current browser directory when trying to do tab completion. */
  
@@ -582,7 +597,7 @@ index 5f2a9c9f..c265529c 100644
  int controlleft, controlright, controlup, controldown;
  int controlhome, controlend;
 diff --git a/src/nano.c b/src/nano.c
-index f61db14e..7c295253 100644
+index 9cf3dfbe..1c827ea8 100644
 --- a/src/nano.c
 +++ b/src/nano.c
 @@ -647,6 +647,14 @@ void usage(void)
@@ -694,10 +709,10 @@ index f61db14e..7c295253 100644
  	if (initscr() == NULL)
  		exit(1);
 diff --git a/src/prototypes.h b/src/prototypes.h
-index ceca2c23..d9cb94b3 100644
+index e1cd8f61..2f522338 100644
 --- a/src/prototypes.h
 +++ b/src/prototypes.h
-@@ -62,7 +62,11 @@ extern int didfind;
+@@ -66,7 +66,11 @@ extern int didfind;
  
  extern char *present_path;
  
@@ -710,7 +725,7 @@ index ceca2c23..d9cb94b3 100644
  extern int controlleft, controlright;
  extern int controlup, controldown;
 diff --git a/src/rcfile.c b/src/rcfile.c
-index 0f324ea0..292e48ab 100644
+index 6143f5fc..59450a66 100644
 --- a/src/rcfile.c
 +++ b/src/rcfile.c
 @@ -136,6 +136,14 @@ static const rcoption rcopts[] = {
@@ -729,7 +744,7 @@ index 0f324ea0..292e48ab 100644
  	{NULL, 0}
  };
 diff --git a/src/winio.c b/src/winio.c
-index bb56e771..18755d13 100644
+index 8ed88e35..d8299349 100644
 --- a/src/winio.c
 +++ b/src/winio.c
 @@ -29,6 +29,9 @@
@@ -742,7 +757,7 @@ index bb56e771..18755d13 100644
  #endif
  
  #ifdef REVISION
-@@ -1901,7 +1904,11 @@ char *display_string(const char *text, size_t column, size_t span,
+@@ -1904,7 +1907,11 @@ char *display_string(const char *text, size_t column, size_t span,
  		}
  
  		/* Determine whether the character takes zero, one, or two columns. */

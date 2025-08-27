@@ -1,3 +1,15 @@
+class << ENV
+  def replace_rpath(**replace_list)
+    replace_list = replace_list.each_with_object({}) do |(old, new), result|
+      result[Formula[old].opt_lib.to_s] = Formula[new].opt_lib.to_s
+      result[Formula[old].lib.to_s] = Formula[new].lib.to_s
+    end
+    rpaths = self["HOMEBREW_RPATH_PATHS"].split(":")
+    rpaths = rpaths.each_with_object([]) {|rpath, result| result << (replace_list.key?(rpath) ? replace_list[rpath] : rpath) }
+    self["HOMEBREW_RPATH_PATHS"] = rpaths.join(":")
+  end
+end
+
 class MuttAT2213 < Formula
   desc "Mongrel of mail user agents (part elm, pine, mush, mh, etc.)"
   homepage "http://www.mutt.org/"
@@ -15,7 +27,7 @@ class MuttAT2213 < Formula
   depends_on "gpgme"
   depends_on "openssl@3"
   depends_on "tokyo-cabinet"
-  depends_on "z80oolong/eaw/ncurses-eaw@6.2"
+  depends_on "z80oolong/eaw/ncurses-eaw@6.5"
 
   uses_from_macos "bzip2"
   uses_from_macos "krb5"
@@ -24,9 +36,11 @@ class MuttAT2213 < Formula
   patch :p1, :DATA
 
   def install
-    ENV.append "CFLAGS",   "-I#{Formula["z80oolong/eaw/ncurses-eaw@6.2"].opt_include}"
-    ENV.append "CPPFLAGS", "-I#{Formula["z80oolong/eaw/ncurses-eaw@6.2"].opt_include}"
-    ENV.append "LDFLAGS",  "-L#{Formula["z80oolong/eaw/ncurses-eaw@6.2"].opt_lib}"
+    ENV.replace_rpath "ncurses" => "z80oolong/eaw/ncurses-eaw@6.5"
+
+    ENV.append "CFLAGS",   "-I#{Formula["z80oolong/eaw/ncurses-eaw@6.5"].opt_include}"
+    ENV.append "CPPFLAGS", "-I#{Formula["z80oolong/eaw/ncurses-eaw@6.5"].opt_include}"
+    ENV.append "LDFLAGS",  "-L#{Formula["z80oolong/eaw/ncurses-eaw@6.5"].opt_lib}"
     ENV["LC_ALL"] = "C"
 
     user_in_mail_group = Etc.getgrnam("mail").mem.include?(ENV["USER"])
@@ -53,24 +67,7 @@ class MuttAT2213 < Formula
     # https://github.com/Homebrew/homebrew/issues/45400
     inreplace "Makefile", /^DOTLOCK_GROUP =.*$/, "DOTLOCK_GROUP = #{effective_group}" unless user_in_mail_group
     system "make", "install"
-
-    replace_rpath "#{bin}/mutt", "ncurses" => "z80oolong/eaw/ncurses-eaw@6.2"
   end
-
-  def replace_rpath(binname, **replace_list)
-    return if OS.mac?
-
-    replace_list = replace_list.each_with_object({}) do |(old, new), result|
-      result[Formula[old].opt_lib.to_s] = Formula[new].opt_lib.to_s
-      result[Formula[old].lib.to_s] = Formula[new].lib.to_s
-    end
-
-    rpath = `#{Formula["patchelf"].opt_bin}/patchelf --print-rpath #{binname}`.chomp.split(":")
-    rpath.each_with_index { |i, path| rpath[i] = replace_list[path] if replace_list[path] }
-
-    system Formula["patchelf"].opt_bin/"patchelf", "--set-rpath", rpath.join(":"), binname
-  end
-  private :replace_rpath
 
   def caveats
     <<~EOS

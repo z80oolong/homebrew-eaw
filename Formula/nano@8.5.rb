@@ -1,27 +1,41 @@
-class NanoAT83 < Formula
+class << ENV
+  def replace_rpath(**replace_list)
+    replace_list = replace_list.each_with_object({}) do |(old, new), result|
+      result[Formula[old].opt_lib.to_s] = Formula[new].opt_lib.to_s
+      result[Formula[old].lib.to_s] = Formula[new].lib.to_s
+    end
+    rpaths = self["HOMEBREW_RPATH_PATHS"].split(":")
+    rpaths = rpaths.each_with_object([]) {|rpath, result| result << (replace_list.key?(rpath) ? replace_list[rpath] : rpath) }
+    self["HOMEBREW_RPATH_PATHS"] = rpaths.join(":")
+  end
+end
+
+class NanoAT85 < Formula
   desc "Free (GNU) replacement for the Pico text editor"
   homepage "https://www.nano-editor.org/"
-  url "https://www.nano-editor.org/dist/v8/nano-8.3.tar.xz"
-  sha256 "551b717b2e28f7e90f749323686a1b5bbbd84cfa1390604d854a3ca3778f111e"
+  url "https://www.nano-editor.org/dist/v8/nano-8.5.tar.xz"
+  sha256 "000b011d339c141af9646d43288f54325ff5c6e8d39d6e482b787bbc6654c26a"
   license "GPL-3.0-or-later"
+  revision 1
 
   keg_only :versioned_formula
 
-  depends_on "pkg-config" => :build
+  depends_on "pkgconf" => :build
   depends_on "gettext"
-  depends_on "z80oolong/eaw/ncurses-eaw@6.2"
+  depends_on "z80oolong/eaw/ncurses-eaw@6.5"
 
   on_linux do
-    depends_on "patchelf" => :build
     depends_on "libmagic"
   end
 
   patch :p1, :DATA
 
   def install
-    ENV.append "CFLAGS",   "-I#{Formula["z80oolong/eaw/ncurses-eaw@6.2"].opt_include}"
-    ENV.append "CPPFLAGS", "-I#{Formula["z80oolong/eaw/ncurses-eaw@6.2"].opt_include}"
-    ENV.append "LDFLAGS",  "-L#{Formula["z80oolong/eaw/ncurses-eaw@6.2"].opt_lib}"
+    ENV.replace_rpath "ncurses" => "z80oolong/eaw/ncurses-eaw@6.5"
+
+    ENV.append "CFLAGS",   "-I#{Formula["z80oolong/eaw/ncurses-eaw@6.5"].opt_include}"
+    ENV.append "CPPFLAGS", "-I#{Formula["z80oolong/eaw/ncurses-eaw@6.5"].opt_include}"
+    ENV.append "LDFLAGS",  "-L#{Formula["z80oolong/eaw/ncurses-eaw@6.5"].opt_lib}"
 
     args =  std_configure_args
     args << "--disable-dependency-tracking"
@@ -36,24 +50,8 @@ class NanoAT83 < Formula
     system "make"
     system "make", "install"
 
-    replace_rpath "#{bin}/nano", "ncurses" => "z80oolong/eaw/ncurses-eaw@6.2"
     doc.install "doc/sample.nanorc"
   end
-
-  def replace_rpath(binname, **replace_list)
-    return if OS.mac?
-
-    replace_list = replace_list.each_with_object({}) do |(old, new), result|
-      result[Formula[old].opt_lib.to_s] = Formula[new].opt_lib.to_s
-      result[Formula[old].lib.to_s] = Formula[new].lib.to_s
-    end
-
-    rpath = `#{Formula["patchelf"].opt_bin}/patchelf --print-rpath #{binname}`.chomp.split(":")
-    rpath.each_with_index { |i, path| rpath[i] = replace_list[path] if replace_list[path] }
-
-    system Formula["patchelf"].opt_bin/"patchelf", "--set-rpath", rpath.join(":"), binname
-  end
-  private :replace_rpath
 
   test do
     system "#{bin}/nano", "--version"
@@ -62,13 +60,14 @@ end
 
 __END__
 diff --git a/src/chars.c b/src/chars.c
-index af73bc3..8ad9321 100644
+index a0ebaec..911dd8a 100644
 --- a/src/chars.c
 +++ b/src/chars.c
-@@ -28,6 +28,405 @@
- #include <wchar.h>
+@@ -28,6 +28,407 @@
  #include <wctype.h>
+ #endif
  
++#ifdef ENABLE_UTF8
 +#ifndef NO_USE_UTF8CJK
 +/*
 + * This is an implementation of wcwidth() and wcswidth() (defined in
@@ -467,11 +466,12 @@ index af73bc3..8ad9321 100644
 +#endif /* NO_USE_UTF8CJK_EMOJI */
 +}
 +#endif /* NO_USE_UTF8CJK */
++#endif /* ENABLE_UTF8 */
 +
- static bool use_utf8 = FALSE;
- 		/* Whether we've enabled UTF-8 support. */
- 
-@@ -234,8 +633,11 @@ bool is_doublewidth(const char *ch)
+ #ifdef ENABLE_SPELLER
+ /* Return TRUE when the given character is some kind of letter. */
+ bool is_alpha_char(const char *c)
+@@ -218,8 +619,11 @@ bool is_doublewidth(const char *ch)
  
  	if (mbtowide(&wc, ch) < 0)
  		return FALSE;
@@ -484,7 +484,7 @@ index af73bc3..8ad9321 100644
  }
  
  /* Return TRUE when the given character occupies zero cells. */
-@@ -256,7 +658,11 @@ bool is_zerowidth(const char *ch)
+@@ -240,7 +644,11 @@ bool is_zerowidth(const char *ch)
  		return FALSE;
  #endif
  
@@ -496,7 +496,7 @@ index af73bc3..8ad9321 100644
  }
  #endif /* ENABLE_UTF8 */
  
-@@ -341,7 +747,11 @@ int advance_over(const char *string, size_t *column)
+@@ -325,7 +733,11 @@ int advance_over(const char *string, size_t *column)
  				return 1;
  			}
  
@@ -509,10 +509,10 @@ index af73bc3..8ad9321 100644
  #if defined(__OpenBSD__)
  			*column += (width < 0 || wc >= 0xF0000) ? 1 : width;
 diff --git a/src/definitions.h b/src/definitions.h
-index 0817076..5872799 100644
+index b461caf..9929c9c 100644
 --- a/src/definitions.h
 +++ b/src/definitions.h
-@@ -372,6 +372,12 @@ enum {
+@@ -371,6 +371,12 @@ enum {
  	LET_THEM_ZAP,
  	BREAK_LONG_LINES,
  	JUMPY_SCROLLING,
@@ -526,10 +526,10 @@ index 0817076..5872799 100644
  	INDICATOR,
  	BOOKSTYLE,
 diff --git a/src/global.c b/src/global.c
-index f070779..8d7a410 100644
+index a97ddf6..9cce92d 100644
 --- a/src/global.c
 +++ b/src/global.c
-@@ -93,8 +93,12 @@ int didfind = 0;
+@@ -101,8 +101,12 @@ int didfind = 0;
  char *present_path = NULL;
  		/* The current browser directory when trying to do tab completion. */
  
@@ -543,7 +543,7 @@ index f070779..8d7a410 100644
  int controlleft, controlright, controlup, controldown;
  int controlhome, controlend;
 diff --git a/src/nano.c b/src/nano.c
-index f4dbfdd..a102f16 100644
+index b6146b7..5601740 100644
 --- a/src/nano.c
 +++ b/src/nano.c
 @@ -647,6 +647,14 @@ void usage(void)
@@ -561,7 +561,7 @@ index f4dbfdd..a102f16 100644
  #ifndef NANO_TINY
  	print_opt("-@", "--colonparsing", N_("Accept 'filename:linenumber' notation"));
  	print_opt("-%", "--stateflags", N_("Show some states on the title bar"));
-@@ -1840,6 +1848,14 @@ int main(int argc, char **argv)
+@@ -1841,6 +1849,14 @@ int main(int argc, char **argv)
  #ifdef HAVE_LIBMAGIC
  		{"magic", 0, NULL, '!'},
  #endif
@@ -576,7 +576,7 @@ index f4dbfdd..a102f16 100644
  		{NULL, 0, NULL, 0}
  	};
  
-@@ -1870,7 +1886,16 @@ int main(int argc, char **argv)
+@@ -1871,7 +1887,16 @@ int main(int argc, char **argv)
  #endif
  
  #ifdef ENABLE_NLS
@@ -593,7 +593,7 @@ index f4dbfdd..a102f16 100644
  	textdomain(PACKAGE);
  #endif
  
-@@ -1881,8 +1906,18 @@ int main(int argc, char **argv)
+@@ -1882,8 +1907,18 @@ int main(int argc, char **argv)
  	if (*(tail(argv[0])) == 'r')
  		SET(RESTRICTED);
  
@@ -612,7 +612,7 @@ index f4dbfdd..a102f16 100644
  		switch (optchr) {
  #ifndef NANO_TINY
  			case 'A':
-@@ -2127,6 +2162,19 @@ int main(int argc, char **argv)
+@@ -2128,6 +2163,19 @@ int main(int argc, char **argv)
  				SET(USE_MAGIC);
  				break;
  #endif
@@ -630,9 +630,9 @@ index f4dbfdd..a102f16 100644
 +#endif
 +#endif
  #ifndef NANO_TINY
- 			case '@':
- 				SET(COLON_PARSING);
-@@ -2154,6 +2202,21 @@ int main(int argc, char **argv)
+ 			case 0xCC:
+ 				SET(WHITESPACE_DISPLAY);
+@@ -2158,6 +2206,21 @@ int main(int argc, char **argv)
  	if (getenv("TERM") == NULL)
  		putenv("TERM=vt220");
  
@@ -655,10 +655,10 @@ index f4dbfdd..a102f16 100644
  	if (initscr() == NULL)
  		exit(1);
 diff --git a/src/prototypes.h b/src/prototypes.h
-index 4a1eac5..6ea78a1 100644
+index 4aa37ff..8b162cf 100644
 --- a/src/prototypes.h
 +++ b/src/prototypes.h
-@@ -61,7 +61,11 @@ extern int didfind;
+@@ -65,7 +65,11 @@ extern int didfind;
  
  extern char *present_path;
  
@@ -671,10 +671,10 @@ index 4a1eac5..6ea78a1 100644
  extern int controlleft, controlright;
  extern int controlup, controldown;
 diff --git a/src/rcfile.c b/src/rcfile.c
-index 660546d..5852aab 100644
+index 6143f5f..59450a6 100644
 --- a/src/rcfile.c
 +++ b/src/rcfile.c
-@@ -135,6 +135,14 @@ static const rcoption rcopts[] = {
+@@ -136,6 +136,14 @@ static const rcoption rcopts[] = {
  	{"errorcolor", 0},
  	{"keycolor", 0},
  	{"functioncolor", 0},
@@ -690,7 +690,7 @@ index 660546d..5852aab 100644
  	{NULL, 0}
  };
 diff --git a/src/winio.c b/src/winio.c
-index d462599..3ca95b1 100644
+index baaa96f..07c189c 100644
 --- a/src/winio.c
 +++ b/src/winio.c
 @@ -29,6 +29,9 @@
@@ -703,7 +703,7 @@ index d462599..3ca95b1 100644
  #endif
  
  #ifdef REVISION
-@@ -1910,7 +1913,11 @@ char *display_string(const char *text, size_t column, size_t span,
+@@ -1901,7 +1904,11 @@ char *display_string(const char *text, size_t column, size_t span,
  		}
  
  		/* Determine whether the character takes zero, one, or two columns. */
