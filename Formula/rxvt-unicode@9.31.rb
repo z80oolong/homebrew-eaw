@@ -1,12 +1,15 @@
-class << ENV
-  def replace_rpath(**replace_list)
-    replace_list = replace_list.each_with_object({}) do |(old, new), result|
-      result[Formula[old].opt_lib.to_s] = Formula[new].opt_lib.to_s
-      result[Formula[old].lib.to_s] = Formula[new].lib.to_s
-    end
-    rpaths = self["HOMEBREW_RPATH_PATHS"].split(":")
-    rpaths = rpaths.each_with_object([]) {|rpath, result| result << (replace_list.key?(rpath) ? replace_list[rpath] : rpath) }
-    self["HOMEBREW_RPATH_PATHS"] = rpaths.join(":")
+def ENV.replace_rpath(**replace_list)
+  replace_list = replace_list.each_with_object({}) do |(old, new), result|
+    old_f = Formula[old]
+    new_f = Formula[new]
+    result[old_f.opt_lib.to_s] = new_f.opt_lib.to_s
+    result[old_f.lib.to_s] = new_f.lib.to_s
+  end
+
+  if (rpaths = fetch("HOMEBREW_RPATH_PATHS", false))
+    self["HOMEBREW_RPATH_PATHS"] = (rpaths.split(":").map do |rpath|
+      replace_list.fetch(rpath, rpath)
+    end).join(":")
   end
 end
 
@@ -16,7 +19,7 @@ class RxvtUnicodeAT931 < Formula
   url "http://dist.schmorp.de/rxvt-unicode/Attic/rxvt-unicode-9.31.tar.bz2"
   sha256 "aaa13fcbc149fe0f3f391f933279580f74a96fd312d6ed06b8ff03c2d46672e8"
   license "GPL-3.0-only"
-  revision 5
+  revision 6
 
   livecheck do
     url "http://dist.schmorp.de/rxvt-unicode/"
@@ -72,6 +75,10 @@ class RxvtUnicodeAT931 < Formula
     system "./configure", *args
     system "make"
     system "make", "install"
+  end
+
+  def diff_data
+    path.readlines(nil).first.gsub(/^.*\n__END__\n/m, "")
   end
 
   test do

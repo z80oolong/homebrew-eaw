@@ -1,375 +1,291 @@
-class << ENV
-  def replace_rpath(**replace_list)
-    replace_list = replace_list.each_with_object({}) do |(old, new), result|
-      result[Formula[old].opt_lib.to_s] = Formula[new].opt_lib.to_s
-      result[Formula[old].lib.to_s] = Formula[new].lib.to_s
-    end
-    rpaths = self["HOMEBREW_RPATH_PATHS"].split(":")
-    rpaths = rpaths.each_with_object([]) {|rpath, result| result << (replace_list.key?(rpath) ? replace_list[rpath] : rpath) }
-    self["HOMEBREW_RPATH_PATHS"] = rpaths.join(":")
+def ENV.replace_rpath(**replace_list)
+  replace_list = replace_list.each_with_object({}) do |(old, new), result|
+    old_f = Formula[old]
+    new_f = Formula[new]
+    result[old_f.opt_lib.to_s] = new_f.opt_lib.to_s
+    result[old_f.lib.to_s] = new_f.lib.to_s
+  end
+
+  if (rpaths = fetch("HOMEBREW_RPATH_PATHS", false))
+    self["HOMEBREW_RPATH_PATHS"] = (rpaths.split(":").map do |rpath|
+      replace_list.fetch(rpath, rpath)
+    end).join(":")
   end
 end
 
-class MuttHead < Formula
-  desc "Mongrel of mail user agents (part elm, pine, mush, mh, etc.)"
-  homepage "http://www.mutt.org/"
+class NeomuttAT20991231Dev < Formula
+  desc "E-mail reader with support for Notmuch, NNTP and much more"
+  homepage "https://neomutt.org/"
   license "GPL-2.0-or-later"
-  head "https://gitlab.com/muttmua/mutt.git", branch: "master"
+  revision 3
 
-  stable do
-    current_commit = "0742c5d58c5383fe9045b4f388469ba739adf023"
-    url "https://gitlab.com/muttmua/mutt.git",
-      branch:   "master",
-      revision: current_commit
-    version "git-#{current_commit[0..7]}"
-  end
+  current_commit = "b976587882add0f602f6ce280341056d412d5005"
+  url "https://github.com/neomutt/neomutt.git",
+    branch:   "main",
+    revision: current_commit
+  version "git-#{current_commit[0..7]}"
 
-  keg_only "it conflicts with 'homebrew/core/mutt'"
+  keg_only :versioned_formula
 
-  depends_on "autoconf" => :build
-  depends_on "automake" => :build
-  depends_on "libxslt" => :build
-  depends_on "perl" => :build
+  depends_on "gettext"
   depends_on "glibc"
   depends_on "gpgme"
-  depends_on "openssl@3"
+  depends_on "libidn"
+  depends_on "lmdb"
+  depends_on "lua"
+  depends_on "notmuch"
+  depends_on "openssl@1.1"
   depends_on "tokyo-cabinet"
   depends_on "z80oolong/eaw/ncurses-eaw@6.5"
-
-  uses_from_macos "bzip2"
-  uses_from_macos "krb5"
-  uses_from_macos "zlib"
-
-  conflicts_with "tin", because: "both install mmdf.5 and mbox.5 man pages"
-
-  resource "html" do
-    url "https://muttmua.gitlab.io/mutt/manual-dev.html"
-    sha256 "b2070c628927e603f3987586daf3f86dbea9ee226abc1cc60d1bc2688ba5f8f6"
+  unless OS.mac?
+    depends_on "pkgconf" => :build
+    depends_on "cyrus-sasl"
+    depends_on "krb5"
   end
 
   patch :p1, :DATA
 
   def install
-    ENV.replace_rpath "ncurses" => "z80oolong/eaw/ncurses-eaw@6.5"
-
     ENV.append "CFLAGS",   "-I#{Formula["z80oolong/eaw/ncurses-eaw@6.5"].opt_include}"
     ENV.append "CPPFLAGS", "-I#{Formula["z80oolong/eaw/ncurses-eaw@6.5"].opt_include}"
     ENV.append "LDFLAGS",  "-L#{Formula["z80oolong/eaw/ncurses-eaw@6.5"].opt_lib}"
-    ENV["LC_ALL"] = "C"
-
-    user_in_mail_group = Etc.getgrnam("mail").mem.include?(ENV["USER"])
-    effective_group = Etc.getgrgid(Process.egid).name
+    ENV["XML_CATALOG_FILES"] = "#{etc}/xml/catalog"
 
     args = std_configure_args
-    args << "--disable-warnings"
-    args << "--enable-debug"
-    args << "--enable-hcache"
-    args << "--enable-imap"
-    args << "--enable-pop"
-    args << "--enable-sidebar"
-    args << "--enable-smtp"
-    args << "--with-gss"
-    args << "--with-ssl=#{Formula["openssl@3"].opt_prefix}"
-    args << "--with-tokyocabinet"
     args << "--enable-gpgme"
-    args << (OS.mac? ? "--with-sasl" : "--with-sasl2")
+    args << "--with-gpgme=#{Formula["gpgme"].opt_prefix}"
+    args << "--disable-doc"
+    args << "--gss"
+    args << "--lmdb"
+    args << "--notmuch"
+    args << "--sasl"
+    args << "--tokyocabinet"
+    args << "--with-ssl=#{Formula["openssl@1.1"].opt_prefix}"
+    args << "--with-ui=ncurses"
+    args << "--with-ncurses=#{Formula["z80oolong/eaw/ncurses-eaw@6.5"].opt_prefix}"
+    args << "--lua"
+    args << "--with-lua=#{Formula["lua"].prefix}"
 
-    system "./prepare", *args
+    system "./configure", *args
     system "make"
-    # This permits the `mutt_dotlock` file to be installed under a group
-    # that isn't `mail`.
-    # https://github.com/Homebrew/homebrew/issues/45400
-    inreplace "Makefile", /^DOTLOCK_GROUP =.*$/, "DOTLOCK_GROUP = #{effective_group}" unless user_in_mail_group
     system "make", "install"
-
-    doc.install resource("html")
   end
 
-  def caveats
-    <<~EOS
-      mutt_dotlock(1) has been installed, but does not have the permissions to lock
-      spool files in /var/mail. To grant the necessary permissions, run
-
-      sudo chgrp mail #{bin}/mutt_dotlock
-      sudo chmod g+s #{bin}/mutt_dotlock
-
-      Alternatively, you may configure `spoolfile` in your .muttrc to a file inside
-      your home directory.
-    EOS
+  def diff_data
+    path.readlines(nil).first.gsub(/^.*\n__END__\n/m, "")
   end
 
   test do
-    system bin/"mutt", "-D"
-    touch "foo"
-    system bin/"mutt_dotlock", "foo"
-    system bin/"mutt_dotlock", "-u", "foo"
+    output = shell_output("#{bin}/neomutt -F /dev/null -Q debug_level")
+    assert_equal "set debug_level = 0", output.chomp
   end
 end
 
 __END__
-warning: refname 'upstream' is ambiguous.
-diff --git a/curs_lib.c b/curs_lib.c
-index 246cb6be..6f4c7fd9 100644
---- a/curs_lib.c
-+++ b/curs_lib.c
-@@ -1387,7 +1387,11 @@ void mutt_format_string (char *dest, size_t destlen,
- #endif
-         if (!IsWPrint (wc))
-           wc = '?';
-+#ifndef NO_USE_MKWCWIDTH
-+      w = mutt_wcwidth (wc);
+diff --git a/editor/enter.c b/editor/enter.c
+index f2f981809..461d28a54 100644
+--- a/editor/enter.c
++++ b/editor/enter.c
+@@ -36,7 +36,11 @@
+ #include "state.h"
+ 
+ /// combining mark / non-spacing character
++#ifdef NO_USE_UTF8CJK
+ #define COMB_CHAR(wc) (IsWPrint(wc) && (wcwidth(wc) == 0))
 +#else
-       w = wcwidth (wc);
++#define COMB_CHAR(wc) (IsWPrint(wc) && (mutt_mb_wcwidth(wc) == 0))
++#endif
+ 
+ /**
+  * editor_backspace - Delete the char in front of the cursor
+diff --git a/editor/window.c b/editor/window.c
+index 34fa5acbb..179a6d879 100644
+--- a/editor/window.c
++++ b/editor/window.c
+@@ -70,7 +70,11 @@ static const struct Mapping EditorHelp[] = {
+  */
+ static int my_addwch(struct MuttWindow *win, wchar_t wc)
+ {
++#ifdef NO_USE_UTF8CJK
+   int n = wcwidth(wc);
++#else
++  int n = mutt_mb_wcwidth(wc);
++#endif
+   if (IsWPrint(wc) && (n > 0))
+     return mutt_addwch(win, wc);
+   if (!(wc & ~0x7f))
+diff --git a/expando/format.c b/expando/format.c
+index 45d23f1b5..02e46ec66 100644
+--- a/expando/format.c
++++ b/expando/format.c
+@@ -145,7 +145,11 @@ int format_string(struct Buffer *buf, int min_cols, int max_cols, enum FormatJus
+     }
+     else if (iswspace(wc))
+     {
++#ifdef NO_USE_UTF8CJK
+       w = MAX(1, wcwidth(wc));
++#else
++      w = MAX(1, mutt_mb_wcwidth(wc));
 +#endif
      }
-     if (w >= 0)
+     else
      {
-@@ -1516,7 +1520,11 @@ void mutt_paddstr (int n, const char *s)
-     }
-     if (!IsWPrint (wc))
-       wc = '?';
-+#ifndef NO_USE_MKWCWIDTH
-+    w = mutt_wcwidth (wc);
+@@ -156,7 +160,11 @@ int format_string(struct Buffer *buf, int min_cols, int max_cols, enum FormatJus
+ #endif
+           if (!IsWPrint(wc))
+         wc = '?';
++#ifdef NO_USE_UTF8CJK
+       w = wcwidth(wc);
 +#else
-     w = wcwidth (wc);
++      w = mutt_mb_wcwidth(wc);
++#endif
+     }
+ 
+     // It'll require _some_ space
+diff --git a/gui/curs_lib.c b/gui/curs_lib.c
+index 466bd3dd3..caa42c1d8 100644
+--- a/gui/curs_lib.c
++++ b/gui/curs_lib.c
+@@ -358,7 +358,11 @@ void mutt_paddstr(struct MuttWindow *win, int n, const char *s)
+     }
+     if (!IsWPrint(wc))
+       wc = '?';
++#ifdef NO_USE_UTF8CJK
+     const int w = wcwidth(wc);
++#else
++    const int w = mutt_mb_wcwidth(wc);
 +#endif
      if (w >= 0)
      {
        if (w > n)
-@@ -1553,7 +1561,11 @@ size_t mutt_wstr_trunc (const char *src, size_t maxlen, size_t maxwid, size_t *w
-       cl = (cl == (size_t)(-1)) ? 1 : n;
-       wc = replacement_char ();
+@@ -408,7 +412,11 @@ size_t mutt_wstr_trunc(const char *src, size_t maxlen, size_t maxwid, size_t *wi
+       wc = ReplacementChar;
      }
-+#ifndef NO_USE_MKWCWIDTH
-+    cw = mutt_wcwidth (wc);
+ 
++#ifdef NO_USE_UTF8CJK
+     cw = wcwidth(wc);
 +#else
-     cw = wcwidth (wc);
++    cw = mutt_mb_wcwidth(wc);
 +#endif
      /* hack because MUTT_TREE symbols aren't turned into characters
-      * until rendered by print_enriched_string (#3364) */
-     if (cw < 0 && cl == 1 && src[0] && src[0] < MUTT_TREE_MAX)
-@@ -1591,7 +1603,11 @@ int mutt_charlen (const char *s, int *width)
-   memset (&mbstate, 0, sizeof (mbstate));
-   k = mbrtowc (&wc, s, n, &mbstate);
-   if (width)
-+#ifndef NO_USE_MKWCWIDTH
-+    *width = mutt_wcwidth (wc);
-+#else
-     *width = wcwidth (wc);
-+#endif
-   return (k == (size_t)(-1) || k == (size_t)(-2)) ? -1 : k;
- }
- 
-@@ -1623,7 +1639,11 @@ int mutt_strwidth (const char *s)
+      * until rendered by print_enriched_string() */
+     if ((cw < 0) && (src[0] == MUTT_SPECIAL_INDEX))
+@@ -483,7 +491,11 @@ size_t mutt_strnwidth(const char *s, size_t n)
      }
-     if (!IsWPrint (wc))
+     if (!IsWPrint(wc))
        wc = '?';
-+#ifndef NO_USE_MKWCWIDTH
-+    w += mutt_wcwidth (wc);
++#ifdef NO_USE_UTF8CJK
+     w += wcwidth(wc);
 +#else
-     w += wcwidth (wc);
++    w += mutt_mb_wcwidth(wc);
 +#endif
    }
    return w;
  }
-diff --git a/enter.c b/enter.c
-index 693f3b1d..53a74e7e 100644
---- a/enter.c
-+++ b/enter.c
-@@ -27,6 +27,9 @@
- #include "keymap.h"
- #include "history.h"
- #include "buffy.h"
-+#ifndef NO_USE_MKWCWIDTH
-+#include "mbyte.h"
-+#endif
- 
- #include <string.h>
- 
-@@ -39,7 +42,11 @@ enum
- 
- static int my_wcwidth (wchar_t wc)
- {
-+#ifndef NO_USE_MKWCWIDTH
-+  int n = mutt_wcwidth (wc);
-+#else
-   int n = wcwidth (wc);
-+#endif
-   if (IsWPrint (wc) && n > 0)
-     return n;
-   if (!(wc & ~0x7f))
-@@ -50,7 +57,11 @@ static int my_wcwidth (wchar_t wc)
- }
- 
- /* combining mark / non-spacing character */
-+#ifndef NO_USE_MKWCWIDTH
-+#define COMB_CHAR(wc) (IsWPrint (wc) && !mutt_wcwidth (wc))
-+#else
- #define COMB_CHAR(wc) (IsWPrint (wc) && !wcwidth (wc))
-+#endif
- 
- static int my_wcswidth (const wchar_t *s, size_t n)
- {
-@@ -62,7 +73,11 @@ static int my_wcswidth (const wchar_t *s, size_t n)
- 
- static int my_addwch (wchar_t wc)
- {
-+#ifndef NO_USE_MKWCWIDTH
-+  int n = mutt_wcwidth (wc);
-+#else
-   int n = wcwidth (wc);
-+#endif
-   if (IsWPrint (wc) && n > 0)
-     return mutt_addwch (wc);
-   if (!(wc & ~0x7f))
-diff --git a/help.c b/help.c
-index 29dda797..0734d23a 100644
---- a/help.c
-+++ b/help.c
-@@ -109,7 +109,11 @@ static int print_macro (FILE *f, int maxwidth, const char **macro)
-       wc = replacement_char ();
+diff --git a/gui/msgwin.c b/gui/msgwin.c
+index c36b0c5c3..fad898ce4 100644
+--- a/gui/msgwin.c
++++ b/gui/msgwin.c
+@@ -132,7 +132,11 @@ void measure(struct MwCharArray *chars, const char *str, const struct AttrColor
+       consumed = str_len;
      }
-     /* glibc-2.1.3's wcwidth() returns 1 for unprintable chars! */
-+#ifndef NO_USE_MKWCWIDTH
-+    if (IsWPrint (wc) && (w = mutt_wcwidth (wc)) >= 0)
+ 
++#ifdef NO_USE_UTF8CJK
+     int wchar_width = wcwidth(wc);
 +#else
-     if (IsWPrint (wc) && (w = wcwidth (wc)) >= 0)
++    int wchar_width = mutt_mb_wcwidth(wc);
 +#endif
+     if (wchar_width < 0)
+       wchar_width = 1;
+ 
+diff --git a/key/lib.c b/key/lib.c
+index c327d203a..d3fee2416 100644
+--- a/key/lib.c
++++ b/key/lib.c
+@@ -356,7 +356,11 @@ void escape_macro(const char *macro, struct Buffer *buf)
+       wc = ReplacementChar;
+     }
+ 
++#ifdef NO_USE_UTF8CJK
+     const int w = wcwidth(wc);
++#else
++    const int w = mutt_mb_wcwidth(wc);
++#endif
+     if (IsWPrint(wc) && (w >= 0))
      {
-       if (w > n)
- 	break;
-@@ -174,7 +178,11 @@ static int get_wrapped_width (const char *t, size_t wid)
-     }
-     if (!IsWPrint (wc))
-       wc = '?';
-+#ifndef NO_USE_MKWCWIDTH
-+    n += mutt_wcwidth (wc);
-+#else
-     n += wcwidth (wc);
-+#endif
-   }
-   if (n > wid)
-     n = m;
-diff --git a/init.h b/init.h
-index 63684916..b2872fb7 100644
---- a/init.h
-+++ b/init.h
-@@ -4951,6 +4951,12 @@ struct option_t MuttVars[] = {
-   {"xterm_set_titles",	DT_SYN,  R_NONE, {.p="ts_enabled"}, {.p=0} },
-   /*
-   */
-+#ifndef NO_USE_MKWCWIDTH
-+  {"utf8_cjk",          DT_BOOL, R_NONE, {.l=OPTUTF8CJK}, {.l=0} },
-+#ifndef NO_USE_UTF8CJK_EMOJI
-+  {"utf8_emoji",        DT_BOOL, R_NONE, {.l=OPTUTF8CJKEMOJI}, {.l=0} },
-+#endif
-+#endif
-   /*--*/
-   { NULL, 0, 0, {.l=0}, {.l=0} }
- };
-diff --git a/mbyte.c b/mbyte.c
-index 16645feb..4442fc99 100644
---- a/mbyte.c
-+++ b/mbyte.c
-@@ -88,6 +88,22 @@ void mutt_set_charset (char *charset)
- #endif
- }
+       char tmp[MB_LEN_MAX * 2] = { 0 };
+diff --git a/mutt/mbyte.c b/mutt/mbyte.c
+index 2acbb90b0..bac7072fe 100644
+--- a/mutt/mbyte.c
++++ b/mutt/mbyte.c
+@@ -43,6 +43,430 @@
  
-+#ifndef NO_USE_MKWCWIDTH
-+int mk_wcwidth(wchar_t wc);
-+int mk_wcwidth_cjk(wchar_t wc);
-+int mk_wcwidth_cjk_emoji(wchar_t wc);
-+
-+int mutt_wcwidth (wchar_t wc)
-+{
-+  if (option(OPTUTF8CJKEMOJI))
-+    return mk_wcwidth_cjk_emoji(wc);
-+  else if (option(OPTUTF8CJK))
-+    return mk_wcwidth_cjk(wc);
-+  else
-+    return mk_wcwidth(wc);
-+}
-+#endif
-+
- #ifndef HAVE_WC_FUNCS
+ bool OptLocales; ///< (pseudo) set if user has valid locale definition
  
- /*
-diff --git a/mbyte.h b/mbyte.h
-index 9c58c9ec..b3dd79a8 100644
---- a/mbyte.h
-+++ b/mbyte.h
-@@ -8,6 +8,9 @@
- #  ifdef HAVE_WCTYPE_H
- #   include <wctype.h>
- #  endif
-+#  ifndef NO_USE_MKWCWIDTH
-+extern int mutt_wcwidth (wchar_t wc);
-+#  endif
- # endif
- 
- # ifndef HAVE_WC_FUNCS
-diff --git a/mutt.h b/mutt.h
-index 97c02653..ce467d0e 100644
---- a/mutt.h
-+++ b/mutt.h
-@@ -621,6 +621,12 @@ enum
-   OPTPGPSHOWUNUSABLE,
-   OPTPGPAUTOINLINE,
-   OPTPGPREPLYINLINE,
-+#ifndef NO_USE_MKWCWIDTH
-+  OPTUTF8CJK,
-+#ifndef NO_USE_UTF8CJK_EMOJI
-+  OPTUTF8CJKEMOJI,
-+#endif
-+#endif
- 
-   /* pseudo options */
- 
-diff --git a/pager.c b/pager.c
-index e02eea31..d4f22add 100644
---- a/pager.c
-+++ b/pager.c
-@@ -1402,7 +1402,11 @@ static int format_line (struct line_t **lineInfo, int n, unsigned char *buf,
-     {
-       if (wc == ' ')
- 	space = ch;
-+#ifndef NO_USE_MKWCWIDTH
-+      t = mutt_wcwidth (wc);
-+#else
-       t = wcwidth (wc);
-+#endif
-       if (col + t > wrap_cols)
- 	break;
-       col += t;
-diff --git a/sendlib.c b/sendlib.c
-index ef0ca29f..5862e1f1 100644
---- a/sendlib.c
-+++ b/sendlib.c
-@@ -1918,7 +1918,11 @@ static int my_width (const char *p, int col, int flags)
-       consumed = (consumed == (size_t)(-1)) ? 1 : n;
-     }
- 
-+#ifndef NO_USE_MKWCWIDTH
-+    l = mutt_wcwidth (wc);
-+#else
-     l = wcwidth (wc);
-+#endif
-     if (l < 0)
-       l = 1;
-     /* correctly calc tab stop, even for sending as the
-diff --git a/wcwidth.c b/wcwidth.c
-index 75e1b9a8..55dd98ae 100644
---- a/wcwidth.c
-+++ b/wcwidth.c
-@@ -184,3 +184,338 @@ int wcswidth(const wchar_t *pwcs, size_t n)
-   return width;
- }
- #endif
-+
-+#ifndef NO_USE_MKWCWIDTH
++#ifndef NO_USE_UTF8CJK
 +/*
-+ * Use original mk_wcswidth(), mk_wcswidth_cjk(), mk_wcswidth_cjk_emoji(), etc.
++ * This is an implementation of wcwidth() and wcswidth() (defined in
++ * IEEE Std 1002.1-2001) for Unicode.
++ *
++ * http://www.opengroup.org/onlinepubs/007904975/functions/wcwidth.html
++ * http://www.opengroup.org/onlinepubs/007904975/functions/wcswidth.html
++ *
++ * In fixed-width output devices, Latin characters all occupy a single
++ * "cell" position of equal width, whereas ideographic CJK characters
++ * occupy two such cells. Interoperability between terminal-line
++ * applications and (teletype-style) character terminals using the
++ * UTF-8 encoding requires agreement on which character should advance
++ * the cursor by how many cell positions. No established formal
++ * standards exist at present on which Unicode character shall occupy
++ * how many cell positions on character terminals. These routines are
++ * a first attempt of defining such behavior based on simple rules
++ * applied to data provided by the Unicode Consortium.
++ *
++ * For some graphical characters, the Unicode standard explicitly
++ * defines a character-cell width via the definition of the East Asian
++ * FullWidth (F), Wide (W), Half-width (H), and Narrow (Na) classes.
++ * In all these cases, there is no ambiguity about which width a
++ * terminal shall use. For characters in the East Asian Ambiguous (A)
++ * class, the width choice depends purely on a preference of backward
++ * compatibility with either historic CJK or Western practice.
++ * Choosing single-width for these characters is easy to justify as
++ * the appropriate long-term solution, as the CJK practice of
++ * displaying these characters as double-width comes from historic
++ * implementation simplicity (8-bit encoded characters were displayed
++ * single-width and 16-bit ones double-width, even for Greek,
++ * Cyrillic, etc.) and not any typographic considerations.
++ *
++ * Much less clear is the choice of width for the Not East Asian
++ * (Neutral) class. Existing practice does not dictate a width for any
++ * of these characters. It would nevertheless make sense
++ * typographically to allocate two character cells to characters such
++ * as for instance EM SPACE or VOLUME INTEGRAL, which cannot be
++ * represented adequately with a single-width glyph. The following
++ * routines at present merely assign a single-cell width to all
++ * neutral characters, in the interest of simplicity. This is not
++ * entirely satisfactory and should be reconsidered before
++ * establishing a formal standard in this area. At the moment, the
++ * decision which Not East Asian (Neutral) characters should be
++ * represented by double-width glyphs cannot yet be answered by
++ * applying a simple rule from the Unicode database content. Setting
++ * up a proper standard for the behavior of UTF-8 character terminals
++ * will require a careful analysis not only of each Unicode character,
++ * but also of each presentation form, something the author of these
++ * routines has avoided to do so far.
++ *
++ * http://www.unicode.org/unicode/reports/tr11/
++ *
++ * Markus Kuhn -- 2007-05-26 (Unicode 5.0)
++ *
++ * Permission to use, copy, modify, and distribute this software
++ * for any purpose and without fee is hereby granted. The author
++ * disclaims all warranties with regard to this software.
++ *
++ * Latest version: http://www.cl.cam.ac.uk/~mgk25/ucs/wcwidth.c
 + */
++
++// Delete duplicated '#include <wchar.h>' by Z.OOL. <zool@zool.jpn.org>
++//#include <wchar.h>
 +
 +struct interval {
 +  int first;
@@ -395,6 +311,7 @@ index 75e1b9a8..55dd98ae 100644
 +
 +  return 0;
 +}
++
 +
 +/* The following two functions define the column width of an ISO 10646
 + * character as follows:
@@ -428,7 +345,7 @@ index 75e1b9a8..55dd98ae 100644
 + * in ISO 10646.
 + */
 +
-+int mk_wcwidth(wchar_t ucs)
++static int mk_wcwidth(wchar_t ucs)
 +{
 +  /* sorted list of non-overlapping intervals of non-spacing characters */
 +  /* generated by "uniset +cat=Me +cat=Mn +cat=Cf -00AD +1160-11FF +200B c" */
@@ -512,7 +429,8 @@ index 75e1b9a8..55dd98ae 100644
 +      (ucs >= 0x30000 && ucs <= 0x3fffd)));
 +}
 +
-+int mk_wcswidth(const wchar_t *pwcs, size_t n)
++
++static int mk_wcswidth(const wchar_t *pwcs, size_t n)
 +{
 +  int w, width = 0;
 +
@@ -525,6 +443,7 @@ index 75e1b9a8..55dd98ae 100644
 +  return width;
 +}
 +
++
 +/*
 + * The following functions are the same as mk_wcwidth() and
 + * mk_wcswidth(), except that spacing characters in the East Asian
@@ -534,7 +453,7 @@ index 75e1b9a8..55dd98ae 100644
 + * the traditional terminal character-width behaviour. It is not
 + * otherwise recommended for general use.
 + */
-+int mk_wcwidth_cjk(wchar_t ucs)
++static int mk_wcwidth_cjk(wchar_t ucs)
 +{
 +  /* sorted list of non-overlapping intervals of East Asian Ambiguous
 +   * characters, generated by "uniset +WIDTH-A -cat=Me -cat=Mn -cat=Cf c" */
@@ -601,7 +520,7 @@ index 75e1b9a8..55dd98ae 100644
 +  return mk_wcwidth(ucs);
 +}
 +
-+int mk_wcswidth_cjk(const wchar_t *pwcs, size_t n)
++static int mk_wcswidth_cjk(const wchar_t *pwcs, size_t n)
 +{
 +  int w, width = 0;
 +
@@ -615,8 +534,7 @@ index 75e1b9a8..55dd98ae 100644
 +}
 +
 +#ifndef NO_USE_UTF8CJK_EMOJI
-+/* The following function returns 1 if wide charactor code ucs is
-+ * The following functions are the same as mk_wcwidth_cjk() and
++/* The following functions are the same as mk_wcwidth_cjk() and
 + * mk_wcswidth_cjk(), except that spacing characters in the "Emoji"
 + * characters as defined in Unicode have a column width of 2.
 + * This function is based on the following vim-jp issue,
@@ -624,7 +542,7 @@ index 75e1b9a8..55dd98ae 100644
 + *
 + * https://github.com/vim-jp/issues/issues/1086
 + */
-+int mk_wcwidth_cjk_emoji(wchar_t ucs)
++static int mk_wcwidth_cjk_emoji(wchar_t ucs)
 +{
 +  /* Sorted list of non-overlapping intervals of all Emoji characters,
 +   * based on http://unicode.org/emoji/charts/emoji-list.html */
@@ -686,13 +604,40 @@ index 75e1b9a8..55dd98ae 100644
 +
 +  return mk_wcwidth_cjk(ucs);
 +}
++#endif
 +
-+int mk_wcswidth_cjk_emoji(const wchar_t *pwcs, size_t n)
++#include "core/lib.h"
++#include "config/lib.h"
++
++static int mutt_wcwidth_cjk(wchar_t ucs)
++{
++  if (!(NeoMutt->sub)) {
++#ifndef NO_USE_UTF8CJK_EMOJI
++    return mk_wcwidth_cjk_emoji(ucs);
++#else
++    return mk_wcwidth_cjk(ucs);
++#endif
++  }
++
++  if (cs_subset_bool(NeoMutt->sub, "utf8_cjk"))
++  {
++#ifndef NO_USE_UTF8CJK_EMOJI
++    if(cs_subset_bool(NeoMutt->sub, "utf8_emoji"))
++      return mk_wcwidth_cjk_emoji(ucs);
++    else
++#endif
++      return mk_wcwidth_cjk(ucs);
++  }
++
++  return mk_wcwidth(ucs);
++}
++
++static int mutt_wcswidth_cjk(const wchar_t *pwcs, size_t n)
 +{
 +  int w, width = 0;
 +
 +  for (;*pwcs && n-- > 0; pwcs++)
-+    if ((w = mk_wcwidth_cjk_emoji(*pwcs)) < 0)
++    if ((w = mutt_wcwidth_cjk(*pwcs)) < 0)
 +      return -1;
 +    else
 +      width += w;
@@ -700,3 +645,80 @@ index 75e1b9a8..55dd98ae 100644
 +  return width;
 +}
 +#endif
++
+ /**
+  * mutt_mb_charlen - Count the bytes in a (multibyte) character
+  * @param[in]  s     String to be examined
+@@ -63,7 +487,11 @@ int mutt_mb_charlen(const char *s, int *width)
+   size_t n = mutt_str_len(s);
+   size_t k = mbrtowc(&wc, s, n, &mbstate);
+   if (width)
++#ifdef NO_USE_UTF8CJK
+     *width = wcwidth(wc);
++#else
++    *width = mutt_wcwidth_cjk(wc);
++#endif
+   return ((k == ICONV_ILLEGAL_SEQ) || (k == ICONV_BUF_TOO_SMALL)) ? -1 : k;
+ }
+ 
+@@ -164,7 +592,11 @@ int mutt_mb_width(const char *str, int col, bool indent)
+       consumed = str_len;
+     }
+ 
++#ifdef NO_USE_UTF8CJK
+     int wchar_width = wcwidth(wc);
++#else
++    int wchar_width = mutt_wcwidth_cjk(wc);
++#endif
+     if (wchar_width < 0)
+       wchar_width = 1;
+ 
+@@ -197,7 +629,11 @@ int mutt_mb_width(const char *str, int col, bool indent)
+  */
+ int mutt_mb_wcwidth(wchar_t wc)
+ {
++#ifdef NO_USE_UTF8CJK
+   int n = wcwidth(wc);
++#else
++  int n = mutt_wcwidth_cjk(wc);
++#endif
+   if (IsWPrint(wc) && (n > 0))
+     return n;
+   if (!(wc & ~0x7f))
+diff --git a/mutt_config.c b/mutt_config.c
+index d687fc838..76b41e71f 100644
+--- a/mutt_config.c
++++ b/mutt_config.c
+@@ -789,6 +789,16 @@ static struct ConfigDef MainVars[] = {
+   { "wrap_search", DT_BOOL, true, 0, NULL,
+     "Wrap around when the search hits the end"
+   },
++#ifndef NO_USE_UTF8CJK
++  { "utf8_cjk", DT_BOOL, false, 0, NULL,
++    "Width of East Asian Ambiguous Character is 2."
++  },
++#ifndef NO_USE_UTF8CJK_EMOJI
++  { "utf8_emoji", DT_BOOL, false, 0, NULL,
++    "Width of Emoji of UTF-8 Character is 2."
++  },
++#endif
++#endif
+ 
+   { "cursor_overlay",            D_INTERNAL_DEPRECATED|DT_BOOL,   0, IP "2020-07-20" },
+   { "escape",                    D_INTERNAL_DEPRECATED|DT_STRING, 0, IP "2021-03-18" },
+diff --git a/pager/display.c b/pager/display.c
+index 5a48634ce..a50be9b00 100644
+--- a/pager/display.c
++++ b/pager/display.c
+@@ -974,7 +974,11 @@ static int format_line(struct MuttWindow *win, struct Line **lines, int line_num
+       {
+         space = ch;
+       }
++#ifdef NO_USE_UTF8CJK
+       t = wcwidth(wc);
++#else
++      t = mutt_mb_wcwidth(wc);
++#endif
+       if (col + t > wrap_cols)
+         break;
+       col += t;

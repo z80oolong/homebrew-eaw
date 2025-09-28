@@ -1,29 +1,30 @@
-class << ENV
-  def replace_rpath(**replace_list)
-    replace_list = replace_list.each_with_object({}) do |(old, new), result|
-      result[Formula[old].opt_lib.to_s] = Formula[new].opt_lib.to_s
-      result[Formula[old].lib.to_s] = Formula[new].lib.to_s
-    end
-    rpaths = self["HOMEBREW_RPATH_PATHS"].split(":")
-    rpaths = rpaths.each_with_object([]) {|rpath, result| result << (replace_list.key?(rpath) ? replace_list[rpath] : rpath) }
-    self["HOMEBREW_RPATH_PATHS"] = rpaths.join(":")
+def ENV.replace_rpath(**replace_list)
+  replace_list = replace_list.each_with_object({}) do |(old, new), result|
+    old_f = Formula[old]
+    new_f = Formula[new]
+    result[old_f.opt_lib.to_s] = new_f.opt_lib.to_s
+    result[old_f.lib.to_s] = new_f.lib.to_s
+  end
+
+  if (rpaths = fetch("HOMEBREW_RPATH_PATHS", false))
+    self["HOMEBREW_RPATH_PATHS"] = (rpaths.split(":").map do |rpath|
+      replace_list.fetch(rpath, rpath)
+    end).join(":")
   end
 end
 
-class NanoHead < Formula
+class NanoAT89Dev < Formula
   desc "Free (GNU) replacement for the Pico text editor"
   homepage "https://www.nano-editor.org/"
   license "GPL-3.0-or-later"
-  revision 1
+  revision 2
   head "https://git.savannah.gnu.org/git/nano.git", branch: "master"
 
-  stable do
-    current_commit = "326e4146b2267d8683a8eb3333aa49c9023d0dbf"
-    url "https://git.savannah.gnu.org/git/nano.git",
-      branch:   "master",
-      revision: current_commit
-    version "git-#{current_commit[0..7]}"
-  end
+  current_commit = "43f0618f77a45fc40cf67bef665682588eef33ac"
+  url "https://git.savannah.gnu.org/git/nano.git",
+    branch:   "master",
+    revision: current_commit
+  version "git-#{current_commit[0..7]}"
 
   keg_only "it conflicts with 'homebrew/core/nano'"
 
@@ -44,9 +45,9 @@ class NanoHead < Formula
   def install
     ENV.replace_rpath "ncurses" => "z80oolong/eaw/ncurses-eaw@6.5"
 
-    ENV.append "CFLAGS",     "-I#{Formula["z80oolong/eaw/ncurses-eaw@6.5"].opt_include}"
-    ENV.append "CPPFLAGS",   "-I#{Formula["z80oolong/eaw/ncurses-eaw@6.5"].opt_include}"
-    ENV.append "LDFLAGS",    "-L#{Formula["z80oolong/eaw/ncurses-eaw@6.5"].opt_lib}"
+    ENV.append "CFLAGS",  "-I#{Formula["z80oolong/eaw/ncurses-eaw@6.5"].opt_include}"
+    ENV.append "CPPFLAGS","-I#{Formula["z80oolong/eaw/ncurses-eaw@6.5"].opt_include}"
+    ENV.append "LDFLAGS", "-L#{Formula["z80oolong/eaw/ncurses-eaw@6.5"].opt_lib}"
     ENV["LC_ALL"] = "C"
 
     args =  std_configure_args
@@ -66,13 +67,16 @@ class NanoHead < Formula
     doc.install "doc/sample.nanorc"
   end
 
+  def diff_data
+    path.readlines(nil).first.gsub(/^.*\n__END__\n/m, "")
+  end
+
   test do
     system "#{bin}/nano", "--version"
   end
 end
 
 __END__
-warning: refname 'upstream' is ambiguous.
 diff --git a/autogen.sh b/autogen.sh
 index b48bd882..107fa2da 100755
 --- a/autogen.sh

@@ -1,12 +1,15 @@
-class << ENV
-  def replace_rpath(**replace_list)
-    replace_list = replace_list.each_with_object({}) do |(old, new), result|
-      result[Formula[old].opt_lib.to_s] = Formula[new].opt_lib.to_s
-      result[Formula[old].lib.to_s] = Formula[new].lib.to_s
-    end
-    rpaths = self["HOMEBREW_RPATH_PATHS"].split(":")
-    rpaths = rpaths.each_with_object([]) {|rpath, result| result << (replace_list.key?(rpath) ? replace_list[rpath] : rpath) }
-    self["HOMEBREW_RPATH_PATHS"] = rpaths.join(":")
+def ENV.replace_rpath(**replace_list)
+  replace_list = replace_list.each_with_object({}) do |(old, new), result|
+    old_f = Formula[old]
+    new_f = Formula[new]
+    result[old_f.opt_lib.to_s] = new_f.opt_lib.to_s
+    result[old_f.lib.to_s] = new_f.lib.to_s
+  end
+
+  if (rpaths = fetch("HOMEBREW_RPATH_PATHS", false))
+    self["HOMEBREW_RPATH_PATHS"] = (rpaths.split(":").map do |rpath|
+      replace_list.fetch(rpath, rpath)
+    end).join(":")
   end
 end
 
@@ -16,7 +19,7 @@ class NeomuttAT20250510 < Formula
   url "https://github.com/neomutt/neomutt/archive/refs/tags/20250510.tar.gz"
   sha256 "12d225e270d8e16cda41d855880b9d938750a4f1d647f55c6353337d32ffd653"
   license "GPL-2.0-or-later"
-  revision 1
+  revision 3
 
   keg_only :versioned_formula
 
@@ -29,7 +32,7 @@ class NeomuttAT20250510 < Formula
   depends_on "openssl@1.1"
   depends_on "tokyo-cabinet"
   depends_on "z80oolong/eaw/ncurses-eaw@6.5"
-  depends_on "lua" => :recommended
+  depends_on "lua"
 
   on_linux do
     depends_on "pkgconf" => :build
@@ -41,7 +44,6 @@ class NeomuttAT20250510 < Formula
 
   def install
     ENV.replace_rpath "ncurses" => "z80oolong/eaw/ncurses-eaw@6.5"
-
     ENV.append "CFLAGS",   "-I#{Formula["z80oolong/eaw/ncurses-eaw@6.5"].opt_include}"
     ENV.append "CPPFLAGS", "-I#{Formula["z80oolong/eaw/ncurses-eaw@6.5"].opt_include}"
     ENV.append "LDFLAGS",  "-L#{Formula["z80oolong/eaw/ncurses-eaw@6.5"].opt_lib}"
@@ -59,10 +61,8 @@ class NeomuttAT20250510 < Formula
     args << "--with-ssl=#{Formula["openssl@1.1"].opt_prefix}"
     args << "--with-ui=ncurses"
     args << "--with-ncurses=#{Formula["z80oolong/eaw/ncurses-eaw@6.5"].opt_prefix}"
-    unless build.without?("lua")
-      args << "--lua"
-      args << "--with-lua=#{Formula["lua"].prefix}"
-    end
+    args << "--lua"
+    args << "--with-lua=#{Formula["lua"].prefix}"
 
     system "./configure", *args
     system "make"
