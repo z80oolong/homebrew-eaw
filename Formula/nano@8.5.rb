@@ -19,7 +19,7 @@ class NanoAT85 < Formula
   url "https://www.nano-editor.org/dist/v8/nano-8.5.tar.xz"
   sha256 "000b011d339c141af9646d43288f54325ff5c6e8d39d6e482b787bbc6654c26a"
   license "GPL-3.0-or-later"
-  revision 1
+  revision 3
 
   keg_only :versioned_formula
 

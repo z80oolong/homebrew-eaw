@@ -17,7 +17,7 @@ class RxvtUnicodeCurrent < Formula
   desc "Rxvt fork with Unicode support"
   homepage "http://software.schmorp.de/pkg/rxvt-unicode.html"
   license "GPL-3.0-only"
-  revision 6
+  revision 7
 
   stable do
     url "http://dist.schmorp.de/rxvt-unicode/Attic/rxvt-unicode-9.31.tar.bz2"
@@ -29,7 +29,7 @@ class RxvtUnicodeCurrent < Formula
   head do
     url "https://github.com/yusiwen/rxvt-unicode.git"
 
-    patch :p1, Formula["z80oolong/eaw/rxvt-unicode@9.99-dev"].diff_data
+    patch :p1, Formula["z80oolong/eaw/rxvt-unicode@9999-dev"].diff_data
   end
 
   livecheck do
@@ -51,12 +51,8 @@ class RxvtUnicodeCurrent < Formula
   depends_on "libxt"
   depends_on "perl"
   depends_on "startup-notification"
+  depends_on "libptytty"
   depends_on "z80oolong/eaw/ncurses-eaw@6.5"
-
-  resource("libptytty") do
-    url "http://dist.schmorp.de/libptytty/libptytty-2.0.tar.gz"
-    sha256 "8033ed3aadf28759660d4f11f2d7b030acf2a6890cb0f7926fb0cfa6739d31f7"
-  end
 
   resource("libev") do
     url "http://dist.schmorp.de/libev/Attic/libev-4.33.tar.gz"
@@ -65,15 +61,6 @@ class RxvtUnicodeCurrent < Formula
 
   def install
     ENV.replace_rpath "ncurses" => "z80oolong/eaw/ncurses-eaw@6.5"
-
-    resource("libptytty").stage do
-      args  = std_cmake_args
-      args << "-DBUILD_SHARED_LIBS=ON"
-
-      system "cmake", "-S", ".", "-B", "build", *args
-      system "cmake", "--build", "build"
-      system "cmake", "--install", "build"
-    end
 
     resource("libev").stage do
       (buildpath/"libev").mkpath

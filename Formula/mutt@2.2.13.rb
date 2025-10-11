@@ -19,7 +19,7 @@ class MuttAT2213 < Formula
   url "https://bitbucket.org/mutt/mutt/downloads/mutt-2.2.13.tar.gz"
   sha256 "eb23faddc1cc97d867693f3a4a9f30949ad93765ad5b6fdae2797a4001c58efb"
   license "GPL-2.0-or-later"
-  revision 2
+  revision 3
 
   keg_only :versioned_formula
 

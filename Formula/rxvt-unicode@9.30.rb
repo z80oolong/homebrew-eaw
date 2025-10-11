@@ -19,7 +19,7 @@ class RxvtUnicodeAT930 < Formula
   url "http://dist.schmorp.de/rxvt-unicode/Attic/rxvt-unicode-9.30.tar.bz2"
   sha256 "fe1c93d12f385876457a989fc3ae05c0915d2692efc59289d0f70fabe5b44d2d"
   license "GPL-3.0-only"
-  revision 6
+  revision 7
 
   livecheck do
     url "http://dist.schmorp.de/rxvt-unicode/"
@@ -40,26 +40,13 @@ class RxvtUnicodeAT930 < Formula
   depends_on "libxt"
   depends_on "perl"
   depends_on "startup-notification"
+  depends_on "libptytty"
   depends_on "z80oolong/eaw/ncurses-eaw@6.5"
-
-  resource("libptytty") do
-    url "http://dist.schmorp.de/libptytty/libptytty-2.0.tar.gz"
-    sha256 "8033ed3aadf28759660d4f11f2d7b030acf2a6890cb0f7926fb0cfa6739d31f7"
-  end
 
   patch :p1, :DATA
 
   def install
     ENV.replace_rpath "ncurses" => "z80oolong/eaw/ncurses-eaw@6.5"
-
-    resource("libptytty").stage do
-      args  = std_cmake_args
-      args << "-DBUILD_SHARED_LIBS=ON"
-
-      system "cmake", "-S", ".", "-B", "build", *args
-      system "cmake", "--build", "build"
-      system "cmake", "--install", "build"
-    end
 
     args = std_configure_args
     args << "--datarootdir=#{share}"

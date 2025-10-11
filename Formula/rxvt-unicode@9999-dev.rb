@@ -13,16 +13,16 @@ def ENV.replace_rpath(**replace_list)
   end
 end
 
-class RxvtUnicodeAT999Dev < Formula
+class RxvtUnicodeAT9999Dev < Formula
   desc "Rxvt fork with Unicode support"
   homepage "http://software.schmorp.de/pkg/rxvt-unicode.html"
   license "GPL-3.0-only"
-  revision 6
+  revision 7
 
-  current_commit = "d6fdf282a5b054058826bc43477baa38c6ce2203"
+  @@current_commit = "d6fdf282a5b054058826bc43477baa38c6ce2203"
   url "https://github.com/yusiwen/rxvt-unicode.git",
-    revision: current_commit
-  version "git-#{current_commit[0..7]}"
+    revision: @@current_commit
+  version "git-#{@@current_commit[0..7]}"
 
   livecheck do
     url "http://dist.schmorp.de/rxvt-unicode/"
@@ -43,12 +43,8 @@ class RxvtUnicodeAT999Dev < Formula
   depends_on "libxt"
   depends_on "perl"
   depends_on "startup-notification"
+  depends_on "libptytty"
   depends_on "z80oolong/eaw/ncurses-eaw@6.5"
-
-  resource("libptytty") do
-    url "http://dist.schmorp.de/libptytty/libptytty-2.0.tar.gz"
-    sha256 "8033ed3aadf28759660d4f11f2d7b030acf2a6890cb0f7926fb0cfa6739d31f7"
-  end
 
   resource("libev") do
     url "http://dist.schmorp.de/libev/Attic/libev-4.33.tar.gz"
@@ -59,15 +55,6 @@ class RxvtUnicodeAT999Dev < Formula
 
   def install
     ENV.replace_rpath "ncurses" => "z80oolong/eaw/ncurses-eaw@6.5"
-
-    resource("libptytty").stage do
-      args  = std_cmake_args
-      args << "-DBUILD_SHARED_LIBS=ON"
-
-      system "cmake", "-S", ".", "-B", "build", *args
-      system "cmake", "--build", "build"
-      system "cmake", "--install", "build"
-    end
 
     resource("libev").stage do
       (buildpath/"libev").mkpath
@@ -88,6 +75,13 @@ class RxvtUnicodeAT999Dev < Formula
     system "./configure", *args
     system "make"
     system "make", "install"
+  end
+
+  def caveats
+    <<~EOS
+      #{full_name} is a Formula for installing the development version of
+      `rxvt-unicode` based on the HEAD version (commit #{@@current_commit[0..7]}) from its Github repository.
+    EOS
   end
 
   def diff_data

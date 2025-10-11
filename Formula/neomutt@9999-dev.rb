@@ -13,17 +13,17 @@ def ENV.replace_rpath(**replace_list)
   end
 end
 
-class NeomuttAT20991231Dev < Formula
+class NeomuttAT9999Dev < Formula
   desc "E-mail reader with support for Notmuch, NNTP and much more"
   homepage "https://neomutt.org/"
   license "GPL-2.0-or-later"
-  revision 3
+  revision 4
 
-  current_commit = "b976587882add0f602f6ce280341056d412d5005"
+  @@current_commit = "b976587882add0f602f6ce280341056d412d5005"
   url "https://github.com/neomutt/neomutt.git",
     branch:   "main",
-    revision: current_commit
-  version "git-#{current_commit[0..7]}"
+    revision: @@current_commit
+  version "git-#{@@current_commit[0..7]}"
 
   keg_only :versioned_formula
 
@@ -69,6 +69,13 @@ class NeomuttAT20991231Dev < Formula
     system "./configure", *args
     system "make"
     system "make", "install"
+  end
+
+  def caveats
+    <<~EOS
+      #{full_name} is a Formula for installing the development version of
+      `neomutt` based on the HEAD version (commit #{@@current_commit[0..7]}) from its Github repository.
+    EOS
   end
 
   def diff_data

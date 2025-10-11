@@ -19,7 +19,7 @@ class NeomuttAT20250905 < Formula
   url "https://github.com/neomutt/neomutt/archive/refs/tags/20250905.tar.gz"
   sha256 "f409fa3803bfc540869b78719400bceda216842e4da024f83ca3060241d9c516"
   license "GPL-2.0-or-later"
-  revision 2
+  revision 4
 
   keg_only :versioned_formula
 

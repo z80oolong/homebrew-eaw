@@ -17,8 +17,7 @@ class NanoCurrent < Formula
   desc "Free (GNU) replacement for the Pico text editor"
   homepage "https://www.nano-editor.org/"
   license "GPL-3.0-or-later"
-  revision 1
-  head "https://git.savannah.gnu.org/git/nano.git", branch: "master"
+  revision 3
 
   stable do
     url "https://www.nano-editor.org/dist/v8/nano-8.6.tar.xz"
@@ -28,9 +27,9 @@ class NanoCurrent < Formula
   end
 
   head do
-    url "https://git.savannah.gnu.org/git/nano.git",
+    url "https://github.com/madnight/nano.git"
 
-    patch :p1, Formula["z80oolong/eaw/nano@8.9-dev"].diff_data
+    patch :p1, Formula["z80oolong/eaw/nano@9999-dev"].diff_data
 
     depends_on "autoconf" => :build
     depends_on "automake" => :build

@@ -17,7 +17,7 @@ class NeomuttCurrent < Formula
   desc "E-mail reader with support for Notmuch, NNTP and much more"
   homepage "https://neomutt.org/"
   license "GPL-2.0-or-later"
-  revision 3
+  revision 4
   head "https://github.com/neomutt/neomutt.git", branch: "main"
 
   stable do
@@ -30,7 +30,7 @@ class NeomuttCurrent < Formula
   head do
     url "https://github.com/neomutt/neomutt.git", branch: "main"
 
-    patch :p1, Formula["z80oolong/eaw/neomutt@20991231-dev"].diff_data
+    patch :p1, Formula["z80oolong/eaw/neomutt@9999-dev"].diff_data
   end
 
   keg_only "this formula conflicts with 'homebrew/core/neomutt'"
@@ -76,10 +76,6 @@ class NeomuttCurrent < Formula
     system "./configure", *args
     system "make"
     system "make", "install"
-  end
-
-  def diff_data
-    path.readlines(nil).first.gsub(/^.*\n__END__\n/m, "")
   end
 
   test do
