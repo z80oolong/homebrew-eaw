@@ -26,7 +26,7 @@ class NanoAT9999Dev < Formula
     revision: @@current_commit
   version "git-#{@@current_commit[0..7]}"
 
-  keg_only "it conflicts with 'homebrew/core/nano'"
+  keg_only :versioned_formula
 
   depends_on "autoconf" => :build
   depends_on "automake" => :build
