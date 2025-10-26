@@ -21,30 +21,30 @@
 - **```utf8cjk```**: [EAWA] を全角文字幅で表示します。たとえば、[EAWA] を全角文字幅で表示する場合、設定ファイル ```~/.nanorc``` に以下を追加します。
 
   ```
-  set utf8cjk
+    set utf8cjk
   ```
 
   または、```nano``` の起動時に以下のオプションを指定します。
 
   ```
-  $ nano -8
+    $ nano -8
   ```
 
 - **```utf8emoji```**: UTF-8 で定義される絵文字を全角文字幅で表示します。たとえば、絵文字を全角文字幅で表示する場合、設定ファイル ```~/.nanorc``` に以下を追加します。
 
   ```
-  set utf8emoji
+    set utf8emoji
   ```
 
   または、```nano``` の起動時に以下のオプションを指定します。
 
   ```
-  $ nano -4
+    $ nano -4
   ```
 
 これらのオプションの初期値は、環境変数 ```LC_CTYPE``` の値が ```ja*```、```ko*```、```zh*``` の場合に有効、それ以外の場合は無効です。
 
-なお、最新の HEAD 版のコミットをインストールするには、```--HEAD``` オプションを指定してください。
+なお、最新の HEAD 版の [nano][NANO] をインストールするには、```--HEAD``` オプションを指定してください。
 
 - **注意**:
     - **この Formula は ```homebrew/core/nano``` と競合するため、keg-only でインストールされます。**
@@ -86,16 +86,16 @@
 - **```utf8_cjk```**: [EAWA] を全角文字幅で表示します。たとえば、[EAWA] を全角文字幅で表示する場合、設定ファイル ```~/.config/neomutt/neomuttrc``` に以下を追加します。
 
   ```
-  set utf8_cjk=yes
+    set utf8_cjk=yes
   ```
 
 - **```utf8_emoji```**: UTF-8 で定義される絵文字を全角文字幅で表示します。たとえば、絵文字を全角文字幅で表示する場合、設定ファイル ```~/.config/neomutt/neomuttrc``` に以下を追加します。
 
   ```
-  set utf8_emoji=yes
+    set utf8_emoji=yes
   ```
 
-なお、最新の HEAD 版のコミットをインストールするには、```--HEAD``` オプションを指定してください。
+なお、最新の HEAD 版の [neomutt][MUTT] をインストールするには、```--HEAD``` オプションを指定してください。
 
 - **注意**:
     - **この Formula は ```homebrew/core/neomutt``` と競合するため、keg-only でインストールされます。**
@@ -137,10 +137,10 @@
 - **```URXVT_USE_UTF8_CJK```**: この環境変数に ```1``` を設定した場合、[EAWA] を全角文字幅で表示します。たとえば、[EAWA] を全角文字幅で表示する場合、以下のように ```urxvt``` を起動します。
 
   ```
-  $ export URXVT_USE_UTF8_CJK=1
-  $ urxvt
-  # または
-  $ env URXVT_USE_UTF8_CJK=1 urxvt
+    $ export URXVT_USE_UTF8_CJK=1
+    $ urxvt
+    # (または)
+    $ env URXVT_USE_UTF8_CJK=1 urxvt
   ```
 
   [EAWA] を半角文字幅で表示する場合は、この環境変数に ```0``` を設定してください。
@@ -148,13 +148,13 @@
 - **```URXVT_USE_UTF8_CJK_EMOJI```**: この環境変数に ```1``` を設定した場合、UTF-8 で定義される絵文字を全角文字幅で表示します。たとえば、絵文字を全角文字幅で表示する場合、以下のように ```urxvt``` を起動します。
 
   ```
-  $ export URXVT_USE_UTF8_CJK_EMOJI=1
-  $ urxvt
-  # または
-  $ env URXVT_USE_UTF8_CJK_EMOJI=1 urxvt
+    $ export URXVT_USE_UTF8_CJK_EMOJI=1
+    $ urxvt
+    # (または)
+    $ env URXVT_USE_UTF8_CJK_EMOJI=1 urxvt
   ```
 
-なお、最新の HEAD 版のコミットをインストールするには、```--HEAD``` オプションを指定してください。
+なお、最新の HEAD 版の [rxvt-unicode][RXVT] をインストールするには、```--HEAD``` オプションを指定してください。
 
 - **注意**:
     - **この Formula は ```homebrew/core/rxvt-unicode``` と競合するため、keg-only でインストールされます。**
@@ -196,16 +196,16 @@
 - **```utf8_cjk```**: [EAWA] を全角文字幅で表示します。たとえば、[EAWA] を全角文字幅で表示する場合、設定ファイル ```~/.muttrc```、```~/.mutt/muttrc```、または ```~/.config/mutt/muttrc``` に以下を追加します。
 
   ```
-  set utf8_cjk=yes
+    set utf8_cjk=yes
   ```
 
 - **```utf8_emoji```**: UTF-8 で定義される絵文字を全角文字幅で表示します。たとえば、絵文字を全角文字幅で表示する場合、設定ファイル ```~/.muttrc```、```~/.mutt/muttrc```、または ```~/.config/mutt/muttrc``` に以下を追加します。
 
   ```
-  set utf8_emoji=yes
+    set utf8_emoji=yes
   ```
 
-なお、最新の HEAD 版のコミットをインストールするには、```--HEAD``` オプションを指定してください。
+なお、最新の HEAD 版の [mutt][OMUT] をインストールするには、```--HEAD``` オプションを指定してください。
 
 - **注意**:
     - **この Formula は ```homebrew/core/mutt``` と競合するため、keg-only でインストールされます。**
