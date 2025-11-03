@@ -20,7 +20,7 @@ class NanoAT9999Dev < Formula
   revision 3
   head "https://git.savannah.gnu.org/git/nano.git", branch: "master"
 
-  @@current_commit = "43f0618f77a45fc40cf67bef665682588eef33ac"
+  @@current_commit = "e83e1ca4e3fa7e16c5c7158dddd072f9524ab176"
   url "https://git.savannah.gnu.org/git/nano.git",
     branch:   "master",
     revision: @@current_commit
@@ -608,7 +608,7 @@ index 2ff88d5b..aaf41199 100644
  int controlleft, controlright, controlup, controldown;
  int controlhome, controlend;
 diff --git a/src/nano.c b/src/nano.c
-index 9cf3dfbe..1c827ea8 100644
+index bbfb226f..3af3a2ae 100644
 --- a/src/nano.c
 +++ b/src/nano.c
 @@ -647,6 +647,14 @@ void usage(void)
@@ -626,7 +626,7 @@ index 9cf3dfbe..1c827ea8 100644
  #ifndef NANO_TINY
  	print_opt("-@", "--colonparsing", N_("Accept 'filename:linenumber' notation"));
  	print_opt("-%", "--stateflags", N_("Show some states on the title bar"));
-@@ -1841,6 +1849,14 @@ int main(int argc, char **argv)
+@@ -1840,6 +1848,14 @@ int main(int argc, char **argv)
  #ifdef HAVE_LIBMAGIC
  		{"magic", 0, NULL, '!'},
  #endif
@@ -641,7 +641,7 @@ index 9cf3dfbe..1c827ea8 100644
  		{NULL, 0, NULL, 0}
  	};
  
-@@ -1871,7 +1887,16 @@ int main(int argc, char **argv)
+@@ -1870,7 +1886,16 @@ int main(int argc, char **argv)
  #endif
  
  #ifdef ENABLE_NLS
@@ -658,7 +658,7 @@ index 9cf3dfbe..1c827ea8 100644
  	textdomain(PACKAGE);
  #endif
  
-@@ -1882,8 +1907,18 @@ int main(int argc, char **argv)
+@@ -1881,8 +1906,18 @@ int main(int argc, char **argv)
  	if (*(tail(argv[0])) == 'r')
  		SET(RESTRICTED);
  
@@ -677,7 +677,7 @@ index 9cf3dfbe..1c827ea8 100644
  		switch (optchr) {
  #ifndef NANO_TINY
  			case 'A':
-@@ -2128,6 +2163,19 @@ int main(int argc, char **argv)
+@@ -2127,6 +2162,19 @@ int main(int argc, char **argv)
  				SET(USE_MAGIC);
  				break;
  #endif
@@ -697,7 +697,7 @@ index 9cf3dfbe..1c827ea8 100644
  #ifndef NANO_TINY
  			case 0xCC:
  				SET(WHITESPACE_DISPLAY);
-@@ -2158,6 +2206,21 @@ int main(int argc, char **argv)
+@@ -2161,6 +2209,21 @@ int main(int argc, char **argv)
  	if (getenv("TERM") == NULL)
  		putenv("TERM=vt220");
  
@@ -755,7 +755,7 @@ index 6143f5fc..59450a66 100644
  	{NULL, 0}
  };
 diff --git a/src/winio.c b/src/winio.c
-index 8ed88e35..d8299349 100644
+index d74c6fe8..f7fc8176 100644
 --- a/src/winio.c
 +++ b/src/winio.c
 @@ -29,6 +29,9 @@
@@ -768,7 +768,7 @@ index 8ed88e35..d8299349 100644
  #endif
  
  #ifdef REVISION
-@@ -1904,7 +1907,11 @@ char *display_string(const char *text, size_t column, size_t span,
+@@ -1906,7 +1909,11 @@ char *display_string(const char *text, size_t column, size_t span,
  		}
  
  		/* Determine whether the character takes zero, one, or two columns. */

@@ -20,10 +20,12 @@ class MuttCurrent < Formula
   revision 3
 
   stable do
-    url "https://bitbucket.org/mutt/mutt/downloads/mutt-2.2.14.tar.gz"
-    sha256 "d162fb6d491e3af43d6f62f949b7e687bb0c7c2584da52c99a99354a25de14ef"
+    url "http://ftp.mutt.org/pub/mutt/mutt-2.2.15.tar.gz"
+    mirror "https://github.com/muttmua/mutt/archive/refs/tags/mutt-2-2-15-rel.tar.gz"
+    mirror "https://bitbucket.org/mutt/mutt/downloads/mutt-2.2.15.tar.gz"
+    sha256 "a51686104e4203f4c2a3b176527be3b95d08e808e94fd2dcadb7c30566bf894d"
 
-    patch :p1, Formula["mutt@2.2.14"].diff_data
+    patch :p1, Formula["mutt@2.2.15"].diff_data
   end
 
   head do

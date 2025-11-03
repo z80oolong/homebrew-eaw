@@ -19,7 +19,7 @@ class NeomuttAT9999Dev < Formula
   license "GPL-2.0-or-later"
   revision 4
 
-  @@current_commit = "b976587882add0f602f6ce280341056d412d5005"
+  @@current_commit = "1e05a331179049541ae79051be2afec179d18987"
   url "https://github.com/neomutt/neomutt.git",
     branch:   "main",
     revision: @@current_commit
@@ -89,11 +89,12 @@ class NeomuttAT9999Dev < Formula
 end
 
 __END__
+warning: refname 'upstream' is ambiguous.
 diff --git a/editor/enter.c b/editor/enter.c
-index f2f981809..461d28a54 100644
+index 4aae85b54..6299e5217 100644
 --- a/editor/enter.c
 +++ b/editor/enter.c
-@@ -36,7 +36,11 @@
+@@ -35,7 +35,11 @@
  #include "state.h"
  
  /// combining mark / non-spacing character
@@ -106,10 +107,10 @@ index f2f981809..461d28a54 100644
  /**
   * editor_backspace - Delete the char in front of the cursor
 diff --git a/editor/window.c b/editor/window.c
-index 34fa5acbb..179a6d879 100644
+index 5efc87038..b4848b4ba 100644
 --- a/editor/window.c
 +++ b/editor/window.c
-@@ -70,7 +70,11 @@ static const struct Mapping EditorHelp[] = {
+@@ -69,7 +69,11 @@ static const struct Mapping EditorHelp[] = {
   */
  static int my_addwch(struct MuttWindow *win, wchar_t wc)
  {
@@ -150,7 +151,7 @@ index 45d23f1b5..02e46ec66 100644
  
      // It'll require _some_ space
 diff --git a/gui/curs_lib.c b/gui/curs_lib.c
-index 466bd3dd3..caa42c1d8 100644
+index 60accf806..e14fe8a97 100644
 --- a/gui/curs_lib.c
 +++ b/gui/curs_lib.c
 @@ -358,7 +358,11 @@ void mutt_paddstr(struct MuttWindow *win, int n, const char *s)
@@ -190,10 +191,10 @@ index 466bd3dd3..caa42c1d8 100644
    return w;
  }
 diff --git a/gui/msgwin.c b/gui/msgwin.c
-index c36b0c5c3..fad898ce4 100644
+index c8e18a435..3ccf8617f 100644
 --- a/gui/msgwin.c
 +++ b/gui/msgwin.c
-@@ -132,7 +132,11 @@ void measure(struct MwCharArray *chars, const char *str, const struct AttrColor
+@@ -131,7 +131,11 @@ void measure(struct MwCharArray *chars, const char *str, const struct AttrColor
        consumed = str_len;
      }
  
@@ -205,11 +206,11 @@ index c36b0c5c3..fad898ce4 100644
      if (wchar_width < 0)
        wchar_width = 1;
  
-diff --git a/key/lib.c b/key/lib.c
-index c327d203a..d3fee2416 100644
---- a/key/lib.c
-+++ b/key/lib.c
-@@ -356,7 +356,11 @@ void escape_macro(const char *macro, struct Buffer *buf)
+diff --git a/key/dump.c b/key/dump.c
+index 5be223f6d..cc127e88c 100644
+--- a/key/dump.c
++++ b/key/dump.c
+@@ -297,7 +297,11 @@ void escape_macro(const char *macro, struct Buffer *buf)
        wc = ReplacementChar;
      }
  
@@ -693,10 +694,10 @@ index 2acbb90b0..bac7072fe 100644
      return n;
    if (!(wc & ~0x7f))
 diff --git a/mutt_config.c b/mutt_config.c
-index d687fc838..76b41e71f 100644
+index edb4510be..474ddb831 100644
 --- a/mutt_config.c
 +++ b/mutt_config.c
-@@ -789,6 +789,16 @@ static struct ConfigDef MainVars[] = {
+@@ -788,6 +788,16 @@ static struct ConfigDef MainVars[] = {
    { "wrap_search", DT_BOOL, true, 0, NULL,
      "Wrap around when the search hits the end"
    },

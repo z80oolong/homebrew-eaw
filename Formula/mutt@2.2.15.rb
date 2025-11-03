@@ -13,11 +13,13 @@ def ENV.replace_rpath(**replace_list)
   end
 end
 
-class MuttAT2213 < Formula
+class MuttAT2215 < Formula
   desc "Mongrel of mail user agents (part elm, pine, mush, mh, etc.)"
   homepage "http://www.mutt.org/"
-  url "https://bitbucket.org/mutt/mutt/downloads/mutt-2.2.13.tar.gz"
-  sha256 "eb23faddc1cc97d867693f3a4a9f30949ad93765ad5b6fdae2797a4001c58efb"
+  url "http://ftp.mutt.org/pub/mutt/mutt-2.2.15.tar.gz"
+  mirror "https://github.com/muttmua/mutt/archive/refs/tags/mutt-2-2-15-rel.tar.gz"
+  mirror "https://bitbucket.org/mutt/mutt/downloads/mutt-2.2.15.tar.gz"
+  sha256 "a51686104e4203f4c2a3b176527be3b95d08e808e94fd2dcadb7c30566bf894d"
   license "GPL-2.0-or-later"
   revision 3
 
@@ -83,6 +85,10 @@ class MuttAT2213 < Formula
       Alternatively, you may configure `spoolfile` in your .muttrc to a file inside
       your home directory.
     EOS
+  end
+
+  def diff_data
+    path.readlines(nil).first.gsub(/^.*\n__END__\n/m, "")
   end
 
   test do
@@ -237,10 +243,10 @@ index 29dda79..0734d23 100644
    if (n > wid)
      n = m;
 diff --git a/init.h b/init.h
-index b0651c2..1304d62 100644
+index 5e15a3e..70cc9e5 100644
 --- a/init.h
 +++ b/init.h
-@@ -4905,6 +4905,12 @@ struct option_t MuttVars[] = {
+@@ -4919,6 +4919,12 @@ struct option_t MuttVars[] = {
    {"xterm_set_titles",	DT_SYN,  R_NONE, {.p="ts_enabled"}, {.p=0} },
    /*
    */
@@ -328,10 +334,10 @@ index 8df571a..cea17c5 100644
  	break;
        col += t;
 diff --git a/sendlib.c b/sendlib.c
-index 204b130..0fce3be 100644
+index ef0ca29..5862e1f 100644
 --- a/sendlib.c
 +++ b/sendlib.c
-@@ -1916,7 +1916,11 @@ static int my_width (const char *p, int col, int flags)
+@@ -1918,7 +1918,11 @@ static int my_width (const char *p, int col, int flags)
        consumed = (consumed == (size_t)(-1)) ? 1 : n;
      }
  
