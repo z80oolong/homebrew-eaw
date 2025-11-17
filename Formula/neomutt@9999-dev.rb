@@ -1,29 +1,12 @@
-def ENV.replace_rpath(**replace_list)
-  replace_list = replace_list.each_with_object({}) do |(old, new), result|
-    old_f = Formula[old]
-    new_f = Formula[new]
-    result[old_f.opt_lib.to_s] = new_f.opt_lib.to_s
-    result[old_f.lib.to_s] = new_f.lib.to_s
-  end
-
-  if (rpaths = fetch("HOMEBREW_RPATH_PATHS", false))
-    self["HOMEBREW_RPATH_PATHS"] = (rpaths.split(":").map do |rpath|
-      replace_list.fetch(rpath, rpath)
-    end).join(":")
-  end
-end
-
 class NeomuttAT9999Dev < Formula
   desc "E-mail reader with support for Notmuch, NNTP and much more"
   homepage "https://neomutt.org/"
+
+  CURRENT_COMMIT = "1e05a331179049541ae79051be2afec179d18987".freeze
+  url "https://github.com/neomutt/neomutt.git", revision: CURRENT_COMMIT
+  version "git-#{CURRENT_COMMIT[0..7]}"
   license "GPL-2.0-or-later"
   revision 4
-
-  @@current_commit = "1e05a331179049541ae79051be2afec179d18987"
-  url "https://github.com/neomutt/neomutt.git",
-    branch:   "main",
-    revision: @@current_commit
-  version "git-#{@@current_commit[0..7]}"
 
   keg_only :versioned_formula
 
@@ -46,6 +29,11 @@ class NeomuttAT9999Dev < Formula
   patch :p1, :DATA
 
   def install
+    old_curses_f = Formula["ncurses"]
+    new_curses_f = Formula["z80oolong/eaw/ncurses-eaw@6.5"]
+
+    ENV.replace_rpath old_curses_f.lib     => new_curses_f.lib,
+                      old_curses_f.opt_lib => new_curses_f.opt_lib
     ENV.append "CFLAGS",   "-I#{Formula["z80oolong/eaw/ncurses-eaw@6.5"].opt_include}"
     ENV.append "CPPFLAGS", "-I#{Formula["z80oolong/eaw/ncurses-eaw@6.5"].opt_include}"
     ENV.append "LDFLAGS",  "-L#{Formula["z80oolong/eaw/ncurses-eaw@6.5"].opt_lib}"
@@ -74,7 +62,7 @@ class NeomuttAT9999Dev < Formula
   def caveats
     <<~EOS
       #{full_name} is a Formula for installing the development version of
-      `neomutt` based on the HEAD version (commit #{@@current_commit[0..7]}) from its Github repository.
+      `neomutt` based on the HEAD version (commit #{CURRENT_COMMIT[0..7]}) from its Github repository.
     EOS
   end
 
@@ -87,6 +75,22 @@ class NeomuttAT9999Dev < Formula
     assert_equal "set debug_level = 0", output.chomp
   end
 end
+
+module EnvExtend
+  def replace_rpath(**replace_list)
+    replace_list = replace_list.each_with_object({}) do |(old, new), result|
+      result[old.to_s] = new.to_s
+    end
+
+    if (rpaths = fetch("HOMEBREW_RPATH_PATHS", false))
+      self["HOMEBREW_RPATH_PATHS"] = (rpaths.split(":").map do |rpath|
+        replace_list.fetch(rpath, rpath)
+      end).join(":")
+    end
+  end
+end
+
+ENV.extend(EnvExtend)
 
 __END__
 warning: refname 'upstream' is ambiguous.

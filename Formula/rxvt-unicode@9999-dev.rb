@@ -1,28 +1,12 @@
-def ENV.replace_rpath(**replace_list)
-  replace_list = replace_list.each_with_object({}) do |(old, new), result|
-    old_f = Formula[old]
-    new_f = Formula[new]
-    result[old_f.opt_lib.to_s] = new_f.opt_lib.to_s
-    result[old_f.lib.to_s] = new_f.lib.to_s
-  end
-
-  if (rpaths = fetch("HOMEBREW_RPATH_PATHS", false))
-    self["HOMEBREW_RPATH_PATHS"] = (rpaths.split(":").map do |rpath|
-      replace_list.fetch(rpath, rpath)
-    end).join(":")
-  end
-end
-
 class RxvtUnicodeAT9999Dev < Formula
   desc "Rxvt fork with Unicode support"
   homepage "http://software.schmorp.de/pkg/rxvt-unicode.html"
+
+  CURRENT_COMMIT = "d6fdf282a5b054058826bc43477baa38c6ce2203".freeze
+  url "https://github.com/yusiwen/rxvt-unicode.git", revision: CURRENT_COMMIT
+  version "git-#{CURRENT_COMMIT[0..7]}"
   license "GPL-3.0-only"
   revision 7
-
-  @@current_commit = "d6fdf282a5b054058826bc43477baa38c6ce2203"
-  url "https://github.com/yusiwen/rxvt-unicode.git",
-    revision: @@current_commit
-  version "git-#{@@current_commit[0..7]}"
 
   livecheck do
     url "http://dist.schmorp.de/rxvt-unicode/"
@@ -36,6 +20,7 @@ class RxvtUnicodeAT9999Dev < Formula
   depends_on "fontconfig"
   depends_on "freetype"
   depends_on "gdk-pixbuf"
+  depends_on "libptytty"
   depends_on "libx11"
   depends_on "libxft"
   depends_on "libxmu"
@@ -43,7 +28,6 @@ class RxvtUnicodeAT9999Dev < Formula
   depends_on "libxt"
   depends_on "perl"
   depends_on "startup-notification"
-  depends_on "libptytty"
   depends_on "z80oolong/eaw/ncurses-eaw@6.5"
 
   resource("libev") do
@@ -54,7 +38,11 @@ class RxvtUnicodeAT9999Dev < Formula
   patch :p1, :DATA
 
   def install
-    ENV.replace_rpath "ncurses" => "z80oolong/eaw/ncurses-eaw@6.5"
+    old_curses_f = Formula["ncurses"]
+    new_curses_f = Formula["z80oolong/eaw/ncurses-eaw@6.5"]
+
+    ENV.replace_rpath old_curses_f.lib     => new_curses_f.lib,
+                      old_curses_f.opt_lib => new_curses_f.opt_lib
 
     resource("libev").stage do
       (buildpath/"libev").mkpath
@@ -80,7 +68,7 @@ class RxvtUnicodeAT9999Dev < Formula
   def caveats
     <<~EOS
       #{full_name} is a Formula for installing the development version of
-      `rxvt-unicode` based on the HEAD version (commit #{@@current_commit[0..7]}) from its Github repository.
+      `rxvt-unicode` based on the HEAD version (commit #{CURRENT_COMMIT[0..7]}) from its Github repository.
     EOS
   end
 
@@ -97,6 +85,22 @@ class RxvtUnicodeAT9999Dev < Formula
     Process.wait daemon
   end
 end
+
+module EnvExtend
+  def replace_rpath(**replace_list)
+    replace_list = replace_list.each_with_object({}) do |(old, new), result|
+      result[old.to_s] = new.to_s
+    end
+
+    if (rpaths = fetch("HOMEBREW_RPATH_PATHS", false))
+      self["HOMEBREW_RPATH_PATHS"] = (rpaths.split(":").map do |rpath|
+        replace_list.fetch(rpath, rpath)
+      end).join(":")
+    end
+  end
+end
+
+ENV.extend(EnvExtend)
 
 __END__
 diff --git a/Makefile.in b/Makefile.in

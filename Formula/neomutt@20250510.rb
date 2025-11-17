@@ -1,18 +1,3 @@
-def ENV.replace_rpath(**replace_list)
-  replace_list = replace_list.each_with_object({}) do |(old, new), result|
-    old_f = Formula[old]
-    new_f = Formula[new]
-    result[old_f.opt_lib.to_s] = new_f.opt_lib.to_s
-    result[old_f.lib.to_s] = new_f.lib.to_s
-  end
-
-  if (rpaths = fetch("HOMEBREW_RPATH_PATHS", false))
-    self["HOMEBREW_RPATH_PATHS"] = (rpaths.split(":").map do |rpath|
-      replace_list.fetch(rpath, rpath)
-    end).join(":")
-  end
-end
-
 class NeomuttAT20250510 < Formula
   desc "E-mail reader with support for Notmuch, NNTP and much more"
   homepage "https://neomutt.org/"
@@ -28,11 +13,11 @@ class NeomuttAT20250510 < Formula
   depends_on "gpgme"
   depends_on "libidn"
   depends_on "lmdb"
+  depends_on "lua"
   depends_on "notmuch"
   depends_on "openssl@1.1"
   depends_on "tokyo-cabinet"
   depends_on "z80oolong/eaw/ncurses-eaw@6.5"
-  depends_on "lua"
 
   on_linux do
     depends_on "pkgconf" => :build
@@ -43,7 +28,11 @@ class NeomuttAT20250510 < Formula
   patch :p1, :DATA
 
   def install
-    ENV.replace_rpath "ncurses" => "z80oolong/eaw/ncurses-eaw@6.5"
+    old_curses_f = Formula["ncurses"]
+    new_curses_f = Formula["z80oolong/eaw/ncurses-eaw@6.5"]
+
+    ENV.replace_rpath old_curses_f.lib     => new_curses_f.lib,
+                      old_curses_f.opt_lib => new_curses_f.opt_lib
     ENV.append "CFLAGS",   "-I#{Formula["z80oolong/eaw/ncurses-eaw@6.5"].opt_include}"
     ENV.append "CPPFLAGS", "-I#{Formula["z80oolong/eaw/ncurses-eaw@6.5"].opt_include}"
     ENV.append "LDFLAGS",  "-L#{Formula["z80oolong/eaw/ncurses-eaw@6.5"].opt_lib}"
@@ -74,6 +63,22 @@ class NeomuttAT20250510 < Formula
     assert_equal "set debug_level = 0", output.chomp
   end
 end
+
+module EnvExtend
+  def replace_rpath(**replace_list)
+    replace_list = replace_list.each_with_object({}) do |(old, new), result|
+      result[old.to_s] = new.to_s
+    end
+
+    if (rpaths = fetch("HOMEBREW_RPATH_PATHS", false))
+      self["HOMEBREW_RPATH_PATHS"] = (rpaths.split(":").map do |rpath|
+        replace_list.fetch(rpath, rpath)
+      end).join(":")
+    end
+  end
+end
+
+ENV.extend(EnvExtend)
 
 __END__
 diff --git a/editor/enter.c b/editor/enter.c

@@ -1,10 +1,9 @@
 class NcursesEawAT65 < Formula
   desc "Text-based UI library"
   homepage "https://invisible-island.net/ncurses/announce.html"
-  url "https://ftp.gnu.org/gnu/ncurses/ncurses-6.5.tar.gz"
+  url "https://ftpmirror.gnu.org/ncurses/ncurses-6.5.tar.gz"
   mirror "https://invisible-mirror.net/archives/ncurses/ncurses-6.5.tar.gz"
   mirror "ftp://ftp.invisible-island.net/ncurses/ncurses-6.5.tar.gz"
-  mirror "https://ftpmirror.gnu.org/ncurses/ncurses-6.5.tar.gz"
   sha256 "136d91bc269a9a5785e5f9e980bc76ab57428f604ce3e5a5a90cebc767971cc6"
   license "MIT"
 
@@ -41,7 +40,12 @@ class NcursesEawAT65 < Formula
     args << "--with-cxx-shared"
     args << "--with-gpm=no"
     if OS.linux?
-      args << "--with-terminfo-dirs=#{opt_share}/terminfo:#{share}/terminfo:/etc/terminfo:/lib/terminfo:/usr/share/terminfo"
+      terminfo_arg =  "--with-terminfo-dirs="
+      terminfo_arg << "#{opt_share}/terminfo:"
+      terminfo_arg << "#{share}/terminfo:"
+      terminfo_arg << "/etc/terminfo:/lib/terminfo:/usr/share/terminfo"
+
+      args << terminfo_arg
       args << "--without-ada"
     end
 

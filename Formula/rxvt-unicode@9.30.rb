@@ -1,18 +1,3 @@
-def ENV.replace_rpath(**replace_list)
-  replace_list = replace_list.each_with_object({}) do |(old, new), result|
-    old_f = Formula[old]
-    new_f = Formula[new]
-    result[old_f.opt_lib.to_s] = new_f.opt_lib.to_s
-    result[old_f.lib.to_s] = new_f.lib.to_s
-  end
-
-  if (rpaths = fetch("HOMEBREW_RPATH_PATHS", false))
-    self["HOMEBREW_RPATH_PATHS"] = (rpaths.split(":").map do |rpath|
-      replace_list.fetch(rpath, rpath)
-    end).join(":")
-  end
-end
-
 class RxvtUnicodeAT930 < Formula
   desc "Rxvt fork with Unicode support"
   homepage "http://software.schmorp.de/pkg/rxvt-unicode.html"
@@ -33,6 +18,7 @@ class RxvtUnicodeAT930 < Formula
   depends_on "fontconfig"
   depends_on "freetype"
   depends_on "gdk-pixbuf"
+  depends_on "libptytty"
   depends_on "libx11"
   depends_on "libxft"
   depends_on "libxmu"
@@ -40,13 +26,16 @@ class RxvtUnicodeAT930 < Formula
   depends_on "libxt"
   depends_on "perl"
   depends_on "startup-notification"
-  depends_on "libptytty"
   depends_on "z80oolong/eaw/ncurses-eaw@6.5"
 
   patch :p1, :DATA
 
   def install
-    ENV.replace_rpath "ncurses" => "z80oolong/eaw/ncurses-eaw@6.5"
+    old_curses_f = Formula["ncurses"]
+    new_curses_f = Formula["z80oolong/eaw/ncurses-eaw@6.5"]
+
+    ENV.replace_rpath old_curses_f.lib     => new_curses_f.lib,
+                      old_curses_f.opt_lib => new_curses_f.opt_lib
 
     args = std_configure_args
     args << "--datarootdir=#{share}"
@@ -73,6 +62,22 @@ class RxvtUnicodeAT930 < Formula
     Process.wait daemon
   end
 end
+
+module EnvExtend
+  def replace_rpath(**replace_list)
+    replace_list = replace_list.each_with_object({}) do |(old, new), result|
+      result[old.to_s] = new.to_s
+    end
+
+    if (rpaths = fetch("HOMEBREW_RPATH_PATHS", false))
+      self["HOMEBREW_RPATH_PATHS"] = (rpaths.split(":").map do |rpath|
+        replace_list.fetch(rpath, rpath)
+      end).join(":")
+    end
+  end
+end
+
+ENV.extend(EnvExtend)
 
 __END__
 diff --git a/Makefile.in b/Makefile.in

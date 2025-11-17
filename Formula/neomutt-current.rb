@@ -1,24 +1,8 @@
-def ENV.replace_rpath(**replace_list)
-  replace_list = replace_list.each_with_object({}) do |(old, new), result|
-    old_f = Formula[old]
-    new_f = Formula[new]
-    result[old_f.opt_lib.to_s] = new_f.opt_lib.to_s
-    result[old_f.lib.to_s] = new_f.lib.to_s
-  end
-
-  if (rpaths = fetch("HOMEBREW_RPATH_PATHS", false))
-    self["HOMEBREW_RPATH_PATHS"] = (rpaths.split(":").map do |rpath|
-      replace_list.fetch(rpath, rpath)
-    end).join(":")
-  end
-end
-
 class NeomuttCurrent < Formula
   desc "E-mail reader with support for Notmuch, NNTP and much more"
   homepage "https://neomutt.org/"
   license "GPL-2.0-or-later"
   revision 4
-  head "https://github.com/neomutt/neomutt.git", branch: "main"
 
   stable do
     url "https://github.com/neomutt/neomutt/archive/refs/tags/20250905.tar.gz"
@@ -52,7 +36,11 @@ class NeomuttCurrent < Formula
   end
 
   def install
-    ENV.replace_rpath "ncurses" => "z80oolong/eaw/ncurses-eaw@6.5"
+    old_curses_f = Formula["ncurses"]
+    new_curses_f = Formula["z80oolong/eaw/ncurses-eaw@6.5"]
+
+    ENV.replace_rpath old_curses_f.lib     => new_curses_f.lib,
+                      old_curses_f.opt_lib => new_curses_f.opt_lib
     ENV.append "CFLAGS",   "-I#{Formula["z80oolong/eaw/ncurses-eaw@6.5"].opt_include}"
     ENV.append "CPPFLAGS", "-I#{Formula["z80oolong/eaw/ncurses-eaw@6.5"].opt_include}"
     ENV.append "LDFLAGS",  "-L#{Formula["z80oolong/eaw/ncurses-eaw@6.5"].opt_lib}"
@@ -83,3 +71,19 @@ class NeomuttCurrent < Formula
     assert_equal "set debug_level = 0", output.chomp
   end
 end
+
+module EnvExtend
+  def replace_rpath(**replace_list)
+    replace_list = replace_list.each_with_object({}) do |(old, new), result|
+      result[old.to_s] = new.to_s
+    end
+
+    if (rpaths = fetch("HOMEBREW_RPATH_PATHS", false))
+      self["HOMEBREW_RPATH_PATHS"] = (rpaths.split(":").map do |rpath|
+        replace_list.fetch(rpath, rpath)
+      end).join(":")
+    end
+  end
+end
+
+ENV.extend(EnvExtend)

@@ -1,29 +1,12 @@
-def ENV.replace_rpath(**replace_list)
-  replace_list = replace_list.each_with_object({}) do |(old, new), result|
-    old_f = Formula[old]
-    new_f = Formula[new]
-    result[old_f.opt_lib.to_s] = new_f.opt_lib.to_s
-    result[old_f.lib.to_s] = new_f.lib.to_s
-  end
-
-  if (rpaths = fetch("HOMEBREW_RPATH_PATHS", false))
-    self["HOMEBREW_RPATH_PATHS"] = (rpaths.split(":").map do |rpath|
-      replace_list.fetch(rpath, rpath)
-    end).join(":")
-  end
-end
-
 class MuttAT9999Dev < Formula
   desc "Mongrel of mail user agents (part elm, pine, mush, mh, etc.)"
   homepage "http://www.mutt.org/"
+
+  CURRENT_COMMIT = "ba36b184f1c84b2200163ca3a361150a9d6311e4".freeze
+  url "https://gitlab.com/muttmua/mutt.git", revision: CURRENT_COMMIT
+  version "git-#{CURRENT_COMMIT[0..7]}"
   license "GPL-2.0-or-later"
   revision 3
-
-  @@current_commit = "ba36b184f1c84b2200163ca3a361150a9d6311e4"
-  url "https://gitlab.com/muttmua/mutt.git",
-    branch:   "master",
-    revision: @@current_commit
-  version "git-#{@@current_commit[0..7]}"
 
   keg_only :versioned_fomula
 
@@ -41,8 +24,6 @@ class MuttAT9999Dev < Formula
   uses_from_macos "krb5"
   uses_from_macos "zlib"
 
-  conflicts_with "tin", because: "both install mmdf.5 and mbox.5 man pages"
-
   resource "html" do
     url "https://muttmua.gitlab.io/mutt/manual-dev.html"
     sha256 "107c8e55cf0a2801cbec22055758c9554726a3db8e908c6aee5448385925753d"
@@ -51,7 +32,11 @@ class MuttAT9999Dev < Formula
   patch :p1, :DATA
 
   def install
-    ENV.replace_rpath "ncurses" => "z80oolong/eaw/ncurses-eaw@6.5"
+    old_curses_f = Formula["ncurses"]
+    new_curses_f = Formula["z80oolong/eaw/ncurses-eaw@6.5"]
+
+    ENV.replace_rpath old_curses_f.lib     => new_curses_f.lib,
+                      old_curses_f.opt_lib => new_curses_f.opt_lib
     ENV.append "CFLAGS",   "-I#{Formula["z80oolong/eaw/ncurses-eaw@6.5"].opt_include}"
     ENV.append "CPPFLAGS", "-I#{Formula["z80oolong/eaw/ncurses-eaw@6.5"].opt_include}"
     ENV.append "LDFLAGS",  "-L#{Formula["z80oolong/eaw/ncurses-eaw@6.5"].opt_lib}"
@@ -88,7 +73,7 @@ class MuttAT9999Dev < Formula
   def caveats
     <<~EOS
       #{full_name} is a Formula for installing the development version of
-      `mutt` based on the HEAD version (commit #{@@current_commit[0..7]}) from its Github repository.
+      `mutt` based on the HEAD version (commit #{CURRENT_COMMIT[0..7]}) from its Github repository.
 
       mutt_dotlock(1) has been installed, but does not have the permissions to lock
       spool files in /var/mail. To grant the necessary permissions, run
@@ -112,6 +97,22 @@ class MuttAT9999Dev < Formula
     system bin/"mutt_dotlock", "-u", "foo"
   end
 end
+
+module EnvExtend
+  def replace_rpath(**replace_list)
+    replace_list = replace_list.each_with_object({}) do |(old, new), result|
+      result[old.to_s] = new.to_s
+    end
+
+    if (rpaths = fetch("HOMEBREW_RPATH_PATHS", false))
+      self["HOMEBREW_RPATH_PATHS"] = (rpaths.split(":").map do |rpath|
+        replace_list.fetch(rpath, rpath)
+      end).join(":")
+    end
+  end
+end
+
+ENV.extend(EnvExtend)
 
 __END__
 warning: refname 'upstream' is ambiguous.
