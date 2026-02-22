@@ -78,10 +78,11 @@ class RxvtUnicodeAT9999Dev < Formula
 
   test do
     daemon = fork do
-      system bin/"urxvtd"
+      re = Regexp.new("^rxvt-unicode daemon listening on", Regexp::MULTILINE)
+      assert_match re, shell_output("#{bin}/urxvtd 2>&1")
     end
     sleep 2
-    system bin/"urxvtc", "-k"
+    assert_empty shell_output("#{bin}/urxvtc -k")
     Process.wait daemon
   end
 end

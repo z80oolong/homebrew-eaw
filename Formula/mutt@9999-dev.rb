@@ -2,7 +2,7 @@ class MuttAT9999Dev < Formula
   desc "Mongrel of mail user agents (part elm, pine, mush, mh, etc.)"
   homepage "http://www.mutt.org/"
 
-  CURRENT_COMMIT = "ba36b184f1c84b2200163ca3a361150a9d6311e4".freeze
+  CURRENT_COMMIT = "4fb4575a4bc23a739a16db810c13f2a4942786f8".freeze
   url "https://gitlab.com/muttmua/mutt.git", revision: CURRENT_COMMIT
   version "git-#{CURRENT_COMMIT[0..7]}"
   license "GPL-2.0-or-later"
@@ -26,7 +26,7 @@ class MuttAT9999Dev < Formula
 
   resource "html" do
     url "https://muttmua.gitlab.io/mutt/manual-dev.html"
-    sha256 "107c8e55cf0a2801cbec22055758c9554726a3db8e908c6aee5448385925753d"
+    sha256 "957c9d7982df5fc7bdf976da02f327f2effd3acd87e47d703e943c127796e247"
   end
 
   patch :p1, :DATA
@@ -91,10 +91,12 @@ class MuttAT9999Dev < Formula
   end
 
   test do
-    system bin/"mutt", "-D"
+    ENV["LC_ALL"] = "C"
+    assert_equal "utf8_cjk is unset", shell_output("#{bin}/mutt -F /dev/null -Q utf8_cjk").strip
+    assert_equal "utf8_emoji is unset", shell_output("#{bin}/mutt -F /dev/null -Q utf8_emoji").strip
     touch "foo"
-    system bin/"mutt_dotlock", "foo"
-    system bin/"mutt_dotlock", "-u", "foo"
+    assert_empty shell_output("#{bin}/mutt_dotlock ./foo").strip
+    assert_empty shell_output("#{bin}/mutt_dotlock -u ./foo").strip
   end
 end
 
@@ -117,11 +119,11 @@ ENV.extend(EnvExtend)
 __END__
 warning: refname 'upstream' is ambiguous.
 diff --git a/curs_lib.c b/curs_lib.c
-index 246cb6be..6f4c7fd9 100644
+index d2b9b058..a392d3a7 100644
 --- a/curs_lib.c
 +++ b/curs_lib.c
-@@ -1387,7 +1387,11 @@ void mutt_format_string (char *dest, size_t destlen,
- #endif
+@@ -1384,7 +1384,11 @@ void mutt_format_string (char *dest, size_t destlen,
+       else
          if (!IsWPrint (wc))
            wc = '?';
 +#ifndef NO_USE_MKWCWIDTH
@@ -132,7 +134,7 @@ index 246cb6be..6f4c7fd9 100644
      }
      if (w >= 0)
      {
-@@ -1516,7 +1520,11 @@ void mutt_paddstr (int n, const char *s)
+@@ -1513,7 +1517,11 @@ void mutt_paddstr (int n, const char *s)
      }
      if (!IsWPrint (wc))
        wc = '?';
@@ -144,7 +146,7 @@ index 246cb6be..6f4c7fd9 100644
      if (w >= 0)
      {
        if (w > n)
-@@ -1553,7 +1561,11 @@ size_t mutt_wstr_trunc (const char *src, size_t maxlen, size_t maxwid, size_t *w
+@@ -1550,7 +1558,11 @@ size_t mutt_wstr_trunc (const char *src, size_t maxlen, size_t maxwid, size_t *w
        cl = (cl == (size_t)(-1)) ? 1 : n;
        wc = replacement_char ();
      }
@@ -156,7 +158,7 @@ index 246cb6be..6f4c7fd9 100644
      /* hack because MUTT_TREE symbols aren't turned into characters
       * until rendered by print_enriched_string (#3364) */
      if (cw < 0 && cl == 1 && src[0] && src[0] < MUTT_TREE_MAX)
-@@ -1591,7 +1603,11 @@ int mutt_charlen (const char *s, int *width)
+@@ -1588,7 +1600,11 @@ int mutt_charlen (const char *s, int *width)
    memset (&mbstate, 0, sizeof (mbstate));
    k = mbrtowc (&wc, s, n, &mbstate);
    if (width)
@@ -168,7 +170,7 @@ index 246cb6be..6f4c7fd9 100644
    return (k == (size_t)(-1) || k == (size_t)(-2)) ? -1 : k;
  }
  
-@@ -1623,7 +1639,11 @@ int mutt_strwidth (const char *s)
+@@ -1620,7 +1636,11 @@ int mutt_strwidth (const char *s)
      }
      if (!IsWPrint (wc))
        wc = '?';
@@ -181,7 +183,7 @@ index 246cb6be..6f4c7fd9 100644
    return w;
  }
 diff --git a/enter.c b/enter.c
-index 693f3b1d..53a74e7e 100644
+index 54e81178..75e84192 100644
 --- a/enter.c
 +++ b/enter.c
 @@ -27,6 +27,9 @@
@@ -231,7 +233,7 @@ index 693f3b1d..53a74e7e 100644
      return mutt_addwch (wc);
    if (!(wc & ~0x7f))
 diff --git a/help.c b/help.c
-index 29dda797..0734d23a 100644
+index 5094313c..6fcd68ce 100644
 --- a/help.c
 +++ b/help.c
 @@ -109,7 +109,11 @@ static int print_macro (FILE *f, int maxwidth, const char **macro)
@@ -245,7 +247,7 @@ index 29dda797..0734d23a 100644
 +#endif
      {
        if (w > n)
- 	break;
+         break;
 @@ -174,7 +178,11 @@ static int get_wrapped_width (const char *t, size_t wid)
      }
      if (!IsWPrint (wc))
@@ -259,11 +261,11 @@ index 29dda797..0734d23a 100644
    if (n > wid)
      n = m;
 diff --git a/init.h b/init.h
-index 63684916..b2872fb7 100644
+index 84e62fb4..1410dbbb 100644
 --- a/init.h
 +++ b/init.h
-@@ -4951,6 +4951,12 @@ struct option_t MuttVars[] = {
-   {"xterm_set_titles",	DT_SYN,  R_NONE, {.p="ts_enabled"}, {.p=0} },
+@@ -4981,6 +4981,12 @@ struct option_t MuttVars[] = {
+   {"xterm_set_titles",  DT_SYN,  R_NONE, {.p="ts_enabled"}, {.p=0} },
    /*
    */
 +#ifndef NO_USE_MKWCWIDTH
@@ -276,7 +278,7 @@ index 63684916..b2872fb7 100644
    { NULL, 0, 0, {.l=0}, {.l=0} }
  };
 diff --git a/mbyte.c b/mbyte.c
-index 16645feb..4442fc99 100644
+index 34989356..fa884761 100644
 --- a/mbyte.c
 +++ b/mbyte.c
 @@ -88,6 +88,22 @@ void mutt_set_charset (char *charset)
@@ -303,21 +305,20 @@ index 16645feb..4442fc99 100644
  
  /*
 diff --git a/mbyte.h b/mbyte.h
-index 9c58c9ec..b3dd79a8 100644
+index 40499756..4a43e987 100644
 --- a/mbyte.h
 +++ b/mbyte.h
-@@ -8,6 +8,9 @@
- #  ifdef HAVE_WCTYPE_H
- #   include <wctype.h>
- #  endif
-+#  ifndef NO_USE_MKWCWIDTH
+@@ -49,5 +49,8 @@ extern int Charset_is_utf8;
+ size_t utf8rtowc (wchar_t *pwc, const char *s, size_t n, mbstate_t *_ps);
+ wchar_t replacement_char (void);
+ int is_display_corrupting_utf8 (wchar_t wc);
++#ifndef NO_USE_MKWCWIDTH
 +extern int mutt_wcwidth (wchar_t wc);
-+#  endif
- # endif
++#endif
  
- # ifndef HAVE_WC_FUNCS
+ #endif /* _MBYTE_H */
 diff --git a/mutt.h b/mutt.h
-index 97c02653..ce467d0e 100644
+index 75a45999..7efb5498 100644
 --- a/mutt.h
 +++ b/mutt.h
 @@ -621,6 +621,12 @@ enum
@@ -334,26 +335,28 @@ index 97c02653..ce467d0e 100644
    /* pseudo options */
  
 diff --git a/pager.c b/pager.c
-index e02eea31..d4f22add 100644
+index 1598a59e..f219f8b3 100644
 --- a/pager.c
 +++ b/pager.c
-@@ -1402,7 +1402,11 @@ static int format_line (struct line_t **lineInfo, int n, unsigned char *buf,
+@@ -1400,8 +1400,12 @@ static int format_line (struct line_t **lineInfo, int n, unsigned char *buf,
+     if (IsWPrint (wc) || (Charset_is_utf8 && wc == 0x00A0))
      {
        if (wc == ' ')
- 	space = ch;
+-        space = ch;
++	space = ch;
 +#ifndef NO_USE_MKWCWIDTH
 +      t = mutt_wcwidth (wc);
 +#else
        t = wcwidth (wc);
 +#endif
        if (col + t > wrap_cols)
- 	break;
+         break;
        col += t;
 diff --git a/sendlib.c b/sendlib.c
-index ef0ca29f..5862e1f1 100644
+index f0e34d99..3e1b6d88 100644
 --- a/sendlib.c
 +++ b/sendlib.c
-@@ -1918,7 +1918,11 @@ static int my_width (const char *p, int col, int flags)
+@@ -1917,7 +1917,11 @@ static int my_width (const char *p, int col, int flags)
        consumed = (consumed == (size_t)(-1)) ? 1 : n;
      }
  

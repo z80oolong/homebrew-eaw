@@ -5,10 +5,10 @@ class NeomuttCurrent < Formula
   revision 4
 
   stable do
-    url "https://github.com/neomutt/neomutt/archive/refs/tags/20250905.tar.gz"
-    sha256 "f409fa3803bfc540869b78719400bceda216842e4da024f83ca3060241d9c516"
+    url "https://github.com/neomutt/neomutt/archive/refs/tags/20260105.tar.gz"
+    sha256 "a78e55a0df62b7f98566676d0ab9041aad89b2384bb5c6f3a96302a5cf49968d"
 
-    patch :p1, Formula["z80oolong/eaw/neomutt@20250905"].diff_data
+    patch :p1, Formula["z80oolong/eaw/neomutt@20260105"].diff_data
   end
 
   head do
@@ -67,8 +67,11 @@ class NeomuttCurrent < Formula
   end
 
   test do
-    output = shell_output("#{bin}/neomutt -F /dev/null -Q debug_level")
-    assert_equal "set debug_level = 0", output.chomp
+    ENV["LC_ALL"] = "C"
+    output = shell_output("#{bin}/neomutt -F /dev/null -Q utf8_cjk 2>/dev/null || true")
+    assert_equal "set utf8_cjk = no", output.strip
+    output = shell_output("#{bin}/neomutt -F /dev/null -Q utf8_emoji 2>/dev/null || true")
+    assert_equal "set utf8_emoji = no", output.strip
   end
 end
 

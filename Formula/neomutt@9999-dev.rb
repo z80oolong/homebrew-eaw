@@ -71,8 +71,13 @@ class NeomuttAT9999Dev < Formula
   end
 
   test do
-    output = shell_output("#{bin}/neomutt -F /dev/null -Q debug_level")
-    assert_equal "set debug_level = 0", output.chomp
+    ENV["LC_ALL"] = "C"
+    output = shell_output("#{bin}/neomutt -F /dev/null -Q debug_level 2>/dev/null || true")
+    assert_equal "set debug_level = 0", output.strip
+    output = shell_output("#{bin}/neomutt -F /dev/null -Q utf8_cjk 2>/dev/null || true")
+    assert_equal "set utf8_cjk = no", output.strip
+    output = shell_output("#{bin}/neomutt -F /dev/null -Q utf8_emoji 2>/dev/null || true")
+    assert_equal "set utf8_emoji = no", output.strip
   end
 end
 

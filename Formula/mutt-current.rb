@@ -5,12 +5,12 @@ class MuttCurrent < Formula
   revision 3
 
   stable do
-    url "http://ftp.mutt.org/pub/mutt/mutt-2.2.15.tar.gz"
-    mirror "https://github.com/muttmua/mutt/archive/refs/tags/mutt-2-2-15-rel.tar.gz"
-    mirror "https://bitbucket.org/mutt/mutt/downloads/mutt-2.2.15.tar.gz"
-    sha256 "a51686104e4203f4c2a3b176527be3b95d08e808e94fd2dcadb7c30566bf894d"
+    url "http://ftp.mutt.org/pub/mutt/mutt-2.3.0.tar.gz"
+    mirror "https://github.com/muttmua/mutt/archive/refs/tags/mutt-2-3-0-rel.tar.gz"
+    mirror "https://bitbucket.org/mutt/mutt/downloads/mutt-2.3.0.tar.gz"
+    sha256 "5d5ebc40843f7156d5ede30e50016798ac7336467f7ad347e716510516cc2130"
 
-    patch :p1, Formula["mutt@2.2.15"].diff_data
+    patch :p1, Formula["mutt@2.3.0"].diff_data
   end
 
   head do
@@ -95,10 +95,12 @@ class MuttCurrent < Formula
   end
 
   test do
-    system bin/"mutt", "-D"
+    ENV["LC_ALL"] = "C"
+    assert_equal "utf8_cjk is unset", shell_output("#{bin}/mutt -F /dev/null -Q utf8_cjk").strip
+    assert_equal "utf8_emoji is unset", shell_output("#{bin}/mutt -F /dev/null -Q utf8_emoji").strip
     touch "foo"
-    system bin/"mutt_dotlock", "foo"
-    system bin/"mutt_dotlock", "-u", "foo"
+    assert_empty shell_output("#{bin}/mutt_dotlock ./foo").strip
+    assert_empty shell_output("#{bin}/mutt_dotlock -u ./foo").strip
   end
 end
 

@@ -5,10 +5,10 @@ class NanoCurrent < Formula
   revision 3
 
   stable do
-    url "https://www.nano-editor.org/dist/v8/nano-8.6.tar.xz"
-    sha256 "f7abfbf0eed5f573ab51bd77a458f32d82f9859c55e9689f819d96fe1437a619"
+    url "https://www.nano-editor.org/dist/v8/nano-8.7.1.tar.xz"
+    sha256 "76f0dcb248f2e2f1251d4ecd20fd30fb400a360a3a37c6c340e0a52c2d1cdedf"
 
-    patch :p1, Formula["z80oolong/eaw/nano@8.6"].diff_data
+    patch :p1, Formula["z80oolong/eaw/nano@8.7.1"].diff_data
   end
 
   head do
@@ -62,7 +62,10 @@ class NanoCurrent < Formula
   end
 
   test do
-    system "#{bin}/nano", "--version"
+    ENV["LC_ALL"] = "C"
+    output = shell_output("#{bin}/nano --version")
+    assert_match Regexp.new("GNU nano, version 8.6\n", Regexp::MULTILINE), output
+    assert_match Regexp.new("Compiled options: --enable-utf8\n", Regexp::MULTILINE), output
   end
 end
 
