@@ -1,8 +1,13 @@
-class NeomuttAT20260105 < Formula
+require "#{Tap.fetch("z80oolong/eaw").path}/lib/extend.rb"
+ENV.extend(EnvExtend)
+
+class NeomuttAT20260504 < Formula
+  include DiffDataMixin
+
   desc "E-mail reader with support for Notmuch, NNTP and much more"
   homepage "https://neomutt.org/"
-  url "https://github.com/neomutt/neomutt/archive/refs/tags/20260105.tar.gz"
-  sha256 "a78e55a0df62b7f98566676d0ab9041aad89b2384bb5c6f3a96302a5cf49968d"
+  url "https://github.com/neomutt/neomutt/archive/refs/tags/20260504.tar.gz"
+  sha256 "93fd8344c12cd857f084f8d7cc1187479f79036ab9725cfdbc81c0cc845f1615"
   license "GPL-2.0-or-later"
   revision 4
 
@@ -33,9 +38,9 @@ class NeomuttAT20260105 < Formula
 
     ENV.replace_rpath old_curses_f.lib     => new_curses_f.lib,
                       old_curses_f.opt_lib => new_curses_f.opt_lib
-    ENV.append "CFLAGS",   "-I#{Formula["z80oolong/eaw/ncurses-eaw@6.5"].opt_include}"
-    ENV.append "CPPFLAGS", "-I#{Formula["z80oolong/eaw/ncurses-eaw@6.5"].opt_include}"
-    ENV.append "LDFLAGS",  "-L#{Formula["z80oolong/eaw/ncurses-eaw@6.5"].opt_lib}"
+    ENV.append "CFLAGS",   "-I#{new_curses_f.opt_include}"
+    ENV.append "CPPFLAGS", "-I#{new_curses_f.opt_include}"
+    ENV.append "LDFLAGS",  "-L#{new_curses_f.opt_lib}"
     ENV["XML_CATALOG_FILES"] = "#{etc}/xml/catalog"
 
     args = std_configure_args
@@ -49,17 +54,13 @@ class NeomuttAT20260105 < Formula
     args << "--tokyocabinet"
     args << "--with-ssl=#{Formula["openssl@1.1"].opt_prefix}"
     args << "--with-ui=ncurses"
-    args << "--with-ncurses=#{Formula["z80oolong/eaw/ncurses-eaw@6.5"].opt_prefix}"
+    args << "--with-ncurses=#{new_curses_f.opt_prefix}"
     args << "--lua"
     args << "--with-lua=#{Formula["lua"].prefix}"
 
     system "./configure", *args
     system "make"
     system "make", "install"
-  end
-
-  def diff_data
-    path.readlines(nil).first.gsub(/^.*\n__END__\n/m, "")
   end
 
   test do
@@ -70,22 +71,6 @@ class NeomuttAT20260105 < Formula
     assert_equal "set utf8_emoji = no", output.strip
   end
 end
-
-module EnvExtend
-  def replace_rpath(**replace_list)
-    replace_list = replace_list.each_with_object({}) do |(old, new), result|
-      result[old.to_s] = new.to_s
-    end
-
-    if (rpaths = fetch("HOMEBREW_RPATH_PATHS", false))
-      self["HOMEBREW_RPATH_PATHS"] = (rpaths.split(":").map do |rpath|
-        replace_list.fetch(rpath, rpath)
-      end).join(":")
-    end
-  end
-end
-
-ENV.extend(EnvExtend)
 
 __END__
 diff --git a/editor/enter.c b/editor/enter.c
@@ -149,7 +134,7 @@ index 45d23f1..02e46ec 100644
  
      // It'll require _some_ space
 diff --git a/gui/curs_lib.c b/gui/curs_lib.c
-index 424ef4f..a1112ed 100644
+index 89ac15b..1e43b93 100644
 --- a/gui/curs_lib.c
 +++ b/gui/curs_lib.c
 @@ -358,7 +358,11 @@ void mutt_paddstr(struct MuttWindow *win, int n, const char *s)
@@ -706,10 +691,10 @@ index 6980edd..d8ac89c 100644
    { "cursor_overlay",            D_INTERNAL_DEPRECATED|DT_BOOL,   0, IP "2020-07-20" },
    { "escape",                    D_INTERNAL_DEPRECATED|DT_STRING, 0, IP "2021-03-18" },
 diff --git a/pager/display.c b/pager/display.c
-index 5a48634..a50be9b 100644
+index 2b85225..64dd863 100644
 --- a/pager/display.c
 +++ b/pager/display.c
-@@ -974,7 +974,11 @@ static int format_line(struct MuttWindow *win, struct Line **lines, int line_num
+@@ -977,7 +977,11 @@ static int format_line(struct MuttWindow *win, struct Line **lines, int line_num
        {
          space = ch;
        }

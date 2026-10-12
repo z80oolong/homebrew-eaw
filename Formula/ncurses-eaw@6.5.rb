@@ -7,8 +7,6 @@ class NcursesEawAT65 < Formula
   sha256 "136d91bc269a9a5785e5f9e980bc76ab57428f604ce3e5a5a90cebc767971cc6"
   license "MIT"
 
-  no_autobump! because: :requires_manual_review
-
   keg_only :versioned_formula
 
   depends_on "glibc" => :build

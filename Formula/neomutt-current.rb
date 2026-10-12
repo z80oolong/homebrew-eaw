@@ -1,14 +1,21 @@
+require "#{Tap.fetch("z80oolong/eaw").path}/lib/extend.rb"
+ENV.extend(EnvExtend)
+
 class NeomuttCurrent < Formula
+  include DiffDataMixin
+
   desc "E-mail reader with support for Notmuch, NNTP and much more"
   homepage "https://neomutt.org/"
   license "GPL-2.0-or-later"
   revision 4
 
   stable do
-    url "https://github.com/neomutt/neomutt/archive/refs/tags/20260105.tar.gz"
-    sha256 "a78e55a0df62b7f98566676d0ab9041aad89b2384bb5c6f3a96302a5cf49968d"
+    url "https://github.com/neomutt/neomutt/archive/refs/tags/20260504.tar.gz"
+    sha256 "93fd8344c12cd857f084f8d7cc1187479f79036ab9725cfdbc81c0cc845f1615"
 
-    patch :p1, Formula["z80oolong/eaw/neomutt@20260105"].diff_data
+    depends_on "tokyo-cabinet"
+
+    patch :p1, Formula["z80oolong/eaw/neomutt@20260504"].diff_data
   end
 
   head do
@@ -27,7 +34,6 @@ class NeomuttCurrent < Formula
   depends_on "lua"
   depends_on "notmuch"
   depends_on "openssl@1.1"
-  depends_on "tokyo-cabinet"
   depends_on "z80oolong/eaw/ncurses-eaw@6.5"
   unless OS.mac?
     depends_on "pkgconf" => :build
@@ -36,14 +42,16 @@ class NeomuttCurrent < Formula
   end
 
   def install
+    include DiffDataMixin
+
     old_curses_f = Formula["ncurses"]
     new_curses_f = Formula["z80oolong/eaw/ncurses-eaw@6.5"]
 
     ENV.replace_rpath old_curses_f.lib     => new_curses_f.lib,
                       old_curses_f.opt_lib => new_curses_f.opt_lib
-    ENV.append "CFLAGS",   "-I#{Formula["z80oolong/eaw/ncurses-eaw@6.5"].opt_include}"
-    ENV.append "CPPFLAGS", "-I#{Formula["z80oolong/eaw/ncurses-eaw@6.5"].opt_include}"
-    ENV.append "LDFLAGS",  "-L#{Formula["z80oolong/eaw/ncurses-eaw@6.5"].opt_lib}"
+    ENV.append "CFLAGS",   "-I#{new_curses_f.opt_include}"
+    ENV.append "CPPFLAGS", "-I#{new_curses_f.opt_include}"
+    ENV.append "LDFLAGS",  "-L#{new_curses_f.opt_lib}"
     ENV["XML_CATALOG_FILES"] = "#{etc}/xml/catalog"
 
     args = std_configure_args
@@ -54,12 +62,14 @@ class NeomuttCurrent < Formula
     args << "--lmdb"
     args << "--notmuch"
     args << "--sasl"
-    args << "--tokyocabinet"
     args << "--with-ssl=#{Formula["openssl@1.1"].opt_prefix}"
     args << "--with-ui=ncurses"
-    args << "--with-ncurses=#{Formula["z80oolong/eaw/ncurses-eaw@6.5"].opt_prefix}"
+    args << "--with-ncurses=#{new_curses_f.opt_prefix}"
     args << "--lua"
     args << "--with-lua=#{Formula["lua"].prefix}"
+    unless build.head?
+      args << "--tokyocabinet"
+    end
 
     system "./configure", *args
     system "make"
@@ -74,19 +84,3 @@ class NeomuttCurrent < Formula
     assert_equal "set utf8_emoji = no", output.strip
   end
 end
-
-module EnvExtend
-  def replace_rpath(**replace_list)
-    replace_list = replace_list.each_with_object({}) do |(old, new), result|
-      result[old.to_s] = new.to_s
-    end
-
-    if (rpaths = fetch("HOMEBREW_RPATH_PATHS", false))
-      self["HOMEBREW_RPATH_PATHS"] = (rpaths.split(":").map do |rpath|
-        replace_list.fetch(rpath, rpath)
-      end).join(":")
-    end
-  end
-end
-
-ENV.extend(EnvExtend)

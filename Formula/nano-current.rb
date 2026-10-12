@@ -1,18 +1,23 @@
+require "#{Tap.fetch("z80oolong/eaw").path}/lib/extend.rb"
+ENV.extend(EnvExtend)
+
 class NanoCurrent < Formula
+  include DiffDataMixin
+
   desc "Free (GNU) replacement for the Pico text editor"
   homepage "https://www.nano-editor.org/"
   license "GPL-3.0-or-later"
   revision 3
 
   stable do
-    url "https://www.nano-editor.org/dist/v8/nano-8.7.1.tar.xz"
-    sha256 "76f0dcb248f2e2f1251d4ecd20fd30fb400a360a3a37c6c340e0a52c2d1cdedf"
+    url "https://www.nano-editor.org/dist/v9/nano-9.2.tar.xz"
+    sha256 "05ecb99247b782e8a5b3a25ed4101dd034b0236902f7449bc9795b717642f7e9"
 
-    patch :p1, Formula["z80oolong/eaw/nano@8.7.1"].diff_data
+    patch :p1, Formula["z80oolong/eaw/nano@9.2"].diff_data
   end
 
   head do
-    url "https://github.com/madnight/nano.git"
+    url "git://git.sv.gnu.org/nano.git"
 
     depends_on "autoconf" => :build
     depends_on "automake" => :build
@@ -38,10 +43,14 @@ class NanoCurrent < Formula
 
     ENV.replace_rpath old_curses_f.lib     => new_curses_f.lib,
                       old_curses_f.opt_lib => new_curses_f.opt_lib
-    ENV.append "CFLAGS",     "-I#{Formula["z80oolong/eaw/ncurses-eaw@6.5"].opt_include}"
-    ENV.append "CPPFLAGS",   "-I#{Formula["z80oolong/eaw/ncurses-eaw@6.5"].opt_include}"
-    ENV.append "LDFLAGS",    "-L#{Formula["z80oolong/eaw/ncurses-eaw@6.5"].opt_lib}"
+    ENV.append "NCURSESW_CFLAGS", "-I#{new_curses_f.opt_include}"
+    ENV.append "NCURSESW_LIBS", "-L#{new_curses_f.opt_lib} -lncursesw"
+    ENV.append "NCURSES_CFLAGS", "-I#{new_curses_f.opt_include}"
+    ENV.append "NCURSES_LIBS", "-L#{new_curses_f.opt_lib} -lncurses"
     ENV["LC_ALL"] = "C"
+    if build.head?
+      ENV["HOMEBREW_ACLOCAL_PATH"] = "#{Formula["pkgconf"].opt_share}/aclocal"
+    end
 
     args =  std_configure_args
     args << "--disable-dependency-tracking"
@@ -64,23 +73,7 @@ class NanoCurrent < Formula
   test do
     ENV["LC_ALL"] = "C"
     output = shell_output("#{bin}/nano --version")
-    assert_match Regexp.new("GNU nano, version 8.6\n", Regexp::MULTILINE), output
+    assert_match Regexp.new("GNU nano, version 9.0\n", Regexp::MULTILINE), output
     assert_match Regexp.new("Compiled options: --enable-utf8\n", Regexp::MULTILINE), output
   end
 end
-
-module EnvExtend
-  def replace_rpath(**replace_list)
-    replace_list = replace_list.each_with_object({}) do |(old, new), result|
-      result[old.to_s] = new.to_s
-    end
-
-    if (rpaths = fetch("HOMEBREW_RPATH_PATHS", false))
-      self["HOMEBREW_RPATH_PATHS"] = (rpaths.split(":").map do |rpath|
-        replace_list.fetch(rpath, rpath)
-      end).join(":")
-    end
-  end
-end
-
-ENV.extend(EnvExtend)

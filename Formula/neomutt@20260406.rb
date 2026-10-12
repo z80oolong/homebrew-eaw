@@ -1,8 +1,13 @@
-class NeomuttAT20250905 < Formula
+require "#{Tap.fetch("z80oolong/eaw").path}/lib/extend.rb"
+ENV.extend(EnvExtend)
+
+class NeomuttAT20260406 < Formula
+  include DiffDataMixin
+
   desc "E-mail reader with support for Notmuch, NNTP and much more"
   homepage "https://neomutt.org/"
-  url "https://github.com/neomutt/neomutt/archive/refs/tags/20250905.tar.gz"
-  sha256 "f409fa3803bfc540869b78719400bceda216842e4da024f83ca3060241d9c516"
+  url "https://github.com/neomutt/neomutt/archive/refs/tags/20260406.tar.gz"
+  sha256 "bd6ef5aa0d53ee23ce15b0f8624a6450d119623931708df998c6ebee7e528d17"
   license "GPL-2.0-or-later"
   revision 4
 
@@ -58,14 +63,8 @@ class NeomuttAT20250905 < Formula
     system "make", "install"
   end
 
-  def diff_data
-    path.readlines(nil).first.gsub(/^.*\n__END__\n/m, "")
-  end
-
   test do
     ENV["LC_ALL"] = "C"
-    output = shell_output("#{bin}/neomutt -F /dev/null -Q debug_level 2>/dev/null || true")
-    assert_equal "set debug_level = 0", output.strip
     output = shell_output("#{bin}/neomutt -F /dev/null -Q utf8_cjk 2>/dev/null || true")
     assert_equal "set utf8_cjk = no", output.strip
     output = shell_output("#{bin}/neomutt -F /dev/null -Q utf8_emoji 2>/dev/null || true")
@@ -73,28 +72,12 @@ class NeomuttAT20250905 < Formula
   end
 end
 
-module EnvExtend
-  def replace_rpath(**replace_list)
-    replace_list = replace_list.each_with_object({}) do |(old, new), result|
-      result[old.to_s] = new.to_s
-    end
-
-    if (rpaths = fetch("HOMEBREW_RPATH_PATHS", false))
-      self["HOMEBREW_RPATH_PATHS"] = (rpaths.split(":").map do |rpath|
-        replace_list.fetch(rpath, rpath)
-      end).join(":")
-    end
-  end
-end
-
-ENV.extend(EnvExtend)
-
 __END__
 diff --git a/editor/enter.c b/editor/enter.c
-index f2f9818..461d28a 100644
+index 4aae85b..6299e52 100644
 --- a/editor/enter.c
 +++ b/editor/enter.c
-@@ -36,7 +36,11 @@
+@@ -35,7 +35,11 @@
  #include "state.h"
  
  /// combining mark / non-spacing character
@@ -107,10 +90,10 @@ index f2f9818..461d28a 100644
  /**
   * editor_backspace - Delete the char in front of the cursor
 diff --git a/editor/window.c b/editor/window.c
-index 34fa5ac..179a6d8 100644
+index 5efc870..b4848b4 100644
 --- a/editor/window.c
 +++ b/editor/window.c
-@@ -70,7 +70,11 @@ static const struct Mapping EditorHelp[] = {
+@@ -69,7 +69,11 @@ static const struct Mapping EditorHelp[] = {
   */
  static int my_addwch(struct MuttWindow *win, wchar_t wc)
  {
@@ -151,7 +134,7 @@ index 45d23f1..02e46ec 100644
  
      // It'll require _some_ space
 diff --git a/gui/curs_lib.c b/gui/curs_lib.c
-index 466bd3d..caa42c1 100644
+index 424ef4f..a1112ed 100644
 --- a/gui/curs_lib.c
 +++ b/gui/curs_lib.c
 @@ -358,7 +358,11 @@ void mutt_paddstr(struct MuttWindow *win, int n, const char *s)
@@ -191,10 +174,10 @@ index 466bd3d..caa42c1 100644
    return w;
  }
 diff --git a/gui/msgwin.c b/gui/msgwin.c
-index c36b0c5..fad898c 100644
+index c8e18a4..3ccf861 100644
 --- a/gui/msgwin.c
 +++ b/gui/msgwin.c
-@@ -132,7 +132,11 @@ void measure(struct MwCharArray *chars, const char *str, const struct AttrColor
+@@ -131,7 +131,11 @@ void measure(struct MwCharArray *chars, const char *str, const struct AttrColor
        consumed = str_len;
      }
  
@@ -206,11 +189,11 @@ index c36b0c5..fad898c 100644
      if (wchar_width < 0)
        wchar_width = 1;
  
-diff --git a/key/lib.c b/key/lib.c
-index c327d20..d3fee24 100644
---- a/key/lib.c
-+++ b/key/lib.c
-@@ -356,7 +356,11 @@ void escape_macro(const char *macro, struct Buffer *buf)
+diff --git a/key/dump.c b/key/dump.c
+index 5be223f..cc127e8 100644
+--- a/key/dump.c
++++ b/key/dump.c
+@@ -297,7 +297,11 @@ void escape_macro(const char *macro, struct Buffer *buf)
        wc = ReplacementChar;
      }
  
@@ -687,10 +670,10 @@ index 2acbb90..98e6bce 100644
      return n;
    if (!(wc & ~0x7f))
 diff --git a/mutt_config.c b/mutt_config.c
-index d687fc8..76b41e7 100644
+index 6980edd..d8ac89c 100644
 --- a/mutt_config.c
 +++ b/mutt_config.c
-@@ -789,6 +789,16 @@ static struct ConfigDef MainVars[] = {
+@@ -788,6 +788,16 @@ static struct ConfigDef MainVars[] = {
    { "wrap_search", DT_BOOL, true, 0, NULL,
      "Wrap around when the search hits the end"
    },

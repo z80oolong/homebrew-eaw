@@ -1,8 +1,13 @@
-class NanoAT87 < Formula
+require "#{Tap.fetch("z80oolong/eaw").path}/lib/extend.rb"
+ENV.extend(EnvExtend)
+
+class NanoAT92 < Formula
+  include DiffDataMixin
+
   desc "Free (GNU) replacement for the Pico text editor"
   homepage "https://www.nano-editor.org/"
-  url "https://www.nano-editor.org/dist/v8/nano-8.7.tar.xz"
-  sha256 "afd287aa672c48b8e1a93fdb6c6588453d527510d966822b687f2835f0d986e9"
+  url "https://www.nano-editor.org/dist/v9/nano-9.2.tar.xz"
+  sha256 "05ecb99247b782e8a5b3a25ed4101dd034b0236902f7449bc9795b717642f7e9"
   license "GPL-3.0-or-later"
   revision 3
 
@@ -24,10 +29,10 @@ class NanoAT87 < Formula
 
     ENV.replace_rpath old_curses_f.lib     => new_curses_f.lib,
                       old_curses_f.opt_lib => new_curses_f.opt_lib
-    ENV.append "NCURSESW_CFLAGS", "-I#{Formula["z80oolong/eaw/ncurses-eaw@6.5"].opt_include}"
-    ENV.append "NCURSESW_LIBS", "-L#{Formula["z80oolong/eaw/ncurses-eaw@6.5"].opt_lib} -lncursesw"
-    ENV.append "NCURSES_CFLAGS", "-I#{Formula["z80oolong/eaw/ncurses-eaw@6.5"].opt_include}"
-    ENV.append "NCURSES_LIBS", "-L#{Formula["z80oolong/eaw/ncurses-eaw@6.5"].opt_lib} -lncurses"
+    ENV.append "NCURSESW_CFLAGS", "-I#{new_curses_f.opt_include}"
+    ENV.append "NCURSESW_LIBS", "-L#{new_curses_f.opt_lib} -lncursesw"
+    ENV.append "NCURSES_CFLAGS", "-I#{new_curses_f.opt_include}"
+    ENV.append "NCURSES_LIBS", "-L#{new_curses_f.opt_lib} -lncurses"
 
     args =  std_configure_args
     args << "--disable-dependency-tracking"
@@ -45,10 +50,6 @@ class NanoAT87 < Formula
     doc.install "doc/sample.nanorc"
   end
 
-  def diff_data
-    path.readlines(nil).first.gsub(/^.*\n__END__\n/m, "")
-  end
-
   test do
     ENV["LC_ALL"] = "C"
     output = shell_output("#{bin}/nano --version")
@@ -57,25 +58,9 @@ class NanoAT87 < Formula
   end
 end
 
-module EnvExtend
-  def replace_rpath(**replace_list)
-    replace_list = replace_list.each_with_object({}) do |(old, new), result|
-      result[old.to_s] = new.to_s
-    end
-
-    if (rpaths = fetch("HOMEBREW_RPATH_PATHS", false))
-      self["HOMEBREW_RPATH_PATHS"] = (rpaths.split(":").map do |rpath|
-        replace_list.fetch(rpath, rpath)
-      end).join(":")
-    end
-  end
-end
-
-ENV.extend(EnvExtend)
-
 __END__
 diff --git a/src/chars.c b/src/chars.c
-index a0ebaec..911dd8a 100644
+index 742699a..d91da9d 100644
 --- a/src/chars.c
 +++ b/src/chars.c
 @@ -28,6 +28,407 @@
@@ -486,7 +471,7 @@ index a0ebaec..911dd8a 100644
  #ifdef ENABLE_SPELLER
  /* Return TRUE when the given character is some kind of letter. */
  bool is_alpha_char(const char *c)
-@@ -218,8 +619,11 @@ bool is_doublewidth(const char *ch)
+@@ -220,8 +621,11 @@ bool is_doublewidth(const char *ch)
  
  	if (mbtowide(&wc, ch) < 0)
  		return FALSE;
@@ -499,7 +484,7 @@ index a0ebaec..911dd8a 100644
  }
  
  /* Return TRUE when the given character occupies zero cells. */
-@@ -240,7 +644,11 @@ bool is_zerowidth(const char *ch)
+@@ -242,7 +646,11 @@ bool is_zerowidth(const char *ch)
  		return FALSE;
  #endif
  
@@ -511,7 +496,7 @@ index a0ebaec..911dd8a 100644
  }
  #endif /* ENABLE_UTF8 */
  
-@@ -325,7 +733,11 @@ int advance_over(const char *string, size_t *column)
+@@ -328,7 +736,11 @@ int advance_over(const char *string, size_t *column)
  				return 1;
  			}
  
@@ -524,27 +509,27 @@ index a0ebaec..911dd8a 100644
  #if defined(__OpenBSD__)
  			*column += (width < 0 || wc >= 0xF0000) ? 1 : width;
 diff --git a/src/definitions.h b/src/definitions.h
-index c73b4a8..bc152f9 100644
+index d0e5a9a..c6828e1 100644
 --- a/src/definitions.h
 +++ b/src/definitions.h
-@@ -368,6 +368,12 @@ enum {
- 	LET_THEM_ZAP,
- 	BREAK_LONG_LINES,
- 	JUMPY_SCROLLING,
+@@ -380,6 +380,12 @@ enum {
+ 	MINIBAR,
+ 	ZERO,
+ 	MODERN_BINDINGS,
 +#ifndef NO_USE_UTF8CJK
 +	UTF8CJK,
 +#ifndef NO_USE_UTF8CJK_EMOJI
 +	UTF8EMOJI,
 +#endif /* NO_USE_UTF8CJK_EMOJI */
 +#endif /* NO_USE_UTF8CJK */
- 	EMPTY_LINE,
- 	INDICATOR,
- 	BOOKSTYLE,
+ 	SOLO_SIDESCROLL
+ };
+ 
 diff --git a/src/global.c b/src/global.c
-index 2ff88d5..aaf4119 100644
+index 45d9cc2..7c7a799 100644
 --- a/src/global.c
 +++ b/src/global.c
-@@ -103,8 +103,12 @@ int didfind = 0;
+@@ -105,8 +105,12 @@ int didfind = 0;
  char *present_path = NULL;
  		/* The current browser directory when trying to do tab completion. */
  
@@ -558,10 +543,10 @@ index 2ff88d5..aaf4119 100644
  int controlleft, controlright, controlup, controldown;
  int controlhome, controlend;
 diff --git a/src/nano.c b/src/nano.c
-index bbfb226..74b3414 100644
+index 72f5d1a..77f2a79 100644
 --- a/src/nano.c
 +++ b/src/nano.c
-@@ -647,6 +647,14 @@ void usage(void)
+@@ -637,6 +637,14 @@ void usage(void)
  #ifdef HAVE_LIBMAGIC
  	print_opt("-!", "--magic", N_("Also try magic to determine syntax"));
  #endif
@@ -576,7 +561,7 @@ index bbfb226..74b3414 100644
  #ifndef NANO_TINY
  	print_opt("-@", "--colonparsing", N_("Accept 'filename:linenumber' notation"));
  	print_opt("-%", "--stateflags", N_("Show some states on the title bar"));
-@@ -1840,6 +1848,14 @@ int main(int argc, char **argv)
+@@ -1837,6 +1845,14 @@ int main(int argc, char **argv)
  #ifdef HAVE_LIBMAGIC
  		{"magic", 0, NULL, '!'},
  #endif
@@ -591,7 +576,7 @@ index bbfb226..74b3414 100644
  		{NULL, 0, NULL, 0}
  	};
  
-@@ -1870,7 +1886,16 @@ int main(int argc, char **argv)
+@@ -1867,7 +1883,16 @@ int main(int argc, char **argv)
  #endif
  
  #ifdef ENABLE_NLS
@@ -608,26 +593,26 @@ index bbfb226..74b3414 100644
  	textdomain(PACKAGE);
  #endif
  
-@@ -1881,8 +1906,18 @@ int main(int argc, char **argv)
+@@ -1878,8 +1903,18 @@ int main(int argc, char **argv)
  	if (*(tail(argv[0])) == 'r')
  		SET(RESTRICTED);
  
 +#ifndef NO_USE_UTF8CJK
 +#ifndef NO_USE_UTF8CJK_EMOJI
 +	while ((optchr = getopt_long(argc, argv, "ABC:DEFGHIJ:KLMNOPQ:RST:UVWX:Y:Z"
-+				"abcdef:ghijklmno:pqr:s:tuvwxyz84!@%_0/", long_options, NULL)) > 0) {
++				"abcdef:ghijklmno:pqr:s:tuvwxyz84!@%_01/", long_options, NULL)) > 0) {
 +#else
 +	while ((optchr = getopt_long(argc, argv, "ABC:DEFGHIJ:KLMNOPQ:RST:UVWX:Y:Z"
-+				"abcdef:ghijklmno:pqr:s:tuvwxyz8$!@%_0/", long_options, NULL)) > 0) {
++				"abcdef:ghijklmno:pqr:s:tuvwxyz8$!@%_01/", long_options, NULL)) > 0) {
 +#endif /* NO_USE_UTF8CJK_EMOJI */
 +#else
  	while ((optchr = getopt_long(argc, argv, "ABC:DEFGHIJ:KLMNOPQ:RST:UVWX:Y:Z"
- 				"abcdef:ghijklmno:pqr:s:tuvwxyz!@%_0/", long_options, NULL)) > 0) {
+ 				"abcdef:ghijklmno:pqr:s:tuvwxyz!@%_01/", long_options, NULL)) > 0) {
 +#endif /* NO_USE_UTF8CJK */
  		switch (optchr) {
  #ifndef NANO_TINY
  			case 'A':
-@@ -2127,6 +2162,19 @@ int main(int argc, char **argv)
+@@ -2124,6 +2159,19 @@ int main(int argc, char **argv)
  				SET(USE_MAGIC);
  				break;
  #endif
@@ -647,7 +632,7 @@ index bbfb226..74b3414 100644
  #ifndef NANO_TINY
  			case 0xCC:
  				SET(WHITESPACE_DISPLAY);
-@@ -2161,6 +2209,21 @@ int main(int argc, char **argv)
+@@ -2165,6 +2213,21 @@ int main(int argc, char **argv)
  	if (getenv("TERM") == NULL)
  		putenv("TERM=vt220");
  
@@ -670,10 +655,10 @@ index bbfb226..74b3414 100644
  	if (initscr() == NULL)
  		exit(1);
 diff --git a/src/prototypes.h b/src/prototypes.h
-index e1cd8f6..2f52233 100644
+index 1de24dd..14b7d59 100644
 --- a/src/prototypes.h
 +++ b/src/prototypes.h
-@@ -66,7 +66,11 @@ extern int didfind;
+@@ -68,7 +68,11 @@ extern int didfind;
  
  extern char *present_path;
  
@@ -686,10 +671,10 @@ index e1cd8f6..2f52233 100644
  extern int controlleft, controlright;
  extern int controlup, controldown;
 diff --git a/src/rcfile.c b/src/rcfile.c
-index 6143f5f..59450a6 100644
+index b5e78b3..d303c33 100644
 --- a/src/rcfile.c
 +++ b/src/rcfile.c
-@@ -136,6 +136,14 @@ static const rcoption rcopts[] = {
+@@ -138,6 +138,14 @@ static const rcoption rcopts[] = {
  	{"errorcolor", 0},
  	{"keycolor", 0},
  	{"functioncolor", 0},
@@ -705,7 +690,7 @@ index 6143f5f..59450a6 100644
  	{NULL, 0}
  };
 diff --git a/src/winio.c b/src/winio.c
-index d74c6fe..f7fc817 100644
+index 9382ba3..6e6c64d 100644
 --- a/src/winio.c
 +++ b/src/winio.c
 @@ -29,6 +29,9 @@
@@ -718,7 +703,7 @@ index d74c6fe..f7fc817 100644
  #endif
  
  #ifdef REVISION
-@@ -1906,7 +1909,11 @@ char *display_string(const char *text, size_t column, size_t span,
+@@ -1910,7 +1913,11 @@ char *display_string(const char *text, size_t column, size_t span,
  		}
  
  		/* Determine whether the character takes zero, one, or two columns. */

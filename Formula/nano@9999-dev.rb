@@ -1,9 +1,14 @@
+require "#{Tap.fetch("z80oolong/eaw").path}/lib/extend.rb"
+ENV.extend(EnvExtend)
+
 class NanoAT9999Dev < Formula
+  include DiffDataMixin
+
   desc "Free (GNU) replacement for the Pico text editor"
   homepage "https://www.nano-editor.org/"
 
-  CURRENT_COMMIT = "8d49be96d645436998da814705acc3734a4c1ff3".freeze
-  url "https://git.savannah.gnu.org/git/nano.git", revision: CURRENT_COMMIT
+  CURRENT_COMMIT = "fc6070d40556c6f8b507ada4fcba4790e814441e".freeze
+  url "git://git.sv.gnu.org/nano.git", revision: CURRENT_COMMIT
   version "git-#{CURRENT_COMMIT[0..7]}"
   license "GPL-3.0-or-later"
   revision 3
@@ -30,10 +35,12 @@ class NanoAT9999Dev < Formula
 
     ENV.replace_rpath old_curses_f.lib     => new_curses_f.lib,
                       old_curses_f.opt_lib => new_curses_f.opt_lib
-    ENV.append "CFLAGS", "-I#{Formula["z80oolong/eaw/ncurses-eaw@6.5"].opt_include}"
-    ENV.append "CPPFLAGS", "-I#{Formula["z80oolong/eaw/ncurses-eaw@6.5"].opt_include}"
-    ENV.append "LDFLAGS", "-L#{Formula["z80oolong/eaw/ncurses-eaw@6.5"].opt_lib}"
+    ENV.append "NCURSESW_CFLAGS", "-I#{new_curses_f.opt_include}"
+    ENV.append "NCURSESW_LIBS", "-L#{new_curses_f.opt_lib} -lncursesw"
+    ENV.append "NCURSES_CFLAGS", "-I#{new_curses_f.opt_include}"
+    ENV.append "NCURSES_LIBS", "-L#{new_curses_f.opt_lib} -lncurses"
     ENV["LC_ALL"] = "C"
+    ENV["HOMEBREW_ACLOCAL_PATH"] = "#{Formula["pkgconf"].opt_share}/aclocal"
 
     args =  std_configure_args
     args << "--disable-dependency-tracking"
@@ -44,7 +51,7 @@ class NanoAT9999Dev < Formula
     args << "--enable-nanorc"
     args << "--enable-utf8"
 
-    system "sh", "autogen.sh"
+    system "sh", "./autogen.sh"
     system "./configure", *args
     system "make"
     system "make", "install"
@@ -59,10 +66,6 @@ class NanoAT9999Dev < Formula
     EOS
   end
 
-  def diff_data
-    path.readlines(nil).first.gsub(/^.*\n__END__\n/m, "")
-  end
-
   test do
     ENV["LC_ALL"] = "C"
     output = shell_output("#{bin}/nano --version")
@@ -71,40 +74,10 @@ class NanoAT9999Dev < Formula
   end
 end
 
-module EnvExtend
-  def replace_rpath(**replace_list)
-    replace_list = replace_list.each_with_object({}) do |(old, new), result|
-      result[old.to_s] = new.to_s
-    end
-
-    if (rpaths = fetch("HOMEBREW_RPATH_PATHS", false))
-      self["HOMEBREW_RPATH_PATHS"] = (rpaths.split(":").map do |rpath|
-        replace_list.fetch(rpath, rpath)
-      end).join(":")
-    end
-  end
-end
-
-ENV.extend(EnvExtend)
-
 __END__
 warning: refname 'upstream' is ambiguous.
-diff --git a/autogen.sh b/autogen.sh
-index facc05d8..3290125f 100755
---- a/autogen.sh
-+++ b/autogen.sh
-@@ -1,7 +1,8 @@
- #!/bin/sh
- # Generate configure & friends for GIT users.
- 
--gnulib_url="git://git.sv.gnu.org/gnulib.git"
-+#gnulib_url="git://git.sv.gnu.org/gnulib.git"
-+gnulib_url="https://github.com/coreutils/gnulib.git"
- gnulib_hash="9b20d162b9cb002c3205921af2838c58996926b7"
- 
- modules="
 diff --git a/configure.ac b/configure.ac
-index 4fa98373..2dc811c4 100644
+index 94ce8716..afa90f25 100644
 --- a/configure.ac
 +++ b/configure.ac
 @@ -72,11 +72,19 @@ AM_CONDITIONAL(BUILDING_FROM_GIT, test x$from_git = xyes)
@@ -112,7 +85,7 @@ index 4fa98373..2dc811c4 100644
  
  if test x$from_git = xyes; then
 +	if true; then
-+	if test ! -f HOMEBREW_PREFIX/share/aclocal/pkg.m4; then
++	if test ! -f $HOMEBREW_ACLOCAL_PATH/pkg.m4; then
 +		AC_MSG_ERROR([
 +  *** The pkg.m4 macros are missing. ***
 +  *** The pkg-config package needs to be installed when building from git. ***])
@@ -128,7 +101,7 @@ index 4fa98373..2dc811c4 100644
  	if test "$ac_cv_path_MSGFMT" = ":"; then
  		AC_MSG_ERROR([
 diff --git a/src/chars.c b/src/chars.c
-index e6b5783d..236d819f 100644
+index 25f7e815..44dc2b96 100644
 --- a/src/chars.c
 +++ b/src/chars.c
 @@ -28,6 +28,410 @@
@@ -542,7 +515,7 @@ index e6b5783d..236d819f 100644
  #ifdef ENABLE_SPELLER
  /* Return TRUE when the given character is some kind of letter. */
  bool is_alpha_char(const char *c)
-@@ -219,7 +623,11 @@ bool is_doublewidth(const char *ch)
+@@ -221,7 +625,11 @@ bool is_doublewidth(const char *ch)
  	if (mbtowide(&wc, ch) < 0)
  		return FALSE;
  
@@ -554,7 +527,7 @@ index e6b5783d..236d819f 100644
  }
  
  /* Return TRUE when the given character occupies zero cells. */
-@@ -240,7 +648,11 @@ bool is_zerowidth(const char *ch)
+@@ -242,7 +650,11 @@ bool is_zerowidth(const char *ch)
  		return FALSE;
  #endif
  
@@ -566,7 +539,7 @@ index e6b5783d..236d819f 100644
  }
  #endif /* ENABLE_UTF8 */
  
-@@ -325,7 +737,11 @@ int advance_over(const char *string, size_t *column)
+@@ -328,7 +740,11 @@ int advance_over(const char *string, size_t *column)
  				return 1;
  			}
  
@@ -579,27 +552,27 @@ index e6b5783d..236d819f 100644
  #if defined(__OpenBSD__)
  			*column += (width < 0 || wc >= 0xF0000) ? 1 : width;
 diff --git a/src/definitions.h b/src/definitions.h
-index 020f8d38..f307d617 100644
+index d2d8d12c..1c4b0173 100644
 --- a/src/definitions.h
 +++ b/src/definitions.h
-@@ -371,6 +371,12 @@ enum {
- 	LET_THEM_ZAP,
- 	BREAK_LONG_LINES,
- 	JUMPY_SCROLLING,
+@@ -377,6 +377,12 @@ enum {
+ 	EMPTY_LINE,
+ 	INDICATOR,
+ 	STATEFLAGS,
 +#ifndef NO_USE_UTF8CJK
 +	UTF8CJK,
 +#ifndef NO_USE_UTF8CJK_EMOJI
 +	UTF8EMOJI,
 +#endif /* NO_USE_UTF8CJK_EMOJI */
 +#endif /* NO_USE_UTF8CJK */
- 	EMPTY_LINE,
- 	INDICATOR,
- 	BOOKSTYLE,
+ 	MINIBAR
+ };
+ 
 diff --git a/src/global.c b/src/global.c
-index d602bd80..1165caf4 100644
+index a7549ceb..6590218f 100644
 --- a/src/global.c
 +++ b/src/global.c
-@@ -105,8 +105,12 @@ int didfind = 0;
+@@ -107,8 +107,12 @@ int didfind = 0;
  char *present_path = NULL;
  		/* The current browser directory when trying to do tab completion. */
  
@@ -613,10 +586,10 @@ index d602bd80..1165caf4 100644
  int controlleft, controlright, controlup, controldown;
  int controlhome, controlend;
 diff --git a/src/nano.c b/src/nano.c
-index c6bb0276..ad1e834a 100644
+index 9d3cab54..40e57c55 100644
 --- a/src/nano.c
 +++ b/src/nano.c
-@@ -647,6 +647,14 @@ void usage(void)
+@@ -637,6 +637,14 @@ void usage(void)
  #ifdef HAVE_LIBMAGIC
  	print_opt("-!", "--magic", N_("Also try magic to determine syntax"));
  #endif
@@ -631,7 +604,7 @@ index c6bb0276..ad1e834a 100644
  #ifndef NANO_TINY
  	print_opt("-@", "--colonparsing", N_("Accept 'filename:linenumber' notation"));
  	print_opt("-%", "--stateflags", N_("Show some states on the title bar"));
-@@ -1848,6 +1856,14 @@ int main(int argc, char **argv)
+@@ -1837,6 +1845,14 @@ int main(int argc, char **argv)
  #ifdef HAVE_LIBMAGIC
  		{"magic", 0, NULL, '!'},
  #endif
@@ -646,7 +619,7 @@ index c6bb0276..ad1e834a 100644
  		{NULL, 0, NULL, 0}
  	};
  
-@@ -1878,7 +1894,16 @@ int main(int argc, char **argv)
+@@ -1867,7 +1883,16 @@ int main(int argc, char **argv)
  #endif
  
  #ifdef ENABLE_NLS
@@ -663,7 +636,7 @@ index c6bb0276..ad1e834a 100644
  	textdomain(PACKAGE);
  #endif
  
-@@ -1889,8 +1914,18 @@ int main(int argc, char **argv)
+@@ -1878,8 +1903,18 @@ int main(int argc, char **argv)
  	if (*(tail(argv[0])) == 'r')
  		SET(RESTRICTED);
  
@@ -682,7 +655,7 @@ index c6bb0276..ad1e834a 100644
  		switch (optchr) {
  #ifndef NANO_TINY
  			case 'A':
-@@ -2135,6 +2170,19 @@ int main(int argc, char **argv)
+@@ -2124,6 +2159,19 @@ int main(int argc, char **argv)
  				SET(USE_MAGIC);
  				break;
  #endif
@@ -702,7 +675,7 @@ index c6bb0276..ad1e834a 100644
  #ifndef NANO_TINY
  			case 0xCC:
  				SET(WHITESPACE_DISPLAY);
-@@ -2172,6 +2220,21 @@ int main(int argc, char **argv)
+@@ -2165,6 +2213,21 @@ int main(int argc, char **argv)
  	if (getenv("TERM") == NULL)
  		putenv("TERM=vt220");
  
@@ -725,7 +698,7 @@ index c6bb0276..ad1e834a 100644
  	if (initscr() == NULL)
  		exit(1);
 diff --git a/src/prototypes.h b/src/prototypes.h
-index 4759481e..e68900ec 100644
+index d676d094..98b22eac 100644
 --- a/src/prototypes.h
 +++ b/src/prototypes.h
 @@ -68,7 +68,11 @@ extern int didfind;
@@ -741,10 +714,10 @@ index 4759481e..e68900ec 100644
  extern int controlleft, controlright;
  extern int controlup, controldown;
 diff --git a/src/rcfile.c b/src/rcfile.c
-index 698e74c3..a06ba9e4 100644
+index 9bb628f7..7bcfe50b 100644
 --- a/src/rcfile.c
 +++ b/src/rcfile.c
-@@ -137,6 +137,14 @@ static const rcoption rcopts[] = {
+@@ -138,6 +138,14 @@ static const rcoption rcopts[] = {
  	{"errorcolor", 0},
  	{"keycolor", 0},
  	{"functioncolor", 0},
@@ -760,7 +733,7 @@ index 698e74c3..a06ba9e4 100644
  	{NULL, 0}
  };
 diff --git a/src/winio.c b/src/winio.c
-index c39c57ae..46d42987 100644
+index 6a9949d5..aa0ec7a4 100644
 --- a/src/winio.c
 +++ b/src/winio.c
 @@ -29,6 +29,9 @@
@@ -773,7 +746,7 @@ index c39c57ae..46d42987 100644
  #endif
  
  #ifdef REVISION
-@@ -1912,7 +1915,11 @@ char *display_string(const char *text, size_t column, size_t span,
+@@ -1908,7 +1911,11 @@ char *display_string(const char *text, size_t column, size_t span,
  		}
  
  		/* Determine whether the character takes zero, one, or two columns. */

@@ -1,8 +1,13 @@
+require "#{Tap.fetch("z80oolong/eaw").path}/lib/extend.rb"
+ENV.extend(EnvExtend)
+
 class NeomuttAT9999Dev < Formula
+  include DiffDataMixin
+
   desc "E-mail reader with support for Notmuch, NNTP and much more"
   homepage "https://neomutt.org/"
 
-  CURRENT_COMMIT = "1e05a331179049541ae79051be2afec179d18987".freeze
+  CURRENT_COMMIT = "3aae370b8b51fa5ec2a5e2ed1f2c15d90d5a354d".freeze
   url "https://github.com/neomutt/neomutt.git", revision: CURRENT_COMMIT
   version "git-#{CURRENT_COMMIT[0..7]}"
   license "GPL-2.0-or-later"
@@ -18,7 +23,6 @@ class NeomuttAT9999Dev < Formula
   depends_on "lua"
   depends_on "notmuch"
   depends_on "openssl@1.1"
-  depends_on "tokyo-cabinet"
   depends_on "z80oolong/eaw/ncurses-eaw@6.5"
   unless OS.mac?
     depends_on "pkgconf" => :build
@@ -34,9 +38,9 @@ class NeomuttAT9999Dev < Formula
 
     ENV.replace_rpath old_curses_f.lib     => new_curses_f.lib,
                       old_curses_f.opt_lib => new_curses_f.opt_lib
-    ENV.append "CFLAGS",   "-I#{Formula["z80oolong/eaw/ncurses-eaw@6.5"].opt_include}"
-    ENV.append "CPPFLAGS", "-I#{Formula["z80oolong/eaw/ncurses-eaw@6.5"].opt_include}"
-    ENV.append "LDFLAGS",  "-L#{Formula["z80oolong/eaw/ncurses-eaw@6.5"].opt_lib}"
+    ENV.append "CFLAGS",   "-I#{new_curses_f.opt_include}"
+    ENV.append "CPPFLAGS", "-I#{new_curses_f.opt_include}"
+    ENV.append "LDFLAGS",  "-L#{new_curses_f.opt_lib}"
     ENV["XML_CATALOG_FILES"] = "#{etc}/xml/catalog"
 
     args = std_configure_args
@@ -47,10 +51,9 @@ class NeomuttAT9999Dev < Formula
     args << "--lmdb"
     args << "--notmuch"
     args << "--sasl"
-    args << "--tokyocabinet"
     args << "--with-ssl=#{Formula["openssl@1.1"].opt_prefix}"
     args << "--with-ui=ncurses"
-    args << "--with-ncurses=#{Formula["z80oolong/eaw/ncurses-eaw@6.5"].opt_prefix}"
+    args << "--with-ncurses=#{new_curses_f.opt_prefix}"
     args << "--lua"
     args << "--with-lua=#{Formula["lua"].prefix}"
 
@@ -66,10 +69,6 @@ class NeomuttAT9999Dev < Formula
     EOS
   end
 
-  def diff_data
-    path.readlines(nil).first.gsub(/^.*\n__END__\n/m, "")
-  end
-
   test do
     ENV["LC_ALL"] = "C"
     output = shell_output("#{bin}/neomutt -F /dev/null -Q debug_level 2>/dev/null || true")
@@ -81,24 +80,7 @@ class NeomuttAT9999Dev < Formula
   end
 end
 
-module EnvExtend
-  def replace_rpath(**replace_list)
-    replace_list = replace_list.each_with_object({}) do |(old, new), result|
-      result[old.to_s] = new.to_s
-    end
-
-    if (rpaths = fetch("HOMEBREW_RPATH_PATHS", false))
-      self["HOMEBREW_RPATH_PATHS"] = (rpaths.split(":").map do |rpath|
-        replace_list.fetch(rpath, rpath)
-      end).join(":")
-    end
-  end
-end
-
-ENV.extend(EnvExtend)
-
 __END__
-warning: refname 'upstream' is ambiguous.
 diff --git a/editor/enter.c b/editor/enter.c
 index 4aae85b54..6299e5217 100644
 --- a/editor/enter.c
@@ -116,7 +98,7 @@ index 4aae85b54..6299e5217 100644
  /**
   * editor_backspace - Delete the char in front of the cursor
 diff --git a/editor/window.c b/editor/window.c
-index 5efc87038..b4848b4ba 100644
+index 33f1aa3ba..ced71b372 100644
 --- a/editor/window.c
 +++ b/editor/window.c
 @@ -69,7 +69,11 @@ static const struct Mapping EditorHelp[] = {
@@ -132,7 +114,7 @@ index 5efc87038..b4848b4ba 100644
      return mutt_addwch(win, wc);
    if (!(wc & ~0x7f))
 diff --git a/expando/format.c b/expando/format.c
-index 45d23f1b5..02e46ec66 100644
+index a64d93ecb..dcc464b6c 100644
 --- a/expando/format.c
 +++ b/expando/format.c
 @@ -145,7 +145,11 @@ int format_string(struct Buffer *buf, int min_cols, int max_cols, enum FormatJus
@@ -160,10 +142,10 @@ index 45d23f1b5..02e46ec66 100644
  
      // It'll require _some_ space
 diff --git a/gui/curs_lib.c b/gui/curs_lib.c
-index 60accf806..e14fe8a97 100644
+index 428473366..563b376c9 100644
 --- a/gui/curs_lib.c
 +++ b/gui/curs_lib.c
-@@ -358,7 +358,11 @@ void mutt_paddstr(struct MuttWindow *win, int n, const char *s)
+@@ -359,7 +359,11 @@ void mutt_paddstr(struct MuttWindow *win, int n, const char *s)
      }
      if (!IsWPrint(wc))
        wc = '?';
@@ -175,7 +157,7 @@ index 60accf806..e14fe8a97 100644
      if (w >= 0)
      {
        if (w > n)
-@@ -408,7 +412,11 @@ size_t mutt_wstr_trunc(const char *src, size_t maxlen, size_t maxwid, size_t *wi
+@@ -409,7 +413,11 @@ size_t mutt_wstr_trunc(const char *src, size_t maxlen, size_t maxwid, size_t *wi
        wc = ReplacementChar;
      }
  
@@ -187,7 +169,7 @@ index 60accf806..e14fe8a97 100644
      /* hack because MUTT_TREE symbols aren't turned into characters
       * until rendered by print_enriched_string() */
      if ((cw < 0) && (src[0] == MUTT_SPECIAL_INDEX))
-@@ -483,7 +491,11 @@ size_t mutt_strnwidth(const char *s, size_t n)
+@@ -487,7 +495,11 @@ size_t mutt_strnwidth(const char *s, size_t n)
      }
      if (!IsWPrint(wc))
        wc = '?';
@@ -200,10 +182,10 @@ index 60accf806..e14fe8a97 100644
    return w;
  }
 diff --git a/gui/msgwin.c b/gui/msgwin.c
-index c8e18a435..3ccf8617f 100644
+index a5bb653ab..fda6413ea 100644
 --- a/gui/msgwin.c
 +++ b/gui/msgwin.c
-@@ -131,7 +131,11 @@ void measure(struct MwCharArray *chars, const char *str, const struct AttrColor
+@@ -133,7 +133,11 @@ void measure(struct MwCharArray *chars, const char *str, const struct AttrColor
        consumed = str_len;
      }
  
@@ -216,10 +198,10 @@ index c8e18a435..3ccf8617f 100644
        wchar_width = 1;
  
 diff --git a/key/dump.c b/key/dump.c
-index 5be223f6d..cc127e88c 100644
+index 3ef3a7196..b47128e48 100644
 --- a/key/dump.c
 +++ b/key/dump.c
-@@ -297,7 +297,11 @@ void escape_macro(const char *macro, struct Buffer *buf)
+@@ -69,7 +69,11 @@ void escape_macro(const char *macro, struct Buffer *buf)
        wc = ReplacementChar;
      }
  
@@ -232,10 +214,10 @@ index 5be223f6d..cc127e88c 100644
      {
        char tmp[MB_LEN_MAX * 2] = { 0 };
 diff --git a/mutt/mbyte.c b/mutt/mbyte.c
-index 2acbb90b0..bac7072fe 100644
+index 5598d14f9..542743e4d 100644
 --- a/mutt/mbyte.c
 +++ b/mutt/mbyte.c
-@@ -43,6 +43,430 @@
+@@ -44,6 +44,430 @@
  
  bool OptLocales; ///< (pseudo) set if user has valid locale definition
  
@@ -666,7 +648,7 @@ index 2acbb90b0..bac7072fe 100644
  /**
   * mutt_mb_charlen - Count the bytes in a (multibyte) character
   * @param[in]  s     String to be examined
-@@ -63,7 +487,11 @@ int mutt_mb_charlen(const char *s, int *width)
+@@ -64,7 +488,11 @@ int mutt_mb_charlen(const char *s, int *width)
    size_t n = mutt_str_len(s);
    size_t k = mbrtowc(&wc, s, n, &mbstate);
    if (width)
@@ -678,7 +660,7 @@ index 2acbb90b0..bac7072fe 100644
    return ((k == ICONV_ILLEGAL_SEQ) || (k == ICONV_BUF_TOO_SMALL)) ? -1 : k;
  }
  
-@@ -164,7 +592,11 @@ int mutt_mb_width(const char *str, int col, bool indent)
+@@ -165,7 +593,11 @@ int mutt_mb_width(const char *str, int col, bool indent)
        consumed = str_len;
      }
  
@@ -690,7 +672,7 @@ index 2acbb90b0..bac7072fe 100644
      if (wchar_width < 0)
        wchar_width = 1;
  
-@@ -197,7 +629,11 @@ int mutt_mb_width(const char *str, int col, bool indent)
+@@ -198,7 +630,11 @@ int mutt_mb_width(const char *str, int col, bool indent)
   */
  int mutt_mb_wcwidth(wchar_t wc)
  {
@@ -703,10 +685,10 @@ index 2acbb90b0..bac7072fe 100644
      return n;
    if (!(wc & ~0x7f))
 diff --git a/mutt_config.c b/mutt_config.c
-index edb4510be..474ddb831 100644
+index 6bd97f36d..1755bf909 100644
 --- a/mutt_config.c
 +++ b/mutt_config.c
-@@ -788,6 +788,16 @@ static struct ConfigDef MainVars[] = {
+@@ -629,6 +629,16 @@ struct ConfigDef MainVars[] = {
    { "wrap_search", DT_BOOL, true, 0, NULL,
      "Wrap around when the search hits the end"
    },
@@ -724,10 +706,10 @@ index edb4510be..474ddb831 100644
    { "cursor_overlay",            D_INTERNAL_DEPRECATED|DT_BOOL,   0, IP "2020-07-20" },
    { "escape",                    D_INTERNAL_DEPRECATED|DT_STRING, 0, IP "2021-03-18" },
 diff --git a/pager/display.c b/pager/display.c
-index 5a48634ce..a50be9b00 100644
+index ba9dfd4a2..e04e89bb9 100644
 --- a/pager/display.c
 +++ b/pager/display.c
-@@ -974,7 +974,11 @@ static int format_line(struct MuttWindow *win, struct Line **lines, int line_num
+@@ -981,7 +981,11 @@ static int format_line(struct MuttWindow *win, struct Line **lines, int line_num
        {
          space = ch;
        }
