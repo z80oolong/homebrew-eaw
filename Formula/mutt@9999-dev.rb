@@ -1,8 +1,13 @@
+require "#{Tap.fetch("z80oolong/eaw").path}/lib/extend.rb"
+ENV.extend(EnvExtend)
+
 class MuttAT9999Dev < Formula
+  include DiffDataMixin
+
   desc "Mongrel of mail user agents (part elm, pine, mush, mh, etc.)"
   homepage "http://www.mutt.org/"
 
-  CURRENT_COMMIT = "4fb4575a4bc23a739a16db810c13f2a4942786f8".freeze
+  CURRENT_COMMIT = "844fcfe7861631359ee789e4231d322144a1bd3b".freeze
   url "https://gitlab.com/muttmua/mutt.git", revision: CURRENT_COMMIT
   version "git-#{CURRENT_COMMIT[0..7]}"
   license "GPL-2.0-or-later"
@@ -16,7 +21,7 @@ class MuttAT9999Dev < Formula
   depends_on "perl" => :build
   depends_on "glibc"
   depends_on "gpgme"
-  depends_on "openssl@3"
+  depends_on "openssl@4"
   depends_on "tokyo-cabinet"
   depends_on "z80oolong/eaw/ncurses-eaw@6.5"
 
@@ -26,7 +31,7 @@ class MuttAT9999Dev < Formula
 
   resource "html" do
     url "https://muttmua.gitlab.io/mutt/manual-dev.html"
-    sha256 "957c9d7982df5fc7bdf976da02f327f2effd3acd87e47d703e943c127796e247"
+    sha256 "9065fae00bf57b8f973e287ba7f69487cc7ba5c782593a15527767697f5c620d"
   end
 
   patch :p1, :DATA
@@ -54,7 +59,7 @@ class MuttAT9999Dev < Formula
     args << "--enable-sidebar"
     args << "--enable-smtp"
     args << "--with-gss"
-    args << "--with-ssl=#{Formula["openssl@3"].opt_prefix}"
+    args << "--with-ssl=#{Formula["openssl@4"].opt_prefix}"
     args << "--with-tokyocabinet"
     args << "--enable-gpgme"
     args << (OS.mac? ? "--with-sasl" : "--with-sasl2")
@@ -64,7 +69,8 @@ class MuttAT9999Dev < Formula
     # This permits the `mutt_dotlock` file to be installed under a group
     # that isn't `mail`.
     # https://github.com/Homebrew/homebrew/issues/45400
-    inreplace "Makefile", /^DOTLOCK_GROUP =.*$/, "DOTLOCK_GROUP = #{effective_group}" unless user_in_mail_group
+    inreplace "Makefile", /^DOTLOCK_GROUP =.*$/,
+      "DOTLOCK_GROUP = #{effective_group}" unless user_in_mail_group
     system "make", "install"
 
     doc.install resource("html")
@@ -86,10 +92,6 @@ class MuttAT9999Dev < Formula
     EOS
   end
 
-  def diff_data
-    path.readlines(nil).first.gsub(/^.*\n__END__\n/m, "")
-  end
-
   test do
     ENV["LC_ALL"] = "C"
     assert_equal "utf8_cjk is unset", shell_output("#{bin}/mutt -F /dev/null -Q utf8_cjk").strip
@@ -100,90 +102,73 @@ class MuttAT9999Dev < Formula
   end
 end
 
-module EnvExtend
-  def replace_rpath(**replace_list)
-    replace_list = replace_list.each_with_object({}) do |(old, new), result|
-      result[old.to_s] = new.to_s
-    end
-
-    if (rpaths = fetch("HOMEBREW_RPATH_PATHS", false))
-      self["HOMEBREW_RPATH_PATHS"] = (rpaths.split(":").map do |rpath|
-        replace_list.fetch(rpath, rpath)
-      end).join(":")
-    end
-  end
-end
-
-ENV.extend(EnvExtend)
-
 __END__
-warning: refname 'upstream' is ambiguous.
 diff --git a/curs_lib.c b/curs_lib.c
-index d2b9b058..a392d3a7 100644
+index 5c93cbb0..64587730 100644
 --- a/curs_lib.c
 +++ b/curs_lib.c
-@@ -1384,7 +1384,11 @@ void mutt_format_string (char *dest, size_t destlen,
+@@ -1414,7 +1414,11 @@ void mutt_format_string(char *dest, size_t destlen,
        else
-         if (!IsWPrint (wc))
+         if (!IsWPrint(wc))
            wc = '?';
 +#ifndef NO_USE_MKWCWIDTH
-+      w = mutt_wcwidth (wc);
++      w = mutt_wcwidth(wc);
 +#else
-       w = wcwidth (wc);
+       w = wcwidth(wc);
 +#endif
      }
      if (w >= 0)
      {
-@@ -1513,7 +1517,11 @@ void mutt_paddstr (int n, const char *s)
+@@ -1543,7 +1547,11 @@ void mutt_paddstr(int n, const char *s)
      }
-     if (!IsWPrint (wc))
+     if (!IsWPrint(wc))
        wc = '?';
 +#ifndef NO_USE_MKWCWIDTH
-+    w = mutt_wcwidth (wc);
++    w = mutt_wcwidth(wc);
 +#else
-     w = wcwidth (wc);
+     w = wcwidth(wc);
 +#endif
      if (w >= 0)
      {
        if (w > n)
-@@ -1550,7 +1558,11 @@ size_t mutt_wstr_trunc (const char *src, size_t maxlen, size_t maxwid, size_t *w
+@@ -1580,7 +1588,11 @@ size_t mutt_wstr_trunc(const char *src, size_t maxlen, size_t maxwid, size_t *wi
        cl = (cl == (size_t)(-1)) ? 1 : n;
-       wc = replacement_char ();
+       wc = replacement_char();
      }
 +#ifndef NO_USE_MKWCWIDTH
-+    cw = mutt_wcwidth (wc);
++    cw = mutt_wcwidth(wc);
 +#else
-     cw = wcwidth (wc);
+     cw = wcwidth(wc);
 +#endif
      /* hack because MUTT_TREE symbols aren't turned into characters
       * until rendered by print_enriched_string (#3364) */
      if (cw < 0 && cl == 1 && src[0] && src[0] < MUTT_TREE_MAX)
-@@ -1588,7 +1600,11 @@ int mutt_charlen (const char *s, int *width)
-   memset (&mbstate, 0, sizeof (mbstate));
-   k = mbrtowc (&wc, s, n, &mbstate);
+@@ -1618,7 +1630,11 @@ int mutt_charlen(const char *s, int *width)
+   memset(&mbstate, 0, sizeof(mbstate));
+   k = mbrtowc(&wc, s, n, &mbstate);
    if (width)
 +#ifndef NO_USE_MKWCWIDTH
-+    *width = mutt_wcwidth (wc);
++    *width = mutt_wcwidth(wc);
 +#else
-     *width = wcwidth (wc);
+     *width = wcwidth(wc);
 +#endif
    return (k == (size_t)(-1) || k == (size_t)(-2)) ? -1 : k;
  }
  
-@@ -1620,7 +1636,11 @@ int mutt_strwidth (const char *s)
+@@ -1650,7 +1666,11 @@ int mutt_strwidth(const char *s)
      }
-     if (!IsWPrint (wc))
+     if (!IsWPrint(wc))
        wc = '?';
 +#ifndef NO_USE_MKWCWIDTH
-+    w += mutt_wcwidth (wc);
++    w += mutt_wcwidth(wc);
 +#else
-     w += wcwidth (wc);
+     w += wcwidth(wc);
 +#endif
    }
    return w;
  }
 diff --git a/enter.c b/enter.c
-index 54e81178..75e84192 100644
+index fc6f7ee9..9dde0539 100644
 --- a/enter.c
 +++ b/enter.c
 @@ -27,6 +27,9 @@
@@ -198,73 +183,73 @@ index 54e81178..75e84192 100644
  
 @@ -39,7 +42,11 @@ enum
  
- static int my_wcwidth (wchar_t wc)
+ static int my_wcwidth(wchar_t wc)
  {
 +#ifndef NO_USE_MKWCWIDTH
-+  int n = mutt_wcwidth (wc);
++  int n = mutt_wcwidth(wc);
 +#else
-   int n = wcwidth (wc);
+   int n = wcwidth(wc);
 +#endif
-   if (IsWPrint (wc) && n > 0)
+   if (IsWPrint(wc) && n > 0)
      return n;
    if (!(wc & ~0x7f))
-@@ -50,7 +57,11 @@ static int my_wcwidth (wchar_t wc)
+@@ -50,7 +57,11 @@ static int my_wcwidth(wchar_t wc)
  }
  
  /* combining mark / non-spacing character */
 +#ifndef NO_USE_MKWCWIDTH
-+#define COMB_CHAR(wc) (IsWPrint (wc) && !mutt_wcwidth (wc))
++#define COMB_CHAR(wc) (IsWPrint(wc) && !mutt_wcwidth(wc))
 +#else
- #define COMB_CHAR(wc) (IsWPrint (wc) && !wcwidth (wc))
+ #define COMB_CHAR(wc) (IsWPrint(wc) && !wcwidth(wc))
 +#endif
  
- static int my_wcswidth (const wchar_t *s, size_t n)
+ static int my_wcswidth(const wchar_t *s, size_t n)
  {
-@@ -62,7 +73,11 @@ static int my_wcswidth (const wchar_t *s, size_t n)
+@@ -62,7 +73,11 @@ static int my_wcswidth(const wchar_t *s, size_t n)
  
- static int my_addwch (wchar_t wc)
+ static int my_addwch(wchar_t wc)
  {
 +#ifndef NO_USE_MKWCWIDTH
-+  int n = mutt_wcwidth (wc);
++  int n = mutt_wcwidth(wc);
 +#else
-   int n = wcwidth (wc);
+   int n = wcwidth(wc);
 +#endif
-   if (IsWPrint (wc) && n > 0)
-     return mutt_addwch (wc);
+   if (IsWPrint(wc) && n > 0)
+     return mutt_addwch(wc);
    if (!(wc & ~0x7f))
 diff --git a/help.c b/help.c
-index 5094313c..6fcd68ce 100644
+index e1e839fd..4b135d20 100644
 --- a/help.c
 +++ b/help.c
-@@ -109,7 +109,11 @@ static int print_macro (FILE *f, int maxwidth, const char **macro)
-       wc = replacement_char ();
+@@ -109,7 +109,11 @@ static int print_macro(FILE *f, int maxwidth, const char **macro)
+       wc = replacement_char();
      }
      /* glibc-2.1.3's wcwidth() returns 1 for unprintable chars! */
 +#ifndef NO_USE_MKWCWIDTH
-+    if (IsWPrint (wc) && (w = mutt_wcwidth (wc)) >= 0)
++    if (IsWPrint(wc) && (w = mutt_wcwidth(wc)) >= 0)
 +#else
-     if (IsWPrint (wc) && (w = wcwidth (wc)) >= 0)
+     if (IsWPrint(wc) && (w = wcwidth(wc)) >= 0)
 +#endif
      {
        if (w > n)
          break;
-@@ -174,7 +178,11 @@ static int get_wrapped_width (const char *t, size_t wid)
+@@ -174,7 +178,11 @@ static int get_wrapped_width(const char *t, size_t wid)
      }
-     if (!IsWPrint (wc))
+     if (!IsWPrint(wc))
        wc = '?';
 +#ifndef NO_USE_MKWCWIDTH
-+    n += mutt_wcwidth (wc);
++    n += mutt_wcwidth(wc);
 +#else
-     n += wcwidth (wc);
+     n += wcwidth(wc);
 +#endif
    }
    if (n > wid)
      n = m;
 diff --git a/init.h b/init.h
-index 84e62fb4..1410dbbb 100644
+index 394d3d1d..3b972735 100644
 --- a/init.h
 +++ b/init.h
-@@ -4981,6 +4981,12 @@ struct option_t MuttVars[] = {
+@@ -5015,6 +5015,12 @@ struct option_t MuttVars[] = {
    {"xterm_set_titles",  DT_SYN,  R_NONE, {.p="ts_enabled"}, {.p=0} },
    /*
    */
@@ -278,10 +263,10 @@ index 84e62fb4..1410dbbb 100644
    { NULL, 0, 0, {.l=0}, {.l=0} }
  };
 diff --git a/mbyte.c b/mbyte.c
-index 34989356..fa884761 100644
+index 8e8b8719..00c01b5d 100644
 --- a/mbyte.c
 +++ b/mbyte.c
-@@ -88,6 +88,22 @@ void mutt_set_charset (char *charset)
+@@ -67,7 +67,329 @@ void mutt_set_charset(char *charset)
  #endif
  }
  
@@ -301,27 +286,363 @@ index 34989356..fa884761 100644
 +}
 +#endif
 +
- #ifndef HAVE_WC_FUNCS
- 
++#ifndef HAVE_WC_FUNCS
++/*
++ * For systems that don't have them, we provide here our own
++ * implementations of wcrtomb(), mbrtowc(), iswprint() and wcwidth().
++ * Instead of using the locale, as these functions normally would,
++ * we use Mutt's Charset variable. We support 3 types of charset:
++ * (1) For 8-bit charsets, wchar_t uses the same encoding as char.
++ * (2) For UTF-8, wchar_t uses UCS.
++ * (3) For stateless Japanese encodings, we use UCS and convert
++ *     via UTF-8 using iconv.
++ * Unfortunately, we can't handle non-stateless encodings.
++ */
++
++static size_t wcrtomb_iconv (char *s, wchar_t wc, iconv_t cd)
++{
++  char buf[MB_LEN_MAX+1];
++  ICONV_CONST char *ib;
++  char *ob;
++  size_t ibl, obl;
++
++  if (s)
++  {
++    ibl = mutt_wctoutf8 (buf, wc, sizeof (buf));
++    if (ibl == (size_t)(-1))
++      return (size_t)(-1);
++    ib = buf;
++    ob = s;
++    obl = MB_LEN_MAX;
++    iconv (cd, &ib, &ibl, &ob, &obl);
++  }
++  else
++  {
++    ib = "";
++    ibl = 1;
++    ob = buf;
++    obl = sizeof (buf);
++    iconv (cd, &ib, &ibl, &ob, &obl);
++  }
++  return ob - s;
++}
++
++size_t wcrtomb (char *s, wchar_t wc, mbstate_t *ps)
++{
++  /* We only handle stateless encodings, so we can ignore ps. */
++
++  if (Charset_is_utf8)
++    return mutt_wctoutf8 (s, wc, MB_LEN_MAX);
++  else if (charset_from_utf8 != (iconv_t)(-1))
++    return wcrtomb_iconv (s, wc, charset_from_utf8);
++  else
++  {
++    if (!s)
++      return 1;
++    if (wc < 0x100)
++    {
++      *s = wc;
++      return 1;
++    }
++    errno = EILSEQ;
++    return (size_t)(-1);
++  }
++}
++
++size_t mbrtowc_iconv (wchar_t *pwc, const char *s, size_t n,
++                      mbstate_t *ps, iconv_t cd)
++{
++  static mbstate_t mbstate;
++  ICONV_CONST char *ib, *ibmax;
++  char *ob, *t;
++  size_t ibl, obl, k, r;
++  char bufi[8], bufo[6];
++
++  if (!n)
++    return (size_t)(-2);
++
++  t = memchr (ps, 0, sizeof (*ps));
++  k = t ? (t - (char *)ps) : sizeof (*ps);
++  if (k > sizeof (bufi))
++    k = 0;
++  if (k)
++  {
++    /* use the buffer for input */
++    memcpy (bufi, ps, k);
++    ib = bufi;
++    ibmax = bufi + (k + n < sizeof (bufi) ? k + n : sizeof (bufi));
++    memcpy (bufi + k, s, ibmax - bufi - k);
++  }
++  else
++  {
++    /* use the real input */
++    ib = (ICONV_CONST char*) s;
++    ibmax = (ICONV_CONST char*) s + n;
++  }
++
++  ob = bufo;
++  obl = sizeof (bufo);
++  ibl = 1;
++
++  for (;;)
++  {
++    r = iconv (cd, &ib, &ibl, &ob, &obl);
++    if (ob > bufo && (!k || ib > bufi + k))
++    {
++      /* we have a character */
++      memset (ps, 0, sizeof (*ps));
++      utf8rtowc (pwc, bufo, ob - bufo, &mbstate);
++      return (pwc && *pwc) ? (ib - (k ? bufi + k : s)) : 0;
++    }
++    else if (!r || (r == (size_t)(-1) && errno == EINVAL))
++    {
++      if (ib + ibl < ibmax)
++        /* try using more input */
++        ++ibl;
++      else if (k && ib > bufi + k && bufi + k + n > ibmax)
++      {
++        /* switch to using real input */
++        ib = (ICONV_CONST char*) s + (ib - bufi - k);
++        ibmax = (ICONV_CONST char*) s + n;
++        k = 0;
++        ++ibl;
++      }
++      else
++      {
++        /* save the state and give up */
++        memset (ps, 0, sizeof (*ps));
++        if (ibl <= sizeof (mbstate_t)) /* need extra condition here! */
++          memcpy (ps, ib, ibl);
++        return (size_t)(-2);
++      }
++    }
++    else
++    {
++      /* bad input */
++      errno = EILSEQ;
++      return (size_t)(-1);
++    }
++  }
++}
++
++size_t mbrtowc (wchar_t *pwc, const char *s, size_t n, mbstate_t *ps)
++{
++  static mbstate_t mbstate;
++
++  if (!ps)
++    ps = &mbstate;
++
++  if (Charset_is_utf8)
++    return utf8rtowc (pwc, s, n, ps);
++  else if (charset_to_utf8 != (iconv_t)(-1))
++    return mbrtowc_iconv (pwc, s, n, ps, charset_to_utf8);
++  else
++  {
++    if (!s)
++    {
++      memset(ps, 0, sizeof(*ps));
++      return 0;
++    }
++    if (!n)
++      return (size_t)-2;
++    if (pwc)
++      *pwc = (wchar_t)(unsigned char)*s;
++    return (*s != 0);
++  }
++}
++
++int iswprint (wint_t wc)
++{
++  if (Charset_is_utf8 || charset_is_ja)
++    return ((0x20 <= wc && wc < 0x7f) || 0xa0 <= wc);
++  else
++    return (0 <= wc && wc < 256) ? IsPrint (wc) : 0;
++}
++
++int iswspace (wint_t wc)
++{
++  if (Charset_is_utf8 || charset_is_ja)
++    return IS_ASCII_WS (wc);
++  else
++    return (0 <= wc && wc < 256) ? isspace (wc) : 0;  /* __SAFE_ISSPACE_CHECKED__ */
++}
++
++int iswblank (wint_t wc)
++{
++  if (Charset_is_utf8 || charset_is_ja)
++    return wc == 9 || wc == 32;
++  else
++    return (0 <= wc && wc < 256) ? isblank (wc) : 0;
++}
++
++static wint_t towupper_ucs (wint_t x)
++{
++  /* Only works for x < 0x130 */
++  if ((0x60 < x && x < 0x7b) || (0xe0 <= x && x < 0xff && x != 0xf7))
++    return x - 32;
++  else if (0x100 <= x && x < 0x130)
++    return x & ~1;
++  else if (x == 0xb5)
++    return 0x39c;
++  else if (x == 0xff)
++    return 0x178;
++  else
++    return x;
++}
++
++static int iswupper_ucs (wint_t x)
++{
++  /* Only works for x < 0x130 */
++  if ((0x60 < x && x < 0x7b) || (0xe0 <= x && x < 0xff && x != 0xf7))
++    return 0;
++  else if ((0x40 < x && x < 0x5b) || (0xbf < x && x < 0xde))
++    return 1;
++  else if (0x100 <= x && x < 0x130)
++    return 1;
++  else if (x == 0xb5)
++    return 1;
++  else if (x == 0xff)
++    return 0;
++  else
++    return 0;
++}
++
++static wint_t towlower_ucs (wint_t x)
++{
++  /* Only works for x < 0x130 */
++  if ((0x40 < x && x < 0x5b) || (0xc0 <= x && x < 0xdf && x != 0xd7))
++    return x + 32;
++  else if (0x100 <= x && x < 0x130)
++    return x | 1;
++  else
++    return x;
++}
++
++static int iswalnum_ucs (wint_t wc)
++{
++  /* Only works for x < 0x220 */
++  if (wc >= 0x100)
++    return 1;
++  else if (wc < 0x30)
++    return 0;
++  else if (wc < 0x3a)
++    return 1;
++  else if (wc < 0xa0)
++    return (0x40 < (wc & ~0x20) && (wc & ~0x20) < 0x5b);
++  else if (wc < 0xc0)
++    return (wc == 0xaa || wc == 0xb5 || wc == 0xba);
++  else
++    return !(wc == 0xd7 || wc == 0xf7);
++}
++
++static int iswalpha_ucs (wint_t wc)
++{
++  /* Only works for x < 0x220 */
++  if (wc >= 0x100)
++    return 1;
++  else if (wc < 0x3a)
++    return 0;
++  else if (wc < 0xa0)
++    return (0x40 < (wc & ~0x20) && (wc & ~0x20) < 0x5b);
++  else if (wc < 0xc0)
++    return (wc == 0xaa || wc == 0xb5 || wc == 0xba);
++  else
++    return !(wc == 0xd7 || wc == 0xf7);
++}
++
++wint_t towupper (wint_t wc)
++{
++  if (Charset_is_utf8 || charset_is_ja)
++    return towupper_ucs (wc);
++  else
++    return (0 <= wc && wc < 256) ? toupper (wc) : wc;
++}
++
++wint_t towlower (wint_t wc)
++{
++  if (Charset_is_utf8 || charset_is_ja)
++    return towlower_ucs (wc);
++  else
++    return (0 <= wc && wc < 256) ? tolower (wc) : wc;
++}
++
++int iswalnum (wint_t wc)
++{
++  if (Charset_is_utf8 || charset_is_ja)
++    return iswalnum_ucs (wc);
++  else
++    return (0 <= wc && wc < 256) ? isalnum (wc) : 0;
++}
++
++int iswalpha (wint_t wc)
++{
++  if (Charset_is_utf8 || charset_is_ja)
++    return iswalpha_ucs (wc);
++  else
++    return (0 <= wc && wc < 256) ? isalpha (wc) : 0;
++}
++
++int iswupper (wint_t wc)
++{
++  if (Charset_is_utf8 || charset_is_ja)
++    return iswupper_ucs (wc);
++  else
++    return (0 <= wc && wc < 256) ? isupper (wc) : 0;
++}
++#endif
++
+ #ifndef HAVE_WCWIDTH
++#ifndef NO_USE_MKWCWIDTH
  /*
+  * l10n for Japanese:
+  *   Symbols, Greek and Cyrillic in JIS X 0208, Japanese Kanji
+@@ -86,11 +408,20 @@ static int wcwidth_ja(wchar_t ucs)
+   else
+     return -1;
+ }
++#endif
+ 
+ int wcwidth_ucs(wchar_t ucs);
+ 
+ int wcwidth(wchar_t wc)
+ {
++#ifndef NO_USE_MKWCWIDTH
++  if (option(OPTUTF8CJKEMOJI))
++    return mk_wcwidth_cjk_emoji(wc);
++  else if (option(OPTUTF8CJK))
++    return mk_wcwidth_cjk(wc);
++  else
++    return mk_wcwidth(wc);
++#else
+   if (!Charset_is_utf8)
+   {
+     if (!charset_is_ja)
+@@ -112,6 +443,7 @@ int wcwidth(wchar_t wc)
+     }
+   }
+   return wcwidth_ucs(wc);
++#endif
+ }
+ #endif /* !HAVE_WCWIDTH */
+ 
 diff --git a/mbyte.h b/mbyte.h
-index 40499756..4a43e987 100644
+index 9822d573..8b6babef 100644
 --- a/mbyte.h
 +++ b/mbyte.h
-@@ -49,5 +49,8 @@ extern int Charset_is_utf8;
- size_t utf8rtowc (wchar_t *pwc, const char *s, size_t n, mbstate_t *_ps);
- wchar_t replacement_char (void);
- int is_display_corrupting_utf8 (wchar_t wc);
+@@ -9,5 +9,8 @@ void mutt_set_charset(char *charset);
+ extern int Charset_is_utf8;
+ wchar_t replacement_char(void);
+ int is_display_corrupting_utf8(wchar_t wc);
 +#ifndef NO_USE_MKWCWIDTH
-+extern int mutt_wcwidth (wchar_t wc);
++extern int mutt_wcwidth(wchar_t wc);
 +#endif
  
  #endif /* _MBYTE_H */
 diff --git a/mutt.h b/mutt.h
-index 75a45999..7efb5498 100644
+index 262c7e54..af1ea025 100644
 --- a/mutt.h
 +++ b/mutt.h
-@@ -621,6 +621,12 @@ enum
+@@ -610,6 +610,12 @@ enum
    OPTPGPSHOWUNUSABLE,
    OPTPGPAUTOINLINE,
    OPTPGPREPLYINLINE,
@@ -335,41 +656,39 @@ index 75a45999..7efb5498 100644
    /* pseudo options */
  
 diff --git a/pager.c b/pager.c
-index 1598a59e..f219f8b3 100644
+index fcadf26e..1855b33b 100644
 --- a/pager.c
 +++ b/pager.c
-@@ -1400,8 +1400,12 @@ static int format_line (struct line_t **lineInfo, int n, unsigned char *buf,
-     if (IsWPrint (wc) || (Charset_is_utf8 && wc == 0x00A0))
+@@ -1440,7 +1440,11 @@ static int format_line(struct line_t **lineInfo, int n, unsigned char *buf,
      {
        if (wc == ' ')
--        space = ch;
-+	space = ch;
+         space = ch;
 +#ifndef NO_USE_MKWCWIDTH
-+      t = mutt_wcwidth (wc);
++      t = mutt_wcwidth(wc);
 +#else
-       t = wcwidth (wc);
+       t = wcwidth(wc);
 +#endif
        if (col + t > wrap_cols)
          break;
        col += t;
 diff --git a/sendlib.c b/sendlib.c
-index f0e34d99..3e1b6d88 100644
+index 22061753..4f499c7d 100644
 --- a/sendlib.c
 +++ b/sendlib.c
-@@ -1917,7 +1917,11 @@ static int my_width (const char *p, int col, int flags)
+@@ -1963,7 +1963,11 @@ static int my_width(const char *p, int col, int flags)
        consumed = (consumed == (size_t)(-1)) ? 1 : n;
      }
  
 +#ifndef NO_USE_MKWCWIDTH
-+    l = mutt_wcwidth (wc);
++    l = mutt_wcwidth(wc);
 +#else
-     l = wcwidth (wc);
+     l = wcwidth(wc);
 +#endif
      if (l < 0)
        l = 1;
      /* correctly calc tab stop, even for sending as the
 diff --git a/wcwidth.c b/wcwidth.c
-index 75e1b9a8..55dd98ae 100644
+index a8167992..176a8d31 100644
 --- a/wcwidth.c
 +++ b/wcwidth.c
 @@ -184,3 +184,338 @@ int wcswidth(const wchar_t *pwcs, size_t n)

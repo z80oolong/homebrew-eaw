@@ -9,7 +9,7 @@ class NeomuttAT20260504 < Formula
   url "https://github.com/neomutt/neomutt/archive/refs/tags/20260504.tar.gz"
   sha256 "93fd8344c12cd857f084f8d7cc1187479f79036ab9725cfdbc81c0cc845f1615"
   license "GPL-2.0-or-later"
-  revision 4
+  revision 5
 
   keg_only :versioned_formula
 
@@ -20,7 +20,7 @@ class NeomuttAT20260504 < Formula
   depends_on "lmdb"
   depends_on "lua"
   depends_on "notmuch"
-  depends_on "openssl@1.1"
+  depends_on "openssl@4"
   depends_on "tokyo-cabinet"
   depends_on "z80oolong/eaw/ncurses-eaw@6.5"
 
@@ -52,7 +52,7 @@ class NeomuttAT20260504 < Formula
     args << "--notmuch"
     args << "--sasl"
     args << "--tokyocabinet"
-    args << "--with-ssl=#{Formula["openssl@1.1"].opt_prefix}"
+    args << "--with-ssl=#{Formula["openssl@4"].opt_prefix}"
     args << "--with-ui=ncurses"
     args << "--with-ncurses=#{new_curses_f.opt_prefix}"
     args << "--lua"
@@ -73,6 +73,52 @@ class NeomuttAT20260504 < Formula
 end
 
 __END__
+diff --git a/conn/openssl.c b/conn/openssl.c
+index 2bfe6e5..25f6d03 100644
+--- a/conn/openssl.c
++++ b/conn/openssl.c
+@@ -81,6 +81,17 @@
+ #define SSL_has_pending SSL_pending
+ #endif
+ 
++#ifndef NO_FIX_OPENSSL4
++/* Starting OpenSSL v4, the ASN1_STRING type is now opaque */
++#if (defined(OPENSSL_VERSION_NUMBER) && OPENSSL_VERSION_NUMBER >= 0x40000000L)
++  #define mutt_get_asn1_string_length(str) ASN1_STRING_length((str))
++  #define mutt_get_asn1_string_data(str) ASN1_STRING_get0_data((str))
++#else
++  #define mutt_get_asn1_string_length(str) (str)->length
++  #define mutt_get_asn1_string_data(str) (str)->data
++#endif
++#endif /* NO_FIX_OPENSSL4 */
++
+ /// index for storing hostname as application specific data in SSL structure
+ static int HostExDataIndex = -1;
+ 
+@@ -750,12 +761,23 @@ static int check_host(X509 *x509cert, const char *hostname, char *err, size_t er
+       subj_alt_name = sk_GENERAL_NAME_value(subj_alt_names, i);
+       if (subj_alt_name->type == GEN_DNS)
+       {
++#ifndef NO_FIX_OPENSSL4
++        int subj_alt_name_len = mutt_get_asn1_string_length(subj_alt_name->d.ia5);
++        const char *subj_alt_name_str = (const char *) mutt_get_asn1_string_data(subj_alt_name->d.ia5);
++#endif /* NO_FIX_OPENSSL4 */
++
+         has_san_dns = true;
++#ifndef NO_FIX_OPENSSL4
++        if (subj_alt_name_len >= 0 &&
++            mutt_str_len(subj_alt_name_str) == (size_t) subj_alt_name_len &&
++            (match_found = hostname_match(hostname_ascii, subj_alt_name_str)))
++#else /* NO_FIX_OPENSSL4 */
+         if ((subj_alt_name->d.ia5->length >= 0) &&
+             (mutt_str_len((char *) subj_alt_name->d.ia5->data) ==
+              (size_t) subj_alt_name->d.ia5->length) &&
+             (match_found = hostname_match(hostname_ascii,
+                                           (char *) (subj_alt_name->d.ia5->data))))
++#endif /* !NO_FIX_OPENSSL4 */
+         {
+           break;
+         }
 diff --git a/editor/enter.c b/editor/enter.c
 index 4aae85b..6299e52 100644
 --- a/editor/enter.c

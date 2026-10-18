@@ -1,16 +1,21 @@
+require "#{Tap.fetch("z80oolong/eaw").path}/lib/extend.rb"
+ENV.extend(EnvExtend)
+
 class MuttCurrent < Formula
+  include DiffDataMixin
+
   desc "Mongrel of mail user agents (part elm, pine, mush, mh, etc.)"
   homepage "http://www.mutt.org/"
   license "GPL-2.0-or-later"
   revision 3
 
   stable do
-    url "http://ftp.mutt.org/pub/mutt/mutt-2.3.0.tar.gz"
-    mirror "https://github.com/muttmua/mutt/archive/refs/tags/mutt-2-3-0-rel.tar.gz"
-    mirror "https://bitbucket.org/mutt/mutt/downloads/mutt-2.3.0.tar.gz"
-    sha256 "5d5ebc40843f7156d5ede30e50016798ac7336467f7ad347e716510516cc2130"
+    url "http://ftp.mutt.org/pub/mutt/mutt-2.4.3.tar.gz"
+    mirror "https://github.com/muttmua/mutt/archive/refs/tags/mutt-2-4-3-rel.tar.gz"
+    mirror "https://bitbucket.org/mutt/mutt/downloads/mutt-2.4.3.tar.gz"
+    sha256 "ce9154e3afede622d98b90a22c87d06f32051c930a9afb2b7ef41656c4dbc948"
 
-    patch :p1, Formula["mutt@2.3.0"].diff_data
+    patch :p1, Formula["mutt@2.4.3"].diff_data
   end
 
   head do
@@ -27,7 +32,7 @@ class MuttCurrent < Formula
   depends_on "perl" => :build
   depends_on "glibc"
   depends_on "gpgme"
-  depends_on "openssl@3"
+  depends_on "openssl@4"
   depends_on "tokyo-cabinet"
   depends_on "z80oolong/eaw/ncurses-eaw@6.5"
 
@@ -39,7 +44,7 @@ class MuttCurrent < Formula
 
   resource "html" do
     url "https://muttmua.gitlab.io/mutt/manual-dev.html"
-    sha256 "107c8e55cf0a2801cbec22055758c9554726a3db8e908c6aee5448385925753d"
+    sha256 "9065fae00bf57b8f973e287ba7f69487cc7ba5c782593a15527767697f5c620d"
   end
 
   def install
@@ -65,7 +70,7 @@ class MuttCurrent < Formula
     args << "--enable-sidebar"
     args << "--enable-smtp"
     args << "--with-gss"
-    args << "--with-ssl=#{Formula["openssl@3"].opt_prefix}"
+    args << "--with-ssl=#{Formula["openssl@4"].opt_prefix}"
     args << "--with-tokyocabinet"
     args << "--enable-gpgme"
     args << (OS.mac? ? "--with-sasl" : "--with-sasl2")
@@ -75,7 +80,8 @@ class MuttCurrent < Formula
     # This permits the `mutt_dotlock` file to be installed under a group
     # that isn't `mail`.
     # https://github.com/Homebrew/homebrew/issues/45400
-    inreplace "Makefile", /^DOTLOCK_GROUP =.*$/, "DOTLOCK_GROUP = #{effective_group}" unless user_in_mail_group
+    inreplace "Makefile", /^DOTLOCK_GROUP =.*$/,
+      "DOTLOCK_GROUP = #{effective_group}" unless user_in_mail_group
     system "make", "install"
 
     doc.install resource("html")
@@ -103,19 +109,3 @@ class MuttCurrent < Formula
     assert_empty shell_output("#{bin}/mutt_dotlock -u ./foo").strip
   end
 end
-
-module EnvExtend
-  def replace_rpath(**replace_list)
-    replace_list = replace_list.each_with_object({}) do |(old, new), result|
-      result[old.to_s] = new.to_s
-    end
-
-    if (rpaths = fetch("HOMEBREW_RPATH_PATHS", false))
-      self["HOMEBREW_RPATH_PATHS"] = (rpaths.split(":").map do |rpath|
-        replace_list.fetch(rpath, rpath)
-      end).join(":")
-    end
-  end
-end
-
-ENV.extend(EnvExtend)

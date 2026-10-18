@@ -1,15 +1,15 @@
 require "#{Tap.fetch("z80oolong/eaw").path}/lib/extend.rb"
 ENV.extend(EnvExtend)
 
-class NeomuttAT20260406 < Formula
+class NeomuttAT20260616 < Formula
   include DiffDataMixin
 
   desc "E-mail reader with support for Notmuch, NNTP and much more"
   homepage "https://neomutt.org/"
-  url "https://github.com/neomutt/neomutt/archive/refs/tags/20260406.tar.gz"
-  sha256 "bd6ef5aa0d53ee23ce15b0f8624a6450d119623931708df998c6ebee7e528d17"
+  url "https://github.com/neomutt/neomutt/archive/refs/tags/20260616.tar.gz"
+  sha256 "2c34fdd2166d5765e6bfdc21d1248bc4e92ddc0a33537b9418c17cd90e2dda80"
   license "GPL-2.0-or-later"
-  revision 4
+  revision 5 
 
   keg_only :versioned_formula
 
@@ -20,7 +20,7 @@ class NeomuttAT20260406 < Formula
   depends_on "lmdb"
   depends_on "lua"
   depends_on "notmuch"
-  depends_on "openssl@1.1"
+  depends_on "openssl@4"
   depends_on "tokyo-cabinet"
   depends_on "z80oolong/eaw/ncurses-eaw@6.5"
 
@@ -38,9 +38,9 @@ class NeomuttAT20260406 < Formula
 
     ENV.replace_rpath old_curses_f.lib     => new_curses_f.lib,
                       old_curses_f.opt_lib => new_curses_f.opt_lib
-    ENV.append "CFLAGS",   "-I#{Formula["z80oolong/eaw/ncurses-eaw@6.5"].opt_include}"
-    ENV.append "CPPFLAGS", "-I#{Formula["z80oolong/eaw/ncurses-eaw@6.5"].opt_include}"
-    ENV.append "LDFLAGS",  "-L#{Formula["z80oolong/eaw/ncurses-eaw@6.5"].opt_lib}"
+    ENV.append "CFLAGS",   "-I#{new_curses_f.opt_include}"
+    ENV.append "CPPFLAGS", "-I#{new_curses_f.opt_include}"
+    ENV.append "LDFLAGS",  "-L#{new_curses_f.opt_lib}"
     ENV["XML_CATALOG_FILES"] = "#{etc}/xml/catalog"
 
     args = std_configure_args
@@ -52,9 +52,9 @@ class NeomuttAT20260406 < Formula
     args << "--notmuch"
     args << "--sasl"
     args << "--tokyocabinet"
-    args << "--with-ssl=#{Formula["openssl@1.1"].opt_prefix}"
+    args << "--with-ssl=#{Formula["openssl@4"].opt_prefix}"
     args << "--with-ui=ncurses"
-    args << "--with-ncurses=#{Formula["z80oolong/eaw/ncurses-eaw@6.5"].opt_prefix}"
+    args << "--with-ncurses=#{new_curses_f.opt_prefix}"
     args << "--lua"
     args << "--with-lua=#{Formula["lua"].prefix}"
 
@@ -73,6 +73,52 @@ class NeomuttAT20260406 < Formula
 end
 
 __END__
+diff --git a/conn/openssl.c b/conn/openssl.c
+index 2bfe6e5..25f6d03 100644
+--- a/conn/openssl.c
++++ b/conn/openssl.c
+@@ -81,6 +81,17 @@
+ #define SSL_has_pending SSL_pending
+ #endif
+ 
++#ifndef NO_FIX_OPENSSL4
++/* Starting OpenSSL v4, the ASN1_STRING type is now opaque */
++#if (defined(OPENSSL_VERSION_NUMBER) && OPENSSL_VERSION_NUMBER >= 0x40000000L)
++  #define mutt_get_asn1_string_length(str) ASN1_STRING_length((str))
++  #define mutt_get_asn1_string_data(str) ASN1_STRING_get0_data((str))
++#else
++  #define mutt_get_asn1_string_length(str) (str)->length
++  #define mutt_get_asn1_string_data(str) (str)->data
++#endif
++#endif /* NO_FIX_OPENSSL4 */
++
+ /// index for storing hostname as application specific data in SSL structure
+ static int HostExDataIndex = -1;
+ 
+@@ -750,12 +761,23 @@ static int check_host(X509 *x509cert, const char *hostname, char *err, size_t er
+       subj_alt_name = sk_GENERAL_NAME_value(subj_alt_names, i);
+       if (subj_alt_name->type == GEN_DNS)
+       {
++#ifndef NO_FIX_OPENSSL4
++        int subj_alt_name_len = mutt_get_asn1_string_length(subj_alt_name->d.ia5);
++        const char *subj_alt_name_str = (const char *) mutt_get_asn1_string_data(subj_alt_name->d.ia5);
++#endif /* NO_FIX_OPENSSL4 */
++
+         has_san_dns = true;
++#ifndef NO_FIX_OPENSSL4
++        if (subj_alt_name_len >= 0 &&
++            mutt_str_len(subj_alt_name_str) == (size_t) subj_alt_name_len &&
++            (match_found = hostname_match(hostname_ascii, subj_alt_name_str)))
++#else /* NO_FIX_OPENSSL4 */
+         if ((subj_alt_name->d.ia5->length >= 0) &&
+             (mutt_str_len((char *) subj_alt_name->d.ia5->data) ==
+              (size_t) subj_alt_name->d.ia5->length) &&
+             (match_found = hostname_match(hostname_ascii,
+                                           (char *) (subj_alt_name->d.ia5->data))))
++#endif /* !NO_FIX_OPENSSL4 */
+         {
+           break;
+         }
 diff --git a/editor/enter.c b/editor/enter.c
 index 4aae85b..6299e52 100644
 --- a/editor/enter.c
@@ -134,7 +180,7 @@ index 45d23f1..02e46ec 100644
  
      // It'll require _some_ space
 diff --git a/gui/curs_lib.c b/gui/curs_lib.c
-index 424ef4f..a1112ed 100644
+index 89ac15b..1e43b93 100644
 --- a/gui/curs_lib.c
 +++ b/gui/curs_lib.c
 @@ -358,7 +358,11 @@ void mutt_paddstr(struct MuttWindow *win, int n, const char *s)
@@ -691,10 +737,10 @@ index 6980edd..d8ac89c 100644
    { "cursor_overlay",            D_INTERNAL_DEPRECATED|DT_BOOL,   0, IP "2020-07-20" },
    { "escape",                    D_INTERNAL_DEPRECATED|DT_STRING, 0, IP "2021-03-18" },
 diff --git a/pager/display.c b/pager/display.c
-index 5a48634..a50be9b 100644
+index 2b85225..64dd863 100644
 --- a/pager/display.c
 +++ b/pager/display.c
-@@ -974,7 +974,11 @@ static int format_line(struct MuttWindow *win, struct Line **lines, int line_num
+@@ -977,7 +977,11 @@ static int format_line(struct MuttWindow *win, struct Line **lines, int line_num
        {
          space = ch;
        }

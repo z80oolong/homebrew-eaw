@@ -7,15 +7,15 @@ class NeomuttCurrent < Formula
   desc "E-mail reader with support for Notmuch, NNTP and much more"
   homepage "https://neomutt.org/"
   license "GPL-2.0-or-later"
-  revision 4
+  revision 5
 
   stable do
-    url "https://github.com/neomutt/neomutt/archive/refs/tags/20260504.tar.gz"
-    sha256 "93fd8344c12cd857f084f8d7cc1187479f79036ab9725cfdbc81c0cc845f1615"
+    url "https://github.com/neomutt/neomutt/archive/refs/tags/20260616.tar.gz"
+    sha256 "2c34fdd2166d5765e6bfdc21d1248bc4e92ddc0a33537b9418c17cd90e2dda80"
 
     depends_on "tokyo-cabinet"
 
-    patch :p1, Formula["z80oolong/eaw/neomutt@20260504"].diff_data
+    patch :p1, Formula["z80oolong/eaw/neomutt@20260616"].diff_data
   end
 
   head do
@@ -33,7 +33,7 @@ class NeomuttCurrent < Formula
   depends_on "lmdb"
   depends_on "lua"
   depends_on "notmuch"
-  depends_on "openssl@1.1"
+  depends_on "openssl@4"
   depends_on "z80oolong/eaw/ncurses-eaw@6.5"
   unless OS.mac?
     depends_on "pkgconf" => :build
@@ -42,8 +42,6 @@ class NeomuttCurrent < Formula
   end
 
   def install
-    include DiffDataMixin
-
     old_curses_f = Formula["ncurses"]
     new_curses_f = Formula["z80oolong/eaw/ncurses-eaw@6.5"]
 
@@ -62,7 +60,7 @@ class NeomuttCurrent < Formula
     args << "--lmdb"
     args << "--notmuch"
     args << "--sasl"
-    args << "--with-ssl=#{Formula["openssl@1.1"].opt_prefix}"
+    args << "--with-ssl=#{Formula["openssl@4"].opt_prefix}"
     args << "--with-ui=ncurses"
     args << "--with-ncurses=#{new_curses_f.opt_prefix}"
     args << "--lua"

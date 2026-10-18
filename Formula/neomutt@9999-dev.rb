@@ -7,11 +7,11 @@ class NeomuttAT9999Dev < Formula
   desc "E-mail reader with support for Notmuch, NNTP and much more"
   homepage "https://neomutt.org/"
 
-  CURRENT_COMMIT = "3aae370b8b51fa5ec2a5e2ed1f2c15d90d5a354d".freeze
-  url "https://github.com/neomutt/neomutt.git", revision: CURRENT_COMMIT
+  CURRENT_COMMIT = "cd3960fa8a4ddde3fbf1104231ae2b8f8bc582a8".freeze
+  url "https://github.com/neomutt/neomutt.git", branch: "main", revision: CURRENT_COMMIT
   version "git-#{CURRENT_COMMIT[0..7]}"
   license "GPL-2.0-or-later"
-  revision 4
+  revision 5 
 
   keg_only :versioned_formula
 
@@ -22,7 +22,7 @@ class NeomuttAT9999Dev < Formula
   depends_on "lmdb"
   depends_on "lua"
   depends_on "notmuch"
-  depends_on "openssl@1.1"
+  depends_on "openssl@4"
   depends_on "z80oolong/eaw/ncurses-eaw@6.5"
   unless OS.mac?
     depends_on "pkgconf" => :build
@@ -51,7 +51,7 @@ class NeomuttAT9999Dev < Formula
     args << "--lmdb"
     args << "--notmuch"
     args << "--sasl"
-    args << "--with-ssl=#{Formula["openssl@1.1"].opt_prefix}"
+    args << "--with-ssl=#{Formula["openssl@4"].opt_prefix}"
     args << "--with-ui=ncurses"
     args << "--with-ncurses=#{new_curses_f.opt_prefix}"
     args << "--lua"
@@ -81,6 +81,52 @@ class NeomuttAT9999Dev < Formula
 end
 
 __END__
+diff --git a/conn/openssl.c b/conn/openssl.c
+index 0d4564f6b..510443def 100644
+--- a/conn/openssl.c
++++ b/conn/openssl.c
+@@ -83,6 +83,17 @@
+ #define SSL_has_pending SSL_pending
+ #endif
+ 
++#ifndef NO_FIX_OPENSSL4
++/* Starting OpenSSL v4, the ASN1_STRING type is now opaque */
++#if (defined(OPENSSL_VERSION_NUMBER) && OPENSSL_VERSION_NUMBER >= 0x40000000L)
++  #define mutt_get_asn1_string_length(str) ASN1_STRING_length((str))
++  #define mutt_get_asn1_string_data(str) ASN1_STRING_get0_data((str))
++#else
++  #define mutt_get_asn1_string_length(str) (str)->length
++  #define mutt_get_asn1_string_data(str) (str)->data
++#endif
++#endif /* NO_FIX_OPENSSL4 */
++
+ /// index for storing hostname as application specific data in SSL structure
+ // HostExDataIndex moved to ConnModuleData
+ 
+@@ -752,12 +763,23 @@ static int check_host(X509 *x509cert, const char *hostname, char *err, size_t er
+       subj_alt_name = sk_GENERAL_NAME_value(subj_alt_names, i);
+       if (subj_alt_name->type == GEN_DNS)
+       {
++#ifndef NO_FIX_OPENSSL4
++        int subj_alt_name_len = mutt_get_asn1_string_length(subj_alt_name->d.ia5);
++        const char *subj_alt_name_str = (const char *) mutt_get_asn1_string_data(subj_alt_name->d.ia5);
++#endif /* NO_FIX_OPENSSL4 */
++
+         has_san_dns = true;
++#ifndef NO_FIX_OPENSSL4
++        if (subj_alt_name_len >= 0 &&
++            mutt_str_len(subj_alt_name_str) == (size_t) subj_alt_name_len &&
++            (match_found = hostname_match(hostname_ascii, subj_alt_name_str)))
++#else /* NO_FIX_OPENSSL4 */
+         if ((subj_alt_name->d.ia5->length >= 0) &&
+             (mutt_str_len((char *) subj_alt_name->d.ia5->data) ==
+              (size_t) subj_alt_name->d.ia5->length) &&
+             (match_found = hostname_match(hostname_ascii,
+                                           (char *) (subj_alt_name->d.ia5->data))))
++#endif /* !NO_FIX_OPENSSL4 */
+         {
+           break;
+         }
 diff --git a/editor/enter.c b/editor/enter.c
 index 4aae85b54..6299e5217 100644
 --- a/editor/enter.c
@@ -98,7 +144,7 @@ index 4aae85b54..6299e5217 100644
  /**
   * editor_backspace - Delete the char in front of the cursor
 diff --git a/editor/window.c b/editor/window.c
-index 33f1aa3ba..ced71b372 100644
+index 53b3e559b..f5366a269 100644
 --- a/editor/window.c
 +++ b/editor/window.c
 @@ -69,7 +69,11 @@ static const struct Mapping EditorHelp[] = {
@@ -114,10 +160,10 @@ index 33f1aa3ba..ced71b372 100644
      return mutt_addwch(win, wc);
    if (!(wc & ~0x7f))
 diff --git a/expando/format.c b/expando/format.c
-index a64d93ecb..dcc464b6c 100644
+index b2f1919e6..8cee2012d 100644
 --- a/expando/format.c
 +++ b/expando/format.c
-@@ -145,7 +145,11 @@ int format_string(struct Buffer *buf, int min_cols, int max_cols, enum FormatJus
+@@ -144,7 +144,11 @@ int format_string(struct Buffer *buf, int min_cols, int max_cols, enum FormatJus
      }
      else if (iswspace(wc))
      {
@@ -129,7 +175,7 @@ index a64d93ecb..dcc464b6c 100644
      }
      else
      {
-@@ -156,7 +160,11 @@ int format_string(struct Buffer *buf, int min_cols, int max_cols, enum FormatJus
+@@ -155,7 +159,11 @@ int format_string(struct Buffer *buf, int min_cols, int max_cols, enum FormatJus
  #endif
            if (!IsWPrint(wc))
          wc = '?';
@@ -142,7 +188,7 @@ index a64d93ecb..dcc464b6c 100644
  
      // It'll require _some_ space
 diff --git a/gui/curs_lib.c b/gui/curs_lib.c
-index 428473366..563b376c9 100644
+index 781301131..f133a4cdb 100644
 --- a/gui/curs_lib.c
 +++ b/gui/curs_lib.c
 @@ -359,7 +359,11 @@ void mutt_paddstr(struct MuttWindow *win, int n, const char *s)
@@ -157,7 +203,7 @@ index 428473366..563b376c9 100644
      if (w >= 0)
      {
        if (w > n)
-@@ -409,7 +413,11 @@ size_t mutt_wstr_trunc(const char *src, size_t maxlen, size_t maxwid, size_t *wi
+@@ -412,7 +416,11 @@ size_t mutt_wstr_trunc(const char *src, size_t maxlen, size_t maxwid, size_t *wi
        wc = ReplacementChar;
      }
  
@@ -169,7 +215,7 @@ index 428473366..563b376c9 100644
      /* hack because MUTT_TREE symbols aren't turned into characters
       * until rendered by print_enriched_string() */
      if ((cw < 0) && (src[0] == MUTT_SPECIAL_INDEX))
-@@ -487,7 +495,11 @@ size_t mutt_strnwidth(const char *s, size_t n)
+@@ -490,7 +498,11 @@ size_t mutt_strnwidth(const char *s, size_t n)
      }
      if (!IsWPrint(wc))
        wc = '?';
@@ -182,7 +228,7 @@ index 428473366..563b376c9 100644
    return w;
  }
 diff --git a/gui/msgwin.c b/gui/msgwin.c
-index a5bb653ab..fda6413ea 100644
+index dfc4a0b4d..c6a6b2987 100644
 --- a/gui/msgwin.c
 +++ b/gui/msgwin.c
 @@ -133,7 +133,11 @@ void measure(struct MwCharArray *chars, const char *str, const struct AttrColor
@@ -214,7 +260,7 @@ index 3ef3a7196..b47128e48 100644
      {
        char tmp[MB_LEN_MAX * 2] = { 0 };
 diff --git a/mutt/mbyte.c b/mutt/mbyte.c
-index 5598d14f9..542743e4d 100644
+index 2250f301c..2443ff641 100644
 --- a/mutt/mbyte.c
 +++ b/mutt/mbyte.c
 @@ -44,6 +44,430 @@
@@ -685,7 +731,7 @@ index 5598d14f9..542743e4d 100644
      return n;
    if (!(wc & ~0x7f))
 diff --git a/mutt_config.c b/mutt_config.c
-index 6bd97f36d..1755bf909 100644
+index f9ffbe695..dd886f241 100644
 --- a/mutt_config.c
 +++ b/mutt_config.c
 @@ -629,6 +629,16 @@ struct ConfigDef MainVars[] = {
@@ -706,10 +752,10 @@ index 6bd97f36d..1755bf909 100644
    { "cursor_overlay",            D_INTERNAL_DEPRECATED|DT_BOOL,   0, IP "2020-07-20" },
    { "escape",                    D_INTERNAL_DEPRECATED|DT_STRING, 0, IP "2021-03-18" },
 diff --git a/pager/display.c b/pager/display.c
-index ba9dfd4a2..e04e89bb9 100644
+index aaf866149..4fe55ac8e 100644
 --- a/pager/display.c
 +++ b/pager/display.c
-@@ -981,7 +981,11 @@ static int format_line(struct MuttWindow *win, struct Line **lines, int line_num
+@@ -986,7 +986,11 @@ static int format_line(struct MuttWindow *win, struct Line **lines, int line_num
        {
          space = ch;
        }

@@ -1,10 +1,15 @@
-class MuttAT230 < Formula
+require "#{Tap.fetch("z80oolong/eaw").path}/lib/extend.rb"
+ENV.extend(EnvExtend)
+
+class MuttAT242 < Formula
+  include DiffDataMixin
+
   desc "Mongrel of mail user agents (part elm, pine, mush, mh, etc.)"
   homepage "http://www.mutt.org/"
-  url "http://ftp.mutt.org/pub/mutt/mutt-2.3.0.tar.gz"
-  mirror "https://github.com/muttmua/mutt/archive/refs/tags/mutt-2-3-0-rel.tar.gz"
-  mirror "https://bitbucket.org/mutt/mutt/downloads/mutt-2.3.0.tar.gz"
-  sha256 "5d5ebc40843f7156d5ede30e50016798ac7336467f7ad347e716510516cc2130"
+  url "http://ftp.mutt.org/pub/mutt/mutt-2.4.2.tar.gz"
+  mirror "https://github.com/muttmua/mutt/archive/refs/tags/mutt-2-4-2-rel.tar.gz"
+  mirror "https://bitbucket.org/mutt/mutt/downloads/mutt-2.4.2.tar.gz"
+  sha256 "2703ff1a51a99c3163d4fd998ac22e982bbd5493d512a7c5bde716a8adba0394"
   license "GPL-2.0-or-later"
   revision 3
 
@@ -16,7 +21,7 @@ class MuttAT230 < Formula
   depends_on "perl" => :build
   depends_on "glibc"
   depends_on "gpgme"
-  depends_on "openssl@3"
+  depends_on "openssl@4"
   depends_on "tokyo-cabinet"
   depends_on "z80oolong/eaw/ncurses-eaw@6.5"
 
@@ -49,7 +54,7 @@ class MuttAT230 < Formula
     args << "--enable-sidebar"
     args << "--enable-smtp"
     args << "--with-gss"
-    args << "--with-ssl=#{Formula["openssl@3"].opt_prefix}"
+    args << "--with-ssl=#{Formula["openssl@4"].opt_prefix}"
     args << "--with-tokyocabinet"
     args << "--enable-gpgme"
     args << (OS.mac? ? "--with-sasl" : "--with-sasl2")
@@ -59,7 +64,8 @@ class MuttAT230 < Formula
     # This permits the `mutt_dotlock` file to be installed under a group
     # that isn't `mail`.
     # https://github.com/Homebrew/homebrew/issues/45400
-    inreplace "Makefile", /^DOTLOCK_GROUP =.*$/, "DOTLOCK_GROUP = #{effective_group}" unless user_in_mail_group
+    inreplace "Makefile", /^DOTLOCK_GROUP =.*$/,
+      "DOTLOCK_GROUP = #{effective_group}" unless user_in_mail_group
     system "make", "install"
   end
 
@@ -76,10 +82,6 @@ class MuttAT230 < Formula
     EOS
   end
 
-  def diff_data
-    path.readlines(nil).first.gsub(/^.*\n__END__\n/m, "")
-  end
-
   test do
     ENV["LC_ALL"] = "C"
     assert_equal "utf8_cjk is unset", shell_output("#{bin}/mutt -F /dev/null -Q utf8_cjk").strip
@@ -90,89 +92,73 @@ class MuttAT230 < Formula
   end
 end
 
-module EnvExtend
-  def replace_rpath(**replace_list)
-    replace_list = replace_list.each_with_object({}) do |(old, new), result|
-      result[old.to_s] = new.to_s
-    end
-
-    if (rpaths = fetch("HOMEBREW_RPATH_PATHS", false))
-      self["HOMEBREW_RPATH_PATHS"] = (rpaths.split(":").map do |rpath|
-        replace_list.fetch(rpath, rpath)
-      end).join(":")
-    end
-  end
-end
-
-ENV.extend(EnvExtend)
-
 __END__
 diff --git a/curs_lib.c b/curs_lib.c
-index efa76ce..eea315d 100644
+index 5c93cbb..6458773 100644
 --- a/curs_lib.c
 +++ b/curs_lib.c
-@@ -1379,7 +1379,11 @@ void mutt_format_string (char *dest, size_t destlen,
- #endif
-         if (!IsWPrint (wc))
+@@ -1414,7 +1414,11 @@ void mutt_format_string(char *dest, size_t destlen,
+       else
+         if (!IsWPrint(wc))
            wc = '?';
 +#ifndef NO_USE_MKWCWIDTH
-+      w = mutt_wcwidth (wc);
++      w = mutt_wcwidth(wc);
 +#else
-       w = wcwidth (wc);
+       w = wcwidth(wc);
 +#endif
      }
      if (w >= 0)
      {
-@@ -1508,7 +1512,11 @@ void mutt_paddstr (int n, const char *s)
+@@ -1543,7 +1547,11 @@ void mutt_paddstr(int n, const char *s)
      }
-     if (!IsWPrint (wc))
+     if (!IsWPrint(wc))
        wc = '?';
 +#ifndef NO_USE_MKWCWIDTH
-+    w = mutt_wcwidth (wc);
++    w = mutt_wcwidth(wc);
 +#else
-     w = wcwidth (wc);
+     w = wcwidth(wc);
 +#endif
      if (w >= 0)
      {
        if (w > n)
-@@ -1545,7 +1553,11 @@ size_t mutt_wstr_trunc (const char *src, size_t maxlen, size_t maxwid, size_t *w
+@@ -1580,7 +1588,11 @@ size_t mutt_wstr_trunc(const char *src, size_t maxlen, size_t maxwid, size_t *wi
        cl = (cl == (size_t)(-1)) ? 1 : n;
-       wc = replacement_char ();
+       wc = replacement_char();
      }
 +#ifndef NO_USE_MKWCWIDTH
-+    cw = mutt_wcwidth (wc);
++    cw = mutt_wcwidth(wc);
 +#else
-     cw = wcwidth (wc);
+     cw = wcwidth(wc);
 +#endif
      /* hack because MUTT_TREE symbols aren't turned into characters
       * until rendered by print_enriched_string (#3364) */
      if (cw < 0 && cl == 1 && src[0] && src[0] < MUTT_TREE_MAX)
-@@ -1583,7 +1595,11 @@ int mutt_charlen (const char *s, int *width)
-   memset (&mbstate, 0, sizeof (mbstate));
-   k = mbrtowc (&wc, s, n, &mbstate);
+@@ -1618,7 +1630,11 @@ int mutt_charlen(const char *s, int *width)
+   memset(&mbstate, 0, sizeof(mbstate));
+   k = mbrtowc(&wc, s, n, &mbstate);
    if (width)
 +#ifndef NO_USE_MKWCWIDTH
-+    *width = mutt_wcwidth (wc);
++    *width = mutt_wcwidth(wc);
 +#else
-     *width = wcwidth (wc);
+     *width = wcwidth(wc);
 +#endif
    return (k == (size_t)(-1) || k == (size_t)(-2)) ? -1 : k;
  }
  
-@@ -1615,7 +1631,11 @@ int mutt_strwidth (const char *s)
+@@ -1650,7 +1666,11 @@ int mutt_strwidth(const char *s)
      }
-     if (!IsWPrint (wc))
+     if (!IsWPrint(wc))
        wc = '?';
 +#ifndef NO_USE_MKWCWIDTH
-+    w += mutt_wcwidth (wc);
++    w += mutt_wcwidth(wc);
 +#else
-     w += wcwidth (wc);
+     w += wcwidth(wc);
 +#endif
    }
    return w;
  }
 diff --git a/enter.c b/enter.c
-index f09dd26..294ef43 100644
+index eb7bd01..a05fee3 100644
 --- a/enter.c
 +++ b/enter.c
 @@ -27,6 +27,9 @@
@@ -187,74 +173,77 @@ index f09dd26..294ef43 100644
  
 @@ -39,7 +42,11 @@ enum
  
- static int my_wcwidth (wchar_t wc)
+ static int my_wcwidth(wchar_t wc)
  {
 +#ifndef NO_USE_MKWCWIDTH
-+  int n = mutt_wcwidth (wc);
++  int n = mutt_wcwidth(wc);
 +#else
-   int n = wcwidth (wc);
+   int n = wcwidth(wc);
 +#endif
-   if (IsWPrint (wc) && n > 0)
+   if (IsWPrint(wc) && n > 0)
      return n;
    if (!(wc & ~0x7f))
-@@ -50,7 +57,11 @@ static int my_wcwidth (wchar_t wc)
+@@ -50,7 +57,11 @@ static int my_wcwidth(wchar_t wc)
  }
  
  /* combining mark / non-spacing character */
 +#ifndef NO_USE_MKWCWIDTH
-+#define COMB_CHAR(wc) (IsWPrint (wc) && !mutt_wcwidth (wc))
++#define COMB_CHAR(wc) (IsWPrint(wc) && !mutt_wcwidth(wc))
 +#else
- #define COMB_CHAR(wc) (IsWPrint (wc) && !wcwidth (wc))
+ #define COMB_CHAR(wc) (IsWPrint(wc) && !wcwidth(wc))
 +#endif
  
- static int my_wcswidth (const wchar_t *s, size_t n)
+ static int my_wcswidth(const wchar_t *s, size_t n)
  {
-@@ -62,7 +73,11 @@ static int my_wcswidth (const wchar_t *s, size_t n)
+@@ -62,9 +73,13 @@ static int my_wcswidth(const wchar_t *s, size_t n)
  
- static int my_addwch (wchar_t wc)
+ static int my_addwch(wchar_t wc)
  {
 +#ifndef NO_USE_MKWCWIDTH
-+  int n = mutt_wcwidth (wc);
++  int n = mutt_wcwidth(wc);
 +#else
-   int n = wcwidth (wc);
+   int n = wcwidth(wc);
 +#endif
-   if (IsWPrint (wc) && n > 0)
-     return mutt_addwch (wc);
+   if (IsWPrint(wc) && n > 0)
+-    return mutt_addwch(wc);
++    return mutt_addwch (wc);
    if (!(wc & ~0x7f))
+     return printw("^%c", ((int)wc + 0x40) & 0x7f);
+   if (!(wc & ~0xffff))
 diff --git a/help.c b/help.c
-index 29dda79..0734d23 100644
+index e1e839f..4b135d2 100644
 --- a/help.c
 +++ b/help.c
-@@ -109,7 +109,11 @@ static int print_macro (FILE *f, int maxwidth, const char **macro)
-       wc = replacement_char ();
+@@ -109,7 +109,11 @@ static int print_macro(FILE *f, int maxwidth, const char **macro)
+       wc = replacement_char();
      }
      /* glibc-2.1.3's wcwidth() returns 1 for unprintable chars! */
 +#ifndef NO_USE_MKWCWIDTH
-+    if (IsWPrint (wc) && (w = mutt_wcwidth (wc)) >= 0)
++    if (IsWPrint(wc) && (w = mutt_wcwidth(wc)) >= 0)
 +#else
-     if (IsWPrint (wc) && (w = wcwidth (wc)) >= 0)
+     if (IsWPrint(wc) && (w = wcwidth(wc)) >= 0)
 +#endif
      {
        if (w > n)
- 	break;
-@@ -174,7 +178,11 @@ static int get_wrapped_width (const char *t, size_t wid)
+         break;
+@@ -174,7 +178,11 @@ static int get_wrapped_width(const char *t, size_t wid)
      }
-     if (!IsWPrint (wc))
+     if (!IsWPrint(wc))
        wc = '?';
 +#ifndef NO_USE_MKWCWIDTH
-+    n += mutt_wcwidth (wc);
++    n += mutt_wcwidth(wc);
 +#else
-     n += wcwidth (wc);
+     n += wcwidth(wc);
 +#endif
    }
    if (n > wid)
      n = m;
 diff --git a/init.h b/init.h
-index 5e15a3e..70cc9e5 100644
+index af68486..087de90 100644
 --- a/init.h
 +++ b/init.h
-@@ -4919,6 +4919,12 @@ struct option_t MuttVars[] = {
-   {"xterm_set_titles",	DT_SYN,  R_NONE, {.p="ts_enabled"}, {.p=0} },
+@@ -4993,6 +4993,12 @@ struct option_t MuttVars[] = {
+   {"xterm_set_titles",  DT_SYN,  R_NONE, {.p="ts_enabled"}, {.p=0} },
    /*
    */
 +#ifndef NO_USE_MKWCWIDTH
@@ -267,10 +256,10 @@ index 5e15a3e..70cc9e5 100644
    { NULL, 0, 0, {.l=0}, {.l=0} }
  };
 diff --git a/mbyte.c b/mbyte.c
-index 16645fe..4442fc9 100644
+index b3f6c65..5830ade 100644
 --- a/mbyte.c
 +++ b/mbyte.c
-@@ -88,6 +88,22 @@ void mutt_set_charset (char *charset)
+@@ -88,6 +88,22 @@ void mutt_set_charset(char *charset)
  #endif
  }
  
@@ -294,24 +283,33 @@ index 16645fe..4442fc9 100644
  
  /*
 diff --git a/mbyte.h b/mbyte.h
-index 9c58c9e..b3dd79a 100644
+index c17ec1d..e49d2e5 100644
 --- a/mbyte.h
 +++ b/mbyte.h
-@@ -8,6 +8,9 @@
- #  ifdef HAVE_WCTYPE_H
- #   include <wctype.h>
- #  endif
-+#  ifndef NO_USE_MKWCWIDTH
-+extern int mutt_wcwidth (wchar_t wc);
-+#  endif
- # endif
+@@ -1,6 +1,18 @@
+ #ifndef _MBYTE_H
+ # define _MBYTE_H
  
++# ifdef HAVE_WC_FUNCS
++#  ifdef HAVE_WCHAR_H
++#   include <wchar.h>
++#  endif
++#  ifdef HAVE_WCTYPE_H
++#   include <wctype.h>
++#  endif
++#  ifndef NO_USE_MKWCWIDTH
++extern int mutt_wcwidth(wchar_t wc);
++#  endif
++# endif
++
  # ifndef HAVE_WC_FUNCS
+ #ifdef towupper
+ # undef towupper
 diff --git a/mutt.h b/mutt.h
-index 2946c78..0fba904 100644
+index 764d8c1..565d3bf 100644
 --- a/mutt.h
 +++ b/mutt.h
-@@ -620,6 +620,12 @@ enum
+@@ -619,6 +619,12 @@ enum
    OPTPGPSHOWUNUSABLE,
    OPTPGPAUTOINLINE,
    OPTPGPREPLYINLINE,
@@ -325,33 +323,33 @@ index 2946c78..0fba904 100644
    /* pseudo options */
  
 diff --git a/pager.c b/pager.c
-index 8df571a..cea17c5 100644
+index fcadf26..1855b33 100644
 --- a/pager.c
 +++ b/pager.c
-@@ -1402,7 +1402,11 @@ static int format_line (struct line_t **lineInfo, int n, unsigned char *buf,
+@@ -1440,7 +1440,11 @@ static int format_line(struct line_t **lineInfo, int n, unsigned char *buf,
      {
        if (wc == ' ')
- 	space = ch;
+         space = ch;
 +#ifndef NO_USE_MKWCWIDTH
-+      t = mutt_wcwidth (wc);
++      t = mutt_wcwidth(wc);
 +#else
-       t = wcwidth (wc);
+       t = wcwidth(wc);
 +#endif
        if (col + t > wrap_cols)
- 	break;
+         break;
        col += t;
 diff --git a/sendlib.c b/sendlib.c
-index ef0ca29..5862e1f 100644
+index de6aa54..603425c 100644
 --- a/sendlib.c
 +++ b/sendlib.c
-@@ -1918,7 +1918,11 @@ static int my_width (const char *p, int col, int flags)
+@@ -1952,7 +1952,11 @@ static int my_width(const char *p, int col, int flags)
        consumed = (consumed == (size_t)(-1)) ? 1 : n;
      }
  
 +#ifndef NO_USE_MKWCWIDTH
-+    l = mutt_wcwidth (wc);
++    l = mutt_wcwidth(wc);
 +#else
-     l = wcwidth (wc);
+     l = wcwidth(wc);
 +#endif
      if (l < 0)
        l = 1;
