@@ -11,7 +11,7 @@ class RxvtUnicodeAT931 < Formula
     regex(/href=.*?rxvt-unicode[._-]v?(\d+(?:\.\d+)+)\.t/i)
   end
 
-  keg_only :versioned_formula
+  keg_only "this is an alternate version of another formula"
 
   depends_on "cmake" => :build
   depends_on "pkgconf" => :build

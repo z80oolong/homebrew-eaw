@@ -11,7 +11,7 @@ class NanoAT91 < Formula
   license "GPL-3.0-or-later"
   revision 3
 
-  keg_only :versioned_formula
+  keg_only "this is an alternate version of another formula"
 
   depends_on "pkgconf" => :build
   depends_on "gettext"
