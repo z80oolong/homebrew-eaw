@@ -1,20 +1,12 @@
 class MuttCurrent < Formula
   desc "Mongrel of mail user agents (part elm, pine, mush, mh, etc.)"
   homepage "http://www.mutt.org/"
+  url "http://ftp.mutt.org/pub/mutt/mutt-2.4.3.tar.gz"
+  mirror "https://github.com/muttmua/mutt/archive/refs/tags/mutt-2-4-3-rel.tar.gz"
+  mirror "https://bitbucket.org/mutt/mutt/downloads/mutt-2.4.3.tar.gz"
+  sha256 "ce9154e3afede622d98b90a22c87d06f32051c930a9afb2b7ef41656c4dbc948"
   license "GPL-2.0-or-later"
   revision 4
-
-  stable do
-    url "http://ftp.mutt.org/pub/mutt/mutt-2.4.3.tar.gz"
-    mirror "https://github.com/muttmua/mutt/archive/refs/tags/mutt-2-4-3-rel.tar.gz"
-    mirror "https://bitbucket.org/mutt/mutt/downloads/mutt-2.4.3.tar.gz"
-    sha256 "ce9154e3afede622d98b90a22c87d06f32051c930a9afb2b7ef41656c4dbc948"
-
-    patch :p1 do
-      file "Patches/mutt/mutt-2.4.3-fix.diff"
-      type :unofficial
-    end
-  end
 
   keg_only "it conflicts with 'homebrew/core/mutt'"
 
@@ -39,6 +31,11 @@ class MuttCurrent < Formula
     sha256 "9065fae00bf57b8f973e287ba7f69487cc7ba5c782593a15527767697f5c620d"
   end
 
+  patch :p1 do
+    file "Patches/mutt/mutt-2.4.3-fix.diff"
+    type :unofficial
+  end
+
   def install
     old_curses_f = Formula["ncurses"]
     new_curses_f = Formula["z80oolong/eaw/ncurses-eaw@6.5"]
@@ -52,9 +49,9 @@ class MuttCurrent < Formula
         replace_list.fetch(rpath, rpath)
       end).join(":")
     end
-    ENV.append "CFLAGS",   "-I#{Formula["z80oolong/eaw/ncurses-eaw@6.5"].opt_include}"
-    ENV.append "CPPFLAGS", "-I#{Formula["z80oolong/eaw/ncurses-eaw@6.5"].opt_include}"
-    ENV.append "LDFLAGS",  "-L#{Formula["z80oolong/eaw/ncurses-eaw@6.5"].opt_lib}"
+    ENV.append "CFLAGS",   "-I#{formula_opt_include("z80oolong/eaw/ncurses-eaw@6.5")}"
+    ENV.append "CPPFLAGS", "-I#{formula_opt_include("z80oolong/eaw/ncurses-eaw@6.5")}"
+    ENV.append "LDFLAGS",  "-I#{formula_opt_lib("z80oolong/eaw/ncurses-eaw@6.5")}"
     ENV["LC_ALL"] = "C"
 
     user_in_mail_group = Etc.getgrnam("mail").mem.include?(ENV["USER"])
@@ -69,7 +66,7 @@ class MuttCurrent < Formula
     args << "--enable-sidebar"
     args << "--enable-smtp"
     args << "--with-gss"
-    args << "--with-ssl=#{Formula["openssl@4"].opt_prefix}"
+    args << "--with-ssl=#{formula_opt_prefix("openssl@4")}"
     args << "--with-tokyocabinet"
     args << "--enable-gpgme"
     args << (OS.mac? ? "--with-sasl" : "--with-sasl2")
@@ -79,8 +76,9 @@ class MuttCurrent < Formula
     # This permits the `mutt_dotlock` file to be installed under a group
     # that isn't `mail`.
     # https://github.com/Homebrew/homebrew/issues/45400
-    inreplace "Makefile", /^DOTLOCK_GROUP =.*$/,
-      "DOTLOCK_GROUP = #{effective_group}" unless user_in_mail_group
+    unless user_in_mail_group
+      inreplace "Makefile", /^DOTLOCK_GROUP =.*$/, "DOTLOCK_GROUP = #{effective_group}"
+    end
     system "make", "install"
 
     doc.install resource("html")

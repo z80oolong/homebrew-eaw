@@ -65,17 +65,17 @@ class NeomuttCurrent < Formula
 
     args = std_configure_args
     args << "--enable-gpgme"
-    args << "--with-gpgme=#{Formula["gpgme"].opt_prefix}"
+    args << "--with-gpgme=#{formula_opt_prefix("gpgme")}"
     args << "--disable-doc"
     args << "--gss"
     args << "--lmdb"
     args << "--notmuch"
     args << "--sasl"
-    args << "--with-ssl=#{Formula["openssl@4"].opt_prefix}"
+    args << "--with-ssl=#{formula_opt_prefix("openssl@4")}"
     args << "--with-ui=ncurses"
     args << "--with-ncurses=#{new_curses_f.opt_prefix}"
     args << "--lua"
-    args << "--with-lua=#{Formula["lua"].prefix}"
+    args << "--with-lua=#{formula_opt_prefix("lua")}"
     unless build.head?
       args << "--tokyocabinet"
     end

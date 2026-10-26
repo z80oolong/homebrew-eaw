@@ -42,9 +42,9 @@ class MuttAT243 < Formula
         replace_list.fetch(rpath, rpath)
       end).join(":")
     end
-    ENV.append "CFLAGS",   "-I#{Formula["z80oolong/eaw/ncurses-eaw@6.5"].opt_include}"
-    ENV.append "CPPFLAGS", "-I#{Formula["z80oolong/eaw/ncurses-eaw@6.5"].opt_include}"
-    ENV.append "LDFLAGS",  "-L#{Formula["z80oolong/eaw/ncurses-eaw@6.5"].opt_lib}"
+    ENV.append "CFLAGS",   "-I#{formula_opt_include("z80oolong/eaw/ncurses-eaw@6.5")}"
+    ENV.append "CPPFLAGS", "-I#{formula_opt_include("z80oolong/eaw/ncurses-eaw@6.5")}"
+    ENV.append "LDFLAGS",  "-I#{formula_opt_lib("z80oolong/eaw/ncurses-eaw@6.5")}"
     ENV["LC_ALL"] = "C"
 
     user_in_mail_group = Etc.getgrnam("mail").mem.include?(ENV["USER"])
@@ -59,7 +59,7 @@ class MuttAT243 < Formula
     args << "--enable-sidebar"
     args << "--enable-smtp"
     args << "--with-gss"
-    args << "--with-ssl=#{Formula["openssl@4"].opt_prefix}"
+    args << "--with-ssl=#{formula_opt_prefix("openssl@4")}"
     args << "--with-tokyocabinet"
     args << "--enable-gpgme"
     args << (OS.mac? ? "--with-sasl" : "--with-sasl2")
@@ -69,8 +69,9 @@ class MuttAT243 < Formula
     # This permits the `mutt_dotlock` file to be installed under a group
     # that isn't `mail`.
     # https://github.com/Homebrew/homebrew/issues/45400
-    inreplace "Makefile", /^DOTLOCK_GROUP =.*$/,
-      "DOTLOCK_GROUP = #{effective_group}" unless user_in_mail_group
+    unless user_in_mail_group
+      inreplace "Makefile", /^DOTLOCK_GROUP =.*$/, "DOTLOCK_GROUP = #{effective_group}"
+    end
     system "make", "install"
   end
 

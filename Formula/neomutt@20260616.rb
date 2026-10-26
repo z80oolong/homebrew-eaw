@@ -4,7 +4,7 @@ class NeomuttAT20260616 < Formula
   url "https://github.com/neomutt/neomutt/archive/refs/tags/20260616.tar.gz"
   sha256 "2c34fdd2166d5765e6bfdc21d1248bc4e92ddc0a33537b9418c17cd90e2dda80"
   license "GPL-2.0-or-later"
-  revision 6 
+  revision 6
 
   keg_only "this is an alternate version of another formula"
 
@@ -50,18 +50,18 @@ class NeomuttAT20260616 < Formula
 
     args = std_configure_args
     args << "--enable-gpgme"
-    args << "--with-gpgme=#{Formula["gpgme"].opt_prefix}"
+    args << "--with-gpgme=#{formula_opt_prefix("gpgme")}"
     args << "--disable-doc"
     args << "--gss"
     args << "--lmdb"
     args << "--notmuch"
     args << "--sasl"
     args << "--tokyocabinet"
-    args << "--with-ssl=#{Formula["openssl@4"].opt_prefix}"
+    args << "--with-ssl=#{formula_opt_prefix("openssl@4")}"
     args << "--with-ui=ncurses"
     args << "--with-ncurses=#{new_curses_f.opt_prefix}"
     args << "--lua"
-    args << "--with-lua=#{Formula["lua"].prefix}"
+    args << "--with-lua=#{formula_opt_prefix("lua")}"
 
     system "./configure", *args
     system "make"

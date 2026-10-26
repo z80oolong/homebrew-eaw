@@ -4,7 +4,7 @@ class NanoAT92 < Formula
   url "https://www.nano-editor.org/dist/v9/nano-9.2.tar.xz"
   sha256 "05ecb99247b782e8a5b3a25ed4101dd034b0236902f7449bc9795b717642f7e9"
   license "GPL-3.0-or-later"
-  revision 4 
+  revision 4
 
   keg_only "this is an alternate version of another formula"
 

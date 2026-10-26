@@ -6,7 +6,7 @@ class NanoAT9999Dev < Formula
   url "git://git.sv.gnu.org/nano.git", revision: CURRENT_COMMIT
   version "git-#{CURRENT_COMMIT[0..7]}"
   license "GPL-3.0-or-later"
-  revision 4 
+  revision 4
 
   keg_only "this is an alternate version of another formula"
 

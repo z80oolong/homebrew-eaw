@@ -6,7 +6,7 @@ class NeomuttAT9999Dev < Formula
   url "https://github.com/neomutt/neomutt.git", branch: "main", revision: CURRENT_COMMIT
   version "git-#{CURRENT_COMMIT[0..7]}"
   license "GPL-2.0-or-later"
-  revision 5 
+  revision 5
 
   keg_only "this is an alternate version of another formula"
 
@@ -50,17 +50,17 @@ class NeomuttAT9999Dev < Formula
 
     args = std_configure_args
     args << "--enable-gpgme"
-    args << "--with-gpgme=#{Formula["gpgme"].opt_prefix}"
+    args << "--with-gpgme=#{formula_opt_prefix("gpgme")}"
     args << "--disable-doc"
     args << "--gss"
     args << "--lmdb"
     args << "--notmuch"
     args << "--sasl"
-    args << "--with-ssl=#{Formula["openssl@4"].opt_prefix}"
+    args << "--with-ssl=#{formula_opt_prefix("openssl@4")}"
     args << "--with-ui=ncurses"
     args << "--with-ncurses=#{new_curses_f.opt_prefix}"
     args << "--lua"
-    args << "--with-lua=#{Formula["lua"].prefix}"
+    args << "--with-lua=#{formula_opt_prefix("lua")}"
 
     system "./configure", *args
     system "make"
