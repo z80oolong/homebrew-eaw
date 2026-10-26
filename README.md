@@ -10,8 +10,7 @@
 
 - 軽量な CLI テキストエディタ [nano][NANO]
 - CLI ベースの多機能メールクライアント [neomutt][MUTT]
-- Unicode 対応の端末エミュレータ [rxvt-unicode][RXVT]
-- CLI ベースの多機能メールクライアント [mutt][OMUT]
+- CLI ベースの多機能メールクライアント [mutt][OMUT] (安定版のみ)
 
 対応するアプリケーションおよび Formula の詳細は、本リポジトリに同梱の ```FormulaList.md``` を参照してください。
 
@@ -49,7 +48,7 @@
 
 本リポジトリの差分ファイル作成にあたり、[Markus Kuhn 氏][DRMK] が提供する [East Asian Ambiguous Character][EAWA] の扱いを考慮した [```wcwidth.c``` 実装][WCWD]を参照しました。[Markus Kuhn 氏][DRMK] に心より感謝いたします。
 
-また、[nano][NANO]、[neomutt][MUTT]、[rxvt-unicode][RXVT]、[mutt][OMUT] の開発者および開発コミュニティ各位に心より感謝いたします。
+また、[nano][NANO]、[neomutt][MUTT]、[mutt][OMUT] の開発者および開発コミュニティ各位に心より感謝いたします。
 
 ## 使用条件
 

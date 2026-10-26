@@ -1,19 +1,20 @@
-require "#{Tap.fetch("z80oolong/eaw").path}/lib/extend.rb"
-ENV.extend(EnvExtend)
-
 class NanoCurrent < Formula
-  include DiffDataMixin
-
   desc "Free (GNU) replacement for the Pico text editor"
   homepage "https://www.nano-editor.org/"
   license "GPL-3.0-or-later"
-  revision 3
+  revision 4
+
+  CURRENT_VERSION = "9.2".freeze
+  CURRENT_COMMIT  = "fc6070d40556c6f8b507ada4fcba4790e814441e".freeze
 
   stable do
-    url "https://www.nano-editor.org/dist/v9/nano-9.2.tar.xz"
+    url "https://www.nano-editor.org/dist/v9/nano-#{CURRENT_VERSION}.tar.xz"
     sha256 "05ecb99247b782e8a5b3a25ed4101dd034b0236902f7449bc9795b717642f7e9"
 
-    patch :p1, Formula["z80oolong/eaw/nano@9.2"].diff_data
+    patch :p1 do
+      file "Patches/nano/nano-#{CURRENT_VERSION}-fix.diff"
+      type :unofficial
+    end
   end
 
   head do
@@ -24,7 +25,10 @@ class NanoCurrent < Formula
     depends_on "perl" => :build
     depends_on "texinfo" => :build
 
-    patch :p1, Formula["z80oolong/eaw/nano@9999-dev"].diff_data
+    patch :p1 do
+      file "Patches/nano/nano-HEAD-#{CURRENT_COMMIT[0..7]}-fix.diff"
+      type :unofficial
+    end
   end
 
   keg_only "it conflicts with 'homebrew/core/nano'"
@@ -40,9 +44,16 @@ class NanoCurrent < Formula
   def install
     old_curses_f = Formula["ncurses"]
     new_curses_f = Formula["z80oolong/eaw/ncurses-eaw@6.5"]
+    replace_list = {
+      old_curses_f.lib.to_s     => new_curses_f.lib.to_s,
+      old_curses_f.opt_lib.to_s => new_curses_f.opt_lib.to_s,
+    }
 
-    ENV.replace_rpath old_curses_f.lib     => new_curses_f.lib,
-                      old_curses_f.opt_lib => new_curses_f.opt_lib
+    if (rpaths = ENV.fetch("HOMEBREW_RPATH_PATHS", false))
+      ENV["HOMEBREW_RPATH_PATHS"] = (rpaths.split(":").map do |rpath|
+        replace_list.fetch(rpath, rpath)
+      end).join(":")
+    end
     ENV.append "NCURSESW_CFLAGS", "-I#{new_curses_f.opt_include}"
     ENV.append "NCURSESW_LIBS", "-L#{new_curses_f.opt_lib} -lncursesw"
     ENV.append "NCURSES_CFLAGS", "-I#{new_curses_f.opt_include}"

@@ -1,13 +1,11 @@
-require "#{Tap.fetch("z80oolong/eaw").path}/lib/extend.rb"
-ENV.extend(EnvExtend)
-
 class NeomuttCurrent < Formula
-  include DiffDataMixin
-
   desc "E-mail reader with support for Notmuch, NNTP and much more"
   homepage "https://neomutt.org/"
   license "GPL-2.0-or-later"
   revision 5
+
+  CURRENT_VERSION = "20260616".freeze
+  CURRENT_COMMIT  = "2f5469f2ab3619011631416eb91ee6214c624554".freeze
 
   stable do
     url "https://github.com/neomutt/neomutt/archive/refs/tags/20260616.tar.gz"
@@ -15,13 +13,19 @@ class NeomuttCurrent < Formula
 
     depends_on "tokyo-cabinet"
 
-    patch :p1, Formula["z80oolong/eaw/neomutt@20260616"].diff_data
+    patch :p1 do
+      file "Patches/neomutt/neomutt-#{CURRENT_VERSION}-fix.diff"
+      type :unofficial
+    end
   end
 
   head do
     url "https://github.com/neomutt/neomutt.git", branch: "main"
 
-    patch :p1, Formula["z80oolong/eaw/neomutt@9999-dev"].diff_data
+    patch :p1 do
+      file "Patches/neomutt/neomutt-HEAD-#{CURRENT_COMMIT[0..8]}-fix.diff"
+      type :unofficial
+    end
   end
 
   keg_only "this formula conflicts with 'homebrew/core/neomutt'"
@@ -44,9 +48,16 @@ class NeomuttCurrent < Formula
   def install
     old_curses_f = Formula["ncurses"]
     new_curses_f = Formula["z80oolong/eaw/ncurses-eaw@6.5"]
+    replace_list = {
+      old_curses_f.lib.to_s     => new_curses_f.lib.to_s,
+      old_curses_f.opt_lib.to_s => new_curses_f.opt_lib.to_s,
+    }
 
-    ENV.replace_rpath old_curses_f.lib     => new_curses_f.lib,
-                      old_curses_f.opt_lib => new_curses_f.opt_lib
+    if (rpaths = ENV.fetch("HOMEBREW_RPATH_PATHS", false))
+      ENV["HOMEBREW_RPATH_PATHS"] = (rpaths.split(":").map do |rpath|
+        replace_list.fetch(rpath, rpath)
+      end).join(":")
+    end
     ENV.append "CFLAGS",   "-I#{new_curses_f.opt_include}"
     ENV.append "CPPFLAGS", "-I#{new_curses_f.opt_include}"
     ENV.append "LDFLAGS",  "-L#{new_curses_f.opt_lib}"
