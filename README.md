@@ -7,8 +7,8 @@ Homebrew がバージョン 6.0.0 に更新されたことに伴い、セキュ�
 本 Tap リポジトリをご利用の際は、以下の手順に従ってください。
 
 ```
-  $ brew tap z80oolong/tmux
-  $ brew trust z80oolong/tmux
+  $ brew tap z80oolong/eaw
+  $ brew trust z80oolong/eaw
 ```
 
 その後、通常通り Formula のインストールを行えます。
@@ -43,8 +43,8 @@ Homebrew がバージョン 6.0.0 に更新されたことに伴い、セキュ�
 本リポジトリの Formula を以下のようにインストールします：
 
 ```
-  $ brew tap z80oolong/tmux
-  $ brew trust z80oolong/tmux
+  $ brew tap z80oolong/eaw
+  $ brew trust z80oolong/eaw
   $ brew install <formula>
 ```
 
