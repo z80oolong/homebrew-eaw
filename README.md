@@ -1,5 +1,24 @@
 # z80oolong/eaw -- CLI アプリケーションにおける East Asian Ambiguous Character を全角文字幅で表示するための Formula 群
 
+## 告知 (2026-06-30)
+
+Homebrew がバージョン 6.0.0 に更新されたことに伴い、セキュリティ対策が強化されました。**これにより、サードパーティの Tap リポジトリを導入する際には、明示的に信頼を設定する必要があります。**
+
+本 Tap リポジトリをご利用の際は、以下の手順に従ってください。
+
+```
+  $ brew tap z80oolong/tmux
+  $ brew trust z80oolong/tmux
+```
+
+その後、通常通り Formula のインストールを行えます。
+
+```
+  $ brew install <formula>
+```
+
+詳細は `brew trust --help` コマンドまたは Homebrew 公式ドキュメントを参照してください。
+
 ## 概要
 
 [Homebrew for Linux][BREW] は、Linux ディストリビューション向けのソースコードベースのパッケージ管理システムであり、ソフトウェアのビルドおよびインストールを簡素化します。
@@ -24,8 +43,9 @@
 本リポジトリの Formula を以下のようにインストールします：
 
 ```
-  brew tap z80oolong/eaw
-  brew install <formula>
+  $ brew tap z80oolong/tmux
+  $ brew trust z80oolong/tmux
+  $ brew install <formula>
 ```
 
 または、一時的な方法として、以下のように URL を直接指定してインストール可能です：
